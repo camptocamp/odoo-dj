@@ -52,7 +52,7 @@ class SettingsExporter(models.AbstractModel):
             str_values = str_values.replace('{', '{{')
             str_values = str_values.replace('}', '}}')
             str_values = re.sub(
-                r"'XMLID([0-9].*)'", r"ctx.env.ref('{\1}')",
+                r"'XMLID([0-9].*)'", r"ctx.env.ref('{\1}').id",
                 str_values)
             str_values = str_values.format(*xmlids)
         return str_values
