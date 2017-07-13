@@ -6,6 +6,8 @@ from cStringIO import StringIO
 import base64
 import csv
 import logging
+import zipfile
+import io
 
 from odoo import models, fields, api
 from odoo.tools.safe_eval import safe_eval
@@ -66,6 +68,8 @@ class Sample(models.Model):
         items = self.env[self.model_id.model].search(self.eval_domain())
         field_names = ['id']
         field_names.extend([f.strip() for f in self.field_list.split(',')])
+        if 'company_id' in self.model_id.field_id.mapped('name'):
+            field_names.append('company_id')
         export_data = items.export_data(field_names).get('datas',[])
 
         return self.from_data(field_names, export_data)
@@ -83,7 +87,7 @@ class DJ(models.Model):
     compact_disk = fields.Binary(
         help="Resulting Zip file with all songs and related files",
         attachment=True)
-    album_title = fields.Char()
+    album_title = fields.Char(default='out.zip')
 
     @api.model
     def check_company_codename(self):
@@ -115,9 +119,12 @@ class DJ(models.Model):
         self.check_company_codename()
         for rec in self:
             files = rec.get_all_tracks()
-
-            # TODO zip all files inside a zip with correct paths
-            zip_file = base64.encodestring(files[0][1])
+            in_mem_zip = io.BytesIO()
+            with zipfile.ZipFile(in_mem_zip, "w", zipfile.ZIP_DEFLATED) as zf:
+                for filepath, data in files:
+                    zf.writestr(filepath, data)
+            in_mem_zip.seek(0)
+            zip_file = base64.encodestring(in_mem_zip.read())
             rec.compact_disk = zip_file
 
 
