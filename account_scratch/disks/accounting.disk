@@ -1,0 +1,187 @@
+# -*- coding: utf-8 -*-
+# Copyright {{ year }} Camptocamp SA
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+# -- This file has been generated --
+# TODO
+from datetime import date
+import anthem
+from anthem.lyrics.loaders import load_csv
+
+
+{% if currencies %}
+@anthem.log
+def enable_currency(ctx):
+    cc = ctx.env['res.currency'].search([('name', 'in', ({{ currencies|join(', ') }}))])
+    cc.write({'active': True})
+{% endif %}
+
+
+@anthem.log
+def load_account(ctx, cp):
+    """ Setup CoA """
+    csv_content = resource_filename(req, 'data/install/account.account.csv')
+    load_csv(ctx, 'account.account', csv_content)
+
+
+@anthem.log
+def load_banks(ctx):
+    csv_content = resource_filename(req, 'data/install/res.bank.csv')
+    load_csv(ctx, 'res.bank', csv_content)
+
+
+@anthem.log
+def load_journal(ctx, cp):
+    """ Import account.journal  """
+    csv_content = resource_filename(req, 'data/install/account.journal.csv')
+    load_csv(ctx, 'account.journal', csv_content)
+
+
+@anthem.log
+def load_bank_journal(ctx, cp):
+    """ Import account.journal for banks """
+    csv_content = resource_filename(req, 'data/install/account.journal-bank.csv')
+    load_csv(ctx, 'account.journal', csv_content)
+
+
+def _set_account_property(ctx, property_name, account_code):
+    """ Find an account property and setup account on it """
+    if not account_code:
+        return
+    company = ctx.env.user.company_id
+    Property = ctx.env['ir.property']
+    Account = ctx.env['account.account']
+    property = Property.search(
+        [('name', '=', property_name),
+         ('company_id', '=', company.id)])
+    account_ids = Account.search(
+        [('code', '=', account_code),
+         ('company_id', '=', company.id)])
+    if property and account_ids:
+        values = {
+            'value_reference': 'account.account,%s' % (account_ids[0].id,)}
+        property.write(values)
+
+
+@anthem.log
+def set_accounting_property(ctx, cp):
+    # Set receivable property
+    _set_account_property(
+        ctx, 'property_account_receivable_id', cp[PROP_RECEIV])
+    # Set receivable property
+    _set_account_property(
+        ctx, 'property_account_payable_id', cp[PROP_PAY])
+    # Set expense property
+    _set_account_property(
+        ctx, 'property_account_expense_categ_id', cp[PROP_EXP])
+    # Set income property
+    _set_account_property(
+        ctx, 'property_account_income_categ_id', cp[PROP_INC])
+
+
+@anthem.log
+def set_fiscalyear(ctx):
+    date_range_type = ctx.env.ref('account_fiscal_year.fiscalyear')
+    values = {'date_start': '2016-01-01',
+              'name': '2016',
+              'date_end': '2016-12-31',
+              'type_id': date_range_type.id,
+              'company_id': False,
+              'active': True,
+              }
+    create_or_update(ctx, 'date.range', '__setup__.date_range_2016', values)
+
+    values = {'date_start': '2015-01-01',
+              'name': '2015',
+              'date_end': '2015-12-31',
+              'type_id': date_range_type.id,
+              'company_id': False,
+              'active': True,
+              }
+    create_or_update(ctx, 'date.range', '__setup__.date_range_2015', values)
+
+
+@anthem.log
+def configure_currency_rate_live(ctx):
+    """ configure enterprise module currency_rate_live """
+    companies = ctx.env['res.company'].search([])
+
+    today = date.today()
+    if today.month == 12:
+        next_update = today.replace(day=1, month=1, year=today.year + 1)
+    else:
+        next_update = today.replace(day=1, month=today.month + 1)
+
+    companies.write({
+        'currency_interval_unit': 'monthly',
+        'currency_provider': 'ecb',
+        'currency_next_execution_date': fields.Date.to_string(next_update)
+    })
+
+
+@anthem.log
+def set_journal_cancelling_entries(ctx):
+    """ Allowing cancelling entries on each journal"""
+    journals = ctx.env['account.journal'].search([])
+    journals.write({'update_posted': True})
+
+
+@anthem.log
+def setup_invoice_sequences(ctx, cp_prefix):
+    """ Setup sequences for invoices and refund for customer and supplier """
+    cp = ctx.env.user.company_id
+
+    Journal = ctx.env['account.journal']
+    journals = Journal.search([
+        ('code', 'in', ('INV', 'BILL')),
+        ('company_id', '=', cp.id)]
+    )
+    journals.write({'refund_sequence': True})
+    for j in journals:
+        if not j.refund_sequence_id:
+            j.refund_sequence_id = j.sudo()._create_sequence(
+                {'name': j.name + " Refund", 'code': j.code}, refund=True)
+        if j.code == 'INV':
+            j.sequence_id.prefix = cp_prefix + '_AR%(year)s'
+            j.sequence_id.padding = 3
+            j.refund_sequence_id.prefix = cp_prefix + '_CN%(year)s'
+            j.refund_sequence_id.padding = 3
+        else:  # BILL
+            j.sequence_id.prefix = cp_prefix + '_AP%(year)s'
+            j.sequence_id.padding = 3
+            j.refund_sequence_id.prefix = cp_prefix + '_PCN%(year)s'
+            j.refund_sequence_id.padding = 3
+
+
+@anthem.log
+def configure_invoice_paperformat(ctx):
+    """ Configure account.invoice report paperformat"""
+    a4_format = ctx.env['report.paperformat'].search([('name', '=',
+                                                       'European A4')])
+    invoice_format = a4_format.copy({'name': 'Invoice format',
+                                     'margin_bottom': 63.0})
+    invoice_report = ctx.env['ir.actions.report.xml'].search(
+        [('model', '=', 'account.invoice')]
+    )
+    invoice_report.write({'paperformat_id': invoice_format.id})
+
+
+@anthem.log
+def main(ctx):
+    """ Setup accounting """
+    enable_currency(ctx)
+    load_banks(ctx)
+    set_fiscalyear(ctx)
+    for cp in CP_LIST:
+        company_xmlid = '__setup__.company_' + cp[0]
+        company = ctx.env.ref(company_xmlid)
+        with ctx.log(u'Setup accounting for company %s' % company.name):
+            ctx.env.user.company_id = company
+            load_account(ctx, cp[0])
+            load_journal(ctx, cp[0])
+            load_bank_journal(ctx, cp[0])
+            load_partner(ctx, cp[0])
+            set_accounting_property(ctx, cp)
+            setup_invoice_sequences(ctx, cp[1])
+    configure_currency_rate_live(ctx)
+    set_journal_cancelling_entries(ctx)
+configure_invoice_paperformat(ctx)

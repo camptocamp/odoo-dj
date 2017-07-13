@@ -1,0 +1,43 @@
+<odoo>
+  <record model="dj" id="dj_dow_jones">
+    <field name="name">account</field>
+  </record>
+
+  <record model="dj.sample" id="dj_sample_res_bank">
+    <field name="dj_id" ref="dj_dow_jones"/>
+    <field name="model_id" ref="base.model_res_bank"/>
+    <field name="csv_path">data/install/res.bank.csv</field>
+    <field name="domain">[]</field>
+    <field name="field_list">code,name,street,street2,zip,city,phone</field>
+    <field name="xmlid_fields">code</field>
+  </record>
+
+  <record model="dj.sample" id="dj_sample_account_type">
+    <field name="dj_id" ref="dj_dow_jones"/>
+    <field name="model_id" ref="account.model_account_account_type"/>
+    <field name="csv_path">data/install/account.account.type.csv</field>
+    <field name="domain">[]</field>
+    <field name="field_list">name,include_initial_balance,type</field>
+    <field name="xmlid_fields">name</field>
+  </record>
+
+  <record model="dj.sample" id="dj_sample_account">
+    <field name="dj_id" ref="dj_dow_jones"/>
+    <field name="model_id" ref="account.model_account_account"/>
+    <field name="csv_path">data/install/account.account.csv</field>
+    <field name="domain">[]</field>
+    <field name="field_list">code,name,user_type_id,reconcile,currency_id</field>
+    <field name="xmlid_fields">code</field>
+  </record>
+
+  <record model="dj.sample" id="dj_sample_account_tax">
+    <field name="dj_id" ref="dj_dow_jones"/>
+    <field name="model_id" ref="account.model_account_tax"/>
+    <field name="csv_path">data/install/account.tax.csv</field>
+    <field name="domain">[]</field>
+    <field name="field_list">sequence,type_tax_use,name,description,amount,amount_type,price_include,account_id,refund_account_id</field>
+    <field name="xmlid_fields">sequence</field>
+  </record>
+
+</odoo>
+
