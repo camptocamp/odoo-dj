@@ -18,6 +18,7 @@ _logger = logging.getLogger(__name__)
 class Sample(models.Model):
     _name = 'dj.sample'
 
+    name = fields.Char(compute='_compute_sample_name')
     dj_id = fields.Many2one('dj', required=True)
     model_id = fields.Many2one('ir.model', required=True)
     csv_path = fields.Char()
@@ -26,6 +27,11 @@ class Sample(models.Model):
     xmlid_fields = fields.Char(help="List of field to use to generate unique"
                                     " xmlid separated by ','")
 
+
+    @api.one
+    @api.depends('model_id.model')
+    def _compute_sample_name(self):
+        self.name = (self.model_id.model or '').replace('.', '_')
 
     @api.model
     def eval_domain(self):
@@ -113,6 +119,16 @@ class DJ(models.Model):
                 sample.create_csv()
             ))
         return files
+
+    @api.multi
+    def get_beats(self):
+        """ Return list of variable for Jinja
+
+        Get name model and path of playlist
+
+        To be inherited
+        """
+        return {'samples': self.playlist}
 
     @api.multi
     def play(self):
