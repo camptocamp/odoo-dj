@@ -78,13 +78,13 @@ class Sample(models.Model):
 
 class DJ(models.Model):
 
-    """Use disks to create songs from scratch and save it in compact format"""
+    """Use discs to create songs from scratch and save it in compact format"""
 
     _name = 'dj'
 
     name = fields.Selection([])
     playlist = fields.One2many('dj.sample', 'dj_id')
-    compact_disk = fields.Binary(
+    compact_disc = fields.Binary(
         help="Resulting Zip file with all songs and related files",
         attachment=True)
     album_title = fields.Char(default='out.zip')
@@ -104,6 +104,7 @@ class DJ(models.Model):
 
     @api.multi
     def get_all_tracks(self):
+        """ Return all csv generated from dj.samples """
         self.ensure_one()
         files = []
         for sample in self.playlist:
@@ -125,7 +126,7 @@ class DJ(models.Model):
                     zf.writestr(filepath, data)
             in_mem_zip.seek(0)
             zip_file = base64.encodestring(in_mem_zip.read())
-            rec.compact_disk = zip_file
+            rec.compact_disc = zip_file
 
 
 

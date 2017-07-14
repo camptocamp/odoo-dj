@@ -1,3 +1,3 @@
-Use disks to create songs from scratch.
+Use discs and records to create songs from scratch.
 
-Disks are templates for songs.
+Discs are templates for songs.

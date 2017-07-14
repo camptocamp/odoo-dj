@@ -17,7 +17,7 @@
           </tree>
         </field>
         <div states="">
-          <p>Here is your zip file: <field name="compact_disk" readonly="1" filename="album_title"/></p>
+          <p>Here is your zip file containting songs and csv files: <field name="compact_disc" readonly="1" filename="album_title"/></p>
         </div>
       </form>
     </field>

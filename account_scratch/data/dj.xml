@@ -1,6 +1,7 @@
 <odoo>
   <record model="dj" id="dj_dow_jones">
     <field name="name">account</field>
+    <field name="album_title">accounting_songs</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_res_bank">

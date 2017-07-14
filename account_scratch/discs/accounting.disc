@@ -11,7 +11,7 @@ from anthem.lyrics.loaders import load_csv
 {% if currencies %}
 @anthem.log
 def enable_currency(ctx):
-    cc = ctx.env['res.currency'].search([('name', 'in', ({{ currencies|join(', ') }}))])
+    cc = ctx.env['res.currency'].search([('name', 'in', ('{{ currencies|join("', '") }}'))])
     cc.write({'active': True})
 {% endif %}
 
@@ -43,23 +43,6 @@ def load_bank_journal(ctx, cp):
     load_csv(ctx, 'account.journal', csv_content)
 
 
-def _set_account_property(ctx, property_name, account_code):
-    """ Find an account property and setup account on it """
-    if not account_code:
-        return
-    company = ctx.env.user.company_id
-    Property = ctx.env['ir.property']
-    Account = ctx.env['account.account']
-    property = Property.search(
-        [('name', '=', property_name),
-         ('company_id', '=', company.id)])
-    account_ids = Account.search(
-        [('code', '=', account_code),
-         ('company_id', '=', company.id)])
-    if property and account_ids:
-        values = {
-            'value_reference': 'account.account,%s' % (account_ids[0].id,)}
-        property.write(values)
 
 
 @anthem.log
@@ -168,7 +151,9 @@ def configure_invoice_paperformat(ctx):
 @anthem.log
 def main(ctx):
     """ Setup accounting """
+    {% if currencies %}
     enable_currency(ctx)
+    {% endif %}
     load_banks(ctx)
     set_fiscalyear(ctx)
     for cp in CP_LIST:
