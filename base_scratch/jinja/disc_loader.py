@@ -7,6 +7,7 @@ from os.path import join, exists, getmtime
 
 from odoo.modules.module import get_module_resource
 
+
 class DiscLoader(BaseLoader):
     """ A Jinja2 Loader for Definition of Implementable Songs Code """
 

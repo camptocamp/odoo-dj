@@ -27,7 +27,6 @@ class Sample(models.Model):
     xmlid_fields = fields.Char(help="List of field to use to generate unique"
                                     " xmlid separated by ','")
 
-
     @api.one
     @api.depends('model_id.model')
     def _compute_sample_name(self):
@@ -52,9 +51,11 @@ class Sample(models.Model):
                         d = d.encode('utf-8')
                     except UnicodeError:
                         pass
-                if d is False: d = None
+                if d is False:
+                    d = None
 
-                # Spreadsheet apps tend to detect formulas on leading =, + and -
+                # Spreadsheet apps
+                # tend to detect formulas on leading =, + and -
                 if type(d) is str and d.startswith(('=', '-', '+')):
                     d = "'" + d
 
@@ -76,10 +77,9 @@ class Sample(models.Model):
         field_names.extend([f.strip() for f in self.field_list.split(',')])
         if 'company_id' in self.model_id.field_id.mapped('name'):
             field_names.append('company_id')
-        export_data = items.export_data(field_names).get('datas',[])
+        export_data = items.export_data(field_names).get('datas', [])
 
         return self.from_data(field_names, export_data)
-
 
 
 class DJ(models.Model):
@@ -106,7 +106,7 @@ class DJ(models.Model):
             return
         companies = Company.search([('aka', '=', False)])
         if companies:
-            raise # TODO missing aka
+            raise  # TODO missing aka
 
     @api.multi
     def get_all_tracks(self):
@@ -143,6 +143,3 @@ class DJ(models.Model):
             in_mem_zip.seek(0)
             zip_file = base64.encodestring(in_mem_zip.read())
             rec.compact_disc = zip_file
-
-
-

@@ -12,6 +12,7 @@ class AccountingDJSample(models.Model):
     """ Specific filter for ir.sequences """
     _inherit = 'dj.sample'
 
+
 class AccountingDJ(models.Model):
     _inherit = 'dj'
 
@@ -37,7 +38,7 @@ class AccountingDJ(models.Model):
 
     @api.multi
     def get_sequence_config(self):
-        Journal= self.env['account.journal']
+        Journal = self.env['account.journal']
         ModelData = self.env['ir.model.data']
         res = {}
         for cp in self.env['res.company'].search([]):
@@ -61,7 +62,7 @@ class AccountingDJ(models.Model):
         beats['currencies'] = self.get_active_currencies()
         beats.update(self.get_currency_rate_live_beats())
         beats['sequence_config'] = self.get_sequence_config()
-        return beats 
+        return beats
 
     @api.multi
     def play_accounting_disc(self):
@@ -86,4 +87,3 @@ class AccountingDJ(models.Model):
             ))
 
         return files
-
