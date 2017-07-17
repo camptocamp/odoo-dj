@@ -5,12 +5,12 @@
     <field name="arch" type="xml">
       <form string="Make songs">
         <header>
-          <button name="play" string="Play" type="object" class="btn-primary"/>
+          <button name="burn" string="Burn" type="object" class="btn-primary"/>
         </header>
         <group>
           <field name="name"/>
         </group>
-        <field name="playlist">
+        <field name="sample_ids">
           <tree>
             <field name="model_id"/>
             <field name="field_list"/>

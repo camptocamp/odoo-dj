@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+# Copyright {{ year }} Camptocamp SA
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+# -- This file has been generated --
+
+import anthem
+from anthem.lyrics.loaders import load_csv
+
+
+{% for s in samples %}
+@anthem.log
+def load_{{ s.name }}(ctx):
+    """ Import {{ s.model_id.name }} from csv """
+    csv_content = resource_filename(req, '{{ s.csv_path }}')
+    load_csv(ctx, '{{ s.model_id.model }}', csv_content)
+
+{% endfor %}
+
+
+@anthem.log
+def main(ctx):
+    {% for s in samples %}
+    load_{{ s.name }}(ctx){% endfor %}
