@@ -120,7 +120,7 @@ class DJcompilation(models.Model):
 
     def make_album_title(self):
         dt = datetime.datetime.now().strftime('%Y%m%d_%H%M')
-        return '{}-{}.zip'.format(self.name, dt)
+        return '{}_{}-{}.zip'.format(self.name, self.data_mode, dt)
 
 
 class Sample(models.Model):

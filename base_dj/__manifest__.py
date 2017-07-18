@@ -3,8 +3,10 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 {
-    'name': 'Base Scratching',
-    'summary': "",
+    'name': 'Base DJ console',
+    'summary': """
+    Use the DJ console to create compilations w/ your favourite anthem songs.
+    """,
     'version': 'version',
     'author': 'Camptocamp',
     'maintainer': 'Camptocamp',
