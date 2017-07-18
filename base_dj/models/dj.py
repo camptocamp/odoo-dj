@@ -24,7 +24,8 @@ class DJcompilation(models.Model):
 
     _name = 'dj.compilation'
 
-    name = fields.Selection([])
+    name = fields.Char()
+    genre = fields.Selection([])
     data_mode = fields.Selection(
         selection=[
             ('install', 'Install'),
@@ -128,6 +129,7 @@ class Sample(models.Model):
     _order = 'sequence ASC, create_date ASC'
 
     compilation_id = fields.Many2one(
+        string='Compilation',
         comodel_name='dj.compilation',
         required=True,
         ondelete='cascade',
@@ -137,7 +139,11 @@ class Sample(models.Model):
         help="Sequence for the handle.",
         default=10
     )
-    model_id = fields.Many2one('ir.model', required=True)
+    model_id = fields.Many2one(
+        string='Model',
+        comodel_name='ir.model',
+        required=True
+    )
     # basically used on for the domain widget
     model_name = fields.Char(related='model_id.model', readonly=True)
     model_fields_ids = fields.Many2many(

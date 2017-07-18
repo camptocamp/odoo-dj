@@ -20,7 +20,8 @@
     'data': [
         'security/ir.model.access.csv',
         'views/company.xml',
-        'views/dj.xml'
+        'views/compilation.xml',
+        'views/sample.xml',
     ],
     'installable': True,
     'auto_install': False,

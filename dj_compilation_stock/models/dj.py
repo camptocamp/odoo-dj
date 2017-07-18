@@ -8,4 +8,4 @@ from odoo import fields, models
 class DJCompilation(models.Model):
     _inherit = 'dj.compilation'
 
-    name = fields.Selection(selection_add=[('stock', 'Stock')])
+    genre = fields.Selection(selection_add=[('stock', 'Stock')])

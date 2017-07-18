@@ -1,6 +1,7 @@
 <odoo>
   <record model="dj.compilation" id="dj_stock_fresh">
-    <field name="name">stock</field>
+    <field name="name">stock default</field>
+    <field name="genre">stock</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_picking_type">

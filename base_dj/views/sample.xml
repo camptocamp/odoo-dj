@@ -1,0 +1,73 @@
+<odoo>
+
+  <record id="dj_sample_form" model="ir.ui.view">
+    <field name="name">DJ sample form</field>
+    <field name="model">dj.sample</field>
+    <field name="arch" type="xml">
+      <form string="Configure sample">
+        <sheet>
+          <notebook>
+            <page name="main" string="Main">
+              <group>
+                <field name="model_id" context="{'model_tech_name_only': 1}" />
+                <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                <field name="model_name" invisible="1" />
+                <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+              </group>
+            </page>
+            <page name="advanced" string="Advanced">
+              <group>
+                <field name="csv_path"/>
+                <field name="model_context"/>
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="dj_sample_tree" model="ir.ui.view">
+    <field name="name">DJ sample tree</field>
+    <field name="model">dj.sample</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="compilation_id"/>
+        <field name="model_id" context="{'model_tech_name_only': 1}" />
+        <field name="model_fields_ids"/>
+        <field name="domain"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="dj_sample_search" model="ir.ui.view">
+    <field name="name">DJ sample search</field>
+    <field name="model">dj.sample</field>
+    <field name="arch" type="xml">
+      <search string="Samples Search">
+        <field name="compilation_id"/>
+        <field name="model_id"/>
+        <group expand="1" string="Group By">
+          <filter string="Model" name="model" context="{'group_by':'model_id'}"/>
+          <filter string="Compilation" name="compilation" context="{'group_by':'compilation_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <record id="action_dj_samples" model="ir.actions.act_window">
+    <field name="name">Samples</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.sample</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <menuitem
+    parent="menu_dj_console"
+    id="menu_dj_samples"
+    name="Samples"
+    action="action_dj_samples"
+    />
+
+</odoo>
