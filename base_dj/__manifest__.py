@@ -15,10 +15,10 @@
     'depends': ['base'],
     'website': 'www.camptocamp.com',
     'data': [
+        'security/ir.model.access.csv',
         'views/company.xml',
         'views/dj.xml'
     ],
-    'test': [],
     'installable': True,
     'auto_install': False,
 }
