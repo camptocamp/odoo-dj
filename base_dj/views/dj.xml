@@ -17,10 +17,12 @@
                   <field name="field_list"/>
                 </tree>
                 <form>
-                  <field name="model_id" />
-                  <field name="field_list"/>
-                  <field name="csv_path"/>
-                  <field name="domain"/>
+                  <group>
+                    <field name="model_id" />
+                    <field name="field_list"/>
+                    <field name="domain"/>
+                    <field name="csv_path"/>
+                  </group>
                 </form>
               </field>
               <footer>
