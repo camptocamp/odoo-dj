@@ -125,7 +125,7 @@ class DJcompilation(models.Model):
 
 class Sample(models.Model):
     _name = 'dj.sample'
-    _order = 'sequence ASC, create_date DESC'
+    _order = 'sequence ASC, create_date ASC'
 
     compilation_id = fields.Many2one(
         comodel_name='dj.compilation',
@@ -138,14 +138,19 @@ class Sample(models.Model):
         default=10
     )
     model_id = fields.Many2one('ir.model', required=True)
+    model_fields_ids = fields.Many2many(
+        comodel_name='ir.model.fields',
+        string='Fields',
+        domain="[('store', '=', True), ('model_id', '=', model_id)]",
+    )
     name = fields.Char(compute='_compute_sample_name')
     csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
     domain = fields.Char(default="[]")
     model_context = fields.Char(default="{'tracking_disable':1}")
-    field_list = fields.Char(
-        default="name",
-        help="List of field to export separated by ','"
-    )
+    # field_list = fields.Char(
+    #     default="name",
+    #     help="List of field to export separated by ','"
+    # )
     # TODO
     # xmlid_fields = fields.Char(help="List of field to use to generate unique"
     #                                 " xmlid separated by ','")
@@ -171,7 +176,7 @@ class Sample(models.Model):
 
         for data in rows:
             row = []
-            for col in data:
+            for i, col in enumerate(data):
                 if isinstance(col, unicode):
                     try:
                         col = col.encode('utf-8')
@@ -212,14 +217,22 @@ class Sample(models.Model):
             (csv_path, csv_data),
         ]
 
+    def get_burn_field_names(self):
+        field_names = ['id']
+        for field in self.model_fields_ids:
+            name = field.name
+            if field.ttype == 'many2one':
+                name += '/id'
+            field_names.append(name)
+        if ('company_id' in self.sample_model and
+                'company_id/id' not in field_names):
+            field_names.append('company_id/id')
+        return field_names
+
     def make_csv(self, items):
         # TODO create xmlid starting with __setup__
         # XXX detect auto generated xmlids
-        field_names = ['id']
-        field_list = self.field_list or 'name'  # default to `name`
-        field_names.extend([f.strip() for f in field_list.split(',')])
-        if 'company_id' in self.sample_model:
-            field_names.append('company_id')
+        field_names = self.get_burn_field_names()
         export_data = items.export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),

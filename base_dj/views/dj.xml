@@ -11,16 +11,17 @@
                 <field name="name"/>
                 <field name="data_mode"/>
               </group>
-              <field name="sample_ids" context="{'model_dotted_name_only': 1}">
+              <field name="sample_ids" context="{'model_tech_name_only': 1}">
                 <tree>
                   <field name="sequence" widget="handle" />
                   <field name="model_id" />
-                  <field name="field_list"/>
+                  <field name="model_fields_ids" context="{'model_tech_name_only': 1}" />
                 </tree>
                 <form>
                   <group>
-                    <field name="model_id" />
-                    <field name="field_list"/>
+                    <field name="model_id" context="{'model_tech_name_only': 1}" />
+                    <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                    <!-- <field name="field_list"/> -->
                     <field name="domain"/>
                     <field name="csv_path"/>
                     <field name="model_context"/>
@@ -39,6 +40,33 @@
               <group>
                 <field name="disc_template"/>
                 <field name="disc_path"/>
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="dj_sample_form" model="ir.ui.view">
+    <field name="name">DJ sample form</field>
+    <field name="model">dj.sample</field>
+    <field name="arch" type="xml">
+      <form string="Configure sample">
+        <sheet>
+          <notebook>
+            <page name="main" string="Main">
+              <group>
+                <field name="model_id" context="{'model_tech_name_only': 1}" />
+                <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                <!-- <field name="field_list"/> -->
+                <field name="domain"/>
+              </group>
+            </page>
+            <page name="advanced" string="Advanced">
+              <group>
+                <field name="csv_path"/>
+                <field name="model_context"/>
               </group>
             </page>
           </notebook>
