@@ -141,6 +141,7 @@ class Sample(models.Model):
     name = fields.Char(compute='_compute_sample_name')
     csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
     domain = fields.Char(default="[]")
+    model_context = fields.Char(default="{'tracking_disable':1}")
     field_list = fields.Char(
         default="name",
         help="List of field to export separated by ','"
