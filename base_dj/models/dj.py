@@ -125,11 +125,17 @@ class DJcompilation(models.Model):
 
 class Sample(models.Model):
     _name = 'dj.sample'
+    _order = 'sequence ASC, create_date DESC'
 
     compilation_id = fields.Many2one(
         comodel_name='dj.compilation',
         required=True,
         ondelete='cascade',
+    )
+    sequence = fields.Integer(
+        'Sequence',
+        help="Sequence for the handle.",
+        default=10
     )
     model_id = fields.Many2one('ir.model', required=True)
     name = fields.Char(compute='_compute_sample_name')
