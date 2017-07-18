@@ -20,9 +20,10 @@
                 <form>
                   <group>
                     <field name="model_id" context="{'model_tech_name_only': 1}" />
+                    <field name="model_name" invisible="1" />
                     <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                     <!-- <field name="field_list"/> -->
-                    <field name="domain"/>
+                    <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
                     <field name="csv_path"/>
                     <field name="model_context"/>
                   </group>

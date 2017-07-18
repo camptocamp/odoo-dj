@@ -138,6 +138,8 @@ class Sample(models.Model):
         default=10
     )
     model_id = fields.Many2one('ir.model', required=True)
+    # basically used on for the domain widget
+    model_name = fields.Char(related='model_id.model', readonly=True)
     model_fields_ids = fields.Many2many(
         comodel_name='ir.model.fields',
         string='Fields',

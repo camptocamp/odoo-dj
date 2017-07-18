@@ -12,7 +12,10 @@
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',
     'category': 'songs',
-    'depends': ['base'],
+    'depends': [
+        'base',
+        'web_widget_domain_v11',
+    ],
     'website': 'www.camptocamp.com',
     'data': [
         'security/ir.model.access.csv',
