@@ -10,12 +10,12 @@
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',
     'category': 'songs',
-    'depends': ['base_scratch', 'account'],
+    'depends': ['base_dj', 'account'],
     'website': 'www.camptocamp.com',
     'data': ['data/dj.xml'],
     'test': [],
     'external_dependencies': {
     },
-    'installable': True,
+    'installable': False,
     'auto_install': False,
 }
