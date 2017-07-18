@@ -1,0 +1,67 @@
+<odoo>
+  <record id="dj_compilation_form" model="ir.ui.view">
+    <field name="name">DJ compilation form</field>
+    <field name="model">dj.compilation</field>
+    <field name="arch" type="xml">
+      <form string="Make songs">
+        <sheet>
+          <notebook>
+            <page name="main" string="Main">
+              <group>
+                <field name="name"/>
+                <field name="data_mode"/>
+              </group>
+              <field name="sample_ids" context="{'model_dotted_name_only': 1}">
+                <tree>
+                  <field name="model_id" />
+                  <field name="field_list"/>
+                </tree>
+                <form>
+                  <field name="model_id" />
+                  <field name="field_list"/>
+                  <field name="csv_path"/>
+                  <field name="domain"/>
+                </form>
+              </field>
+              <footer>
+                <button name="burn" string="Burn" type="object" class="btn-primary"/>
+                <div name="download">
+                  <field name="album_title" invisible="1" />
+                  <p>Here is your zip file containting songs and csv files: <field name="compact_disc" readonly="1" filename="album_title"/></p>
+                </div>
+              </footer>
+            </page>
+            <page name="advanced" string="Advanced">
+              <group>
+                <field name="disc_template"/>
+                <field name="disc_path"/>
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="dj_compilation_tree" model="ir.ui.view">
+    <field name="name">DJ compilation tree</field>
+    <field name="model">dj.compilation</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="name"/>
+        <field name="data_mode"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="action_dj_compilation" model="ir.actions.act_window">
+    <field name="name">Compilations</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.compilation</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <menuitem string="DJ Console" id="menu_dj_console" parent="base.menu_administration"/>
+  <menuitem action="action_dj_compilation" id="menu_dj_compilation" parent="menu_dj_console" string="Compilations" />
+</odoo>

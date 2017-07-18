@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
-from cStringIO import StringIO
 
 import base64
 import csv
@@ -10,30 +9,50 @@ import zipfile
 import io
 import jinja2
 import os
+import datetime
+from cStringIO import StringIO
 
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions, _
 from odoo.tools.safe_eval import safe_eval
 from odoo.modules.module import get_module_resource
+
 _logger = logging.getLogger(__name__)
 
 
-class DJ(models.Model):
+class DJcompilation(models.Model):
     """Use discs to create songs from scratch and save it in compact format"""
 
-    _name = 'dj'
+    _name = 'dj.compilation'
 
     name = fields.Selection([])
-    sample_ids = fields.One2many('dj.sample', 'dj_id')
-    disc_template = fields.Char(default='base_scratch:discs/default.disc')
-    disc_path = fields.Char(default='songs/install/{name}')
+    data_mode = fields.Selection(
+        selection=[
+            ('install', 'Install'),
+            ('demo', 'Demo'),
+        ],
+        default='install',
+    )
+    sample_ids = fields.One2many('dj.sample', 'compilation_id')
+    disc_template = fields.Char(
+        default='base_dj:discs/default.disc',
+        required=True,
+    )
+    disc_path = fields.Char(
+        default='songs/{data_mode}/{name}.py',
+        required=True,
+    )
     compact_disc = fields.Binary(
+        # TODO: make this volatile (use a controller for instance
+        # or cleanup attachments w/ a cron?)
         help="Resulting Zip file with all songs and related files",
-        attachment=True)
-    album_title = fields.Char(default='out.zip')
+        attachment=True
+    )
+    album_title = fields.Char(default='songs.zip')
 
     @api.model
     def check_company_codename(self):
-        """ Check company short codenames have been setup in multi company
+        """Check company short codenames have been setup in multi company.
+
         We need those to create unique codenames
         """
         Company = self.env['res.company']
@@ -42,11 +61,15 @@ class DJ(models.Model):
             return
         companies = Company.search([('aka', '=', False)])
         if companies:
-            raise  # TODO missing aka
+            raise exceptions.UserError(
+                _("Companies miss `aka` unique code: %s") % ', '.join(
+                    companies.mapped('name')
+                )
+            )
 
     @api.multi
     def get_all_tracks(self):
-        """ Return all csv generated from dj.samples """
+        """Return all files to burn into the compilation."""
         self.ensure_one()
         files = []
         for sample in self.sample_ids:
@@ -56,17 +79,13 @@ class DJ(models.Model):
 
     @api.multi
     def get_template_vars(self):
-        """ Return list of variable for Jinja
-
-        Get name model and path of samples.
-
-        To be inherited
-        """
+        """Return context variables to render disc's template."""
         self.ensure_one()
         return {'samples': self.sample_ids}
 
     @api.multi
     def get_disc_template(self):
+        """Retrieve Jinja template for current disc."""
         self.ensure_one()
         # load Jinja template
         mod, filepath = self.disc_template.split(':')
@@ -74,18 +93,19 @@ class DJ(models.Model):
         path, filename = os.path.split(filepath)
         return jinja2.Environment(
             loader=jinja2.FileSystemLoader(path)
-        ).get_template(path)
+        ).get_template(filename)
 
     @api.multi
     def burn_disc(self):
+        """Burn the disc with songs."""
         self.ensure_one()
         template = self.get_disc_template()
-        path = self.disc_path.format(name=self.name)
+        path = self.disc_path.format(name=self.name, data_mode=self.data_mode)
         return path, template.render(**self.get_template_vars())
 
     @api.multi
     def burn(self):
-        """ Return a zip file containing all required files """
+        """Burn disc into a zip file."""
         self.check_company_codename()
         for rec in self:
             files = rec.get_all_tracks()
@@ -95,20 +115,33 @@ class DJ(models.Model):
                     zf.writestr(filepath, data)
             in_mem_zip.seek(0)
             zip_file = base64.encodestring(in_mem_zip.read())
+            rec.album_title = rec.make_album_title()
             rec.compact_disc = zip_file
+
+    def make_album_title(self):
+        dt = datetime.datetime.now().strftime('%Y%m%d_%H%M')
+        return '{}-{}.zip'.format(self.name, dt)
 
 
 class Sample(models.Model):
     _name = 'dj.sample'
 
-    dj_id = fields.Many2one('dj', required=True)
+    compilation_id = fields.Many2one(
+        comodel_name='dj.compilation',
+        required=True,
+        ondelete='cascade',
+    )
     model_id = fields.Many2one('ir.model', required=True)
     name = fields.Char(compute='_compute_sample_name')
-    csv_path = fields.Char()
+    csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
     domain = fields.Char(default="[]")
-    field_list = fields.Char(help="List of field to export separated by ','")
-    xmlid_fields = fields.Char(help="List of field to use to generate unique"
-                                    " xmlid separated by ','")
+    field_list = fields.Char(
+        default="name",
+        help="List of field to export separated by ','"
+    )
+    # TODO
+    # xmlid_fields = fields.Char(help="List of field to use to generate unique"
+    #                                 " xmlid separated by ','")
 
     @api.multi
     @api.depends('model_id.model')
@@ -131,21 +164,21 @@ class Sample(models.Model):
 
         for data in rows:
             row = []
-            for d in data:
-                if isinstance(d, unicode):
+            for col in data:
+                if isinstance(col, unicode):
                     try:
-                        d = d.encode('utf-8')
+                        col = col.encode('utf-8')
                     except UnicodeError:
                         pass
-                if d is False:
-                    d = None
+                if col is False:
+                    col = None
 
                 # Spreadsheet apps
                 # tend to detect formulas on leading =, + and -
-                if type(d) is str and d.startswith(('=', '-', '+')):
-                    d = "'" + d
+                if type(col) is str and col.startswith(('=', '-', '+')):
+                    col = "'" + col
 
-                row.append(d)
+                row.append(col)
             writer.writerow(row)
 
         fp.seek(0)
@@ -153,21 +186,35 @@ class Sample(models.Model):
         fp.close()
         return data
 
-    def burn_csv(self, items):
-        # TODO create xmlid starting with __setup__
-        # XXX detect auto generated xmlids
-        field_names = ['id']
-        field_names.extend([f.strip() for f in self.field_list.split(',')])
-        if 'company_id' in self.model_id.field_id.mapped('name'):
-            field_names.append('company_id')
-        export_data = items.export_data(field_names).get('datas', [])
-        return self.csv_path, self.csv_from_data(field_names, export_data)
+    @property
+    def sample_model(self):
+        return self.env[self.model_id.model]
+
+    def real_csv_path(self):
+        return self.csv_path.format(
+            model=self.sample_model._name,
+            data_mode=self.compilation_id.data_mode,
+        )
 
     @api.multi
     def burn_track(self):
         self.ensure_one()
-        items = self.env[self.model_id.model].search(self.eval_domain())
-        csv_path, csv_data = self.burn_csv(items)
+        items = self.sample_model.search(self.eval_domain())
+        csv_path, csv_data = self.make_csv(items)
         return [
             (csv_path, csv_data),
         ]
+
+    def make_csv(self, items):
+        # TODO create xmlid starting with __setup__
+        # XXX detect auto generated xmlids
+        field_names = ['id']
+        field_list = self.field_list or 'name'  # default to `name`
+        field_names.extend([f.strip() for f in field_list.split(',')])
+        if 'company_id' in self.sample_model:
+            field_names.append('company_id')
+        export_data = items.export_data(field_names).get('datas', [])
+        return (
+            self.real_csv_path(),
+            self.csv_from_data(field_names, export_data)
+        )

@@ -1,5 +1,0 @@
-@anthem.log
-def import_{{ item }}(ctx):
-    """ Importing {{ item }} from csv """
-    content = resource_stream(req, '{{ path }}')
-    load_csv_stream(ctx, '{{ model }}', content, delimiter={{ separator or ',' }})

@@ -10,8 +10,8 @@ from anthem.lyrics.loaders import load_csv
 {% for s in samples %}
 @anthem.log
 def load_{{ s.name }}(ctx):
-    """ Import {{ s.model_id.name }} from csv """
-    csv_content = resource_filename(req, '{{ s.csv_path }}')
+    """ Import {{ s.model_id.model }} from csv """
+    csv_content = resource_filename(req, '{{ s.real_csv_path() }}')
     load_csv(ctx, '{{ s.model_id.model }}', csv_content)
 
 {% endfor %}

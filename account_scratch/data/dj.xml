@@ -1,52 +1,42 @@
 <odoo>
   <record model="dj" id="dj_dow_jones">
     <field name="name">account</field>
-    <field name="album_title">accounting_songs</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_res_bank">
     <field name="dj_id" ref="dj_dow_jones"/>
     <field name="model_id" ref="base.model_res_bank"/>
-    <field name="csv_path">data/install/res.bank.csv</field>
     <field name="domain">[]</field>
     <field name="field_list">code,name,street,street2,zip,city,phone</field>
-    <field name="xmlid_fields">code</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_account_type">
     <field name="dj_id" ref="dj_dow_jones"/>
     <field name="model_id" ref="account.model_account_account_type"/>
-    <field name="csv_path">data/install/account.account.type.csv</field>
     <field name="domain">[]</field>
     <field name="field_list">name,include_initial_balance,type</field>
-    <field name="xmlid_fields">name</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_account">
     <field name="dj_id" ref="dj_dow_jones"/>
     <field name="model_id" ref="account.model_account_account"/>
-    <field name="csv_path">data/install/account.account.csv</field>
     <field name="domain">[]</field>
     <field name="field_list">code,name,user_type_id,reconcile,currency_id</field>
-    <field name="xmlid_fields">code</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_account_tax">
     <field name="dj_id" ref="dj_dow_jones"/>
     <field name="model_id" ref="account.model_account_tax"/>
-    <field name="csv_path">data/install/account.tax.csv</field>
     <field name="domain">[]</field>
     <field name="field_list">sequence,type_tax_use,name,description,amount,amount_type,price_include,account_id,refund_account_id</field>
-    <field name="xmlid_fields">sequence</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_ir_property">
     <field name="dj_id" ref="dj_dow_jones"/>
     <field name="model_id" ref="base.model_ir_property"/>
-    <field name="csv_path">data/install/ir.property-account.csv</field>
+    <field name="csv_path">data/{data_mode}/{model}-account.csv</field>
     <field name="domain">[('name', 'in', ('property_account_receivable_id','property_account_payable_id','property_account_expense_categ_id','property_account_income_categ_id','property_stock_account_output','property_stock_account_input','property_stock_account_output_categ_id','property_stock_account_input_categ_id'))]</field>
     <field name="field_list">fields_id,name,type,value_reference</field>
-    <field name="xmlid_fields">name</field>
   </record>
 
   <!-- TODO ir.sequence referenced by journals
@@ -56,17 +46,14 @@
     <field name="csv_path">data/install/ir.sequence-account.csv</field>
     <field name="domain">[]</field>
     <field name="field_list">company_id,name,number_next,number_next_actual,prefix,padding,number_increment,use_date_range</field>
-    <field name="xmlid_fields">name</field>
   </record>
   -->
 
   <record model="dj.sample" id="dj_sample_account_journal">
     <field name="dj_id" ref="dj_dow_jones"/>
     <field name="model_id" ref="account.model_account_journal"/>
-    <field name="csv_path">data/install/account.journal.csv</field>
     <field name="domain">[]</field>
     <field name="field_list">type,sequence,code,name,currency_id,default_credit_account_id,default_debit_account_id,update_posted,bank_account_id,bank_acc_number,bank_id</field>
-    <field name="xmlid_fields">sequence</field>
   </record>
 
 
@@ -75,4 +62,3 @@
   <!-- account.financial.html.report -->
   <!-- account.financial.html.report.line -->
 </odoo>
-
