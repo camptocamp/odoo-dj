@@ -188,13 +188,21 @@ class Sample(models.Model):
         comodel_name='ir.model.fields',
         relation='sample_model_fields_rel',
         string='Fields',
-        domain="[('store', '=', True), ('model_id', '=', model_id)]",
+        domain="""[
+            ('store', '=', True),
+            ('model_id', '=', model_id),
+            ('compute', '=', False),
+        ]""",
     )
     model_fields_blacklist_ids = fields.Many2many(
         comodel_name='ir.model.fields',
         relation='sample_model_fields_blacklist_rel',
         string='Fields blacklist',
-        domain="[('store', '=', True), ('model_id', '=', model_id)]",
+        domain="""[
+            ('store', '=', True),
+            ('model_id', '=', model_id),
+            ('compute', '=', False),
+        ]""",
     )
     name = fields.Char(compute='_compute_sample_name')
     csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
@@ -280,7 +288,9 @@ class Sample(models.Model):
         ).difference(set(IGNORED_FORM_FIELDS))
         return self.env['ir.model.fields'].search([
             ('model', '=', self.model_name),
-            ('name', 'in', list(names))
+            ('store', '=', True),
+            ('compute', '=', False),
+            ('name', 'in', list(names)),
         ])
 
     def get_csv_field_names(self):
