@@ -4,7 +4,6 @@
 
 import base64
 import csv
-import logging
 import zipfile
 import io
 import jinja2
@@ -16,8 +15,6 @@ from odoo import models, fields, api, exceptions, _
 from odoo.tools.safe_eval import safe_eval
 from odoo.modules.module import get_module_resource
 from odoo.addons.website.models.website import slugify
-
-_logger = logging.getLogger(__name__)
 
 
 class DJcompilation(models.Model):
@@ -234,9 +231,12 @@ class Sample(models.Model):
         field_names = ['id']
         for field in self.model_fields_ids:
             name = field.name
-            if field.ttype == 'many2one':
+            # we always want xmlids
+            # many2many are handled specifically by `export_data`
+            if field.ttype in ('many2one', 'one2many'):
                 name += '/id'
             field_names.append(name)
+        # we always want company_id if the field is there
         if ('company_id' in self.sample_model and
                 'company_id/id' not in field_names):
             field_names.append('company_id/id')

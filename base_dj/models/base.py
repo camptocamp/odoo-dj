@@ -63,18 +63,18 @@ class Base(models.AbstractModel):
             ('model', '=', self._name),
             ('res_id', '=', self.id),
             ('module', '!=', '__export__'),
-        ])
+        ], order='create_date desc', limit=1)
         if data:
-            if data[-1].module:
-                return '%s.%s' % (data[-1].module, data[-1].name)
+            if data.module:
+                return '%s.%s' % (data.module, data.name)
             else:
-                return data[-1].name
+                return data.name
         else:
             postfix = 0
             base_name = self._dj_xmlid_export_name()
             name = base_name[:]
             while ir_model_data.search([('module', '=', module),
-                                        ('name', '=', name)]):
+                                        ('name', '=', name)], limit=1):
                 postfix += 1
                 name = '%s_%d' % (base_name, postfix)
             ir_model_data.create({
