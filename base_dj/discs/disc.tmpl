@@ -4,8 +4,7 @@
 # -- This file has been generated --
 
 import anthem
-from anthem.lyrics.loaders import load_csv
-
+from ..common import load_csv
 
 {% for sample in samples %}
 {{ sample.dj_render_template() }}

@@ -1,9 +1,17 @@
 @anthem.log
+def add_xmlid_to_existing_locations(ctx):
+    # this works if `base_dj` is installed
+    model = ctx.env['stock.location'].with_context(dj_export=1)
+    for item in model.search([]):
+        item._dj_export_xmlid()
+
+
+@anthem.log
 def load_{{ sample.name }}(ctx):
-    model = ctx.env['stock.location'].with_context({{ sample.model_context }})  # noqa
+    add_xmlid_to_existing_locations(ctx)
     deferred_import(
         ctx,
-        model,
+        'stock.location',
         '{{ sample.real_csv_path() }}',
         defer_parent_computation=True)
 
@@ -12,11 +20,3 @@ def load_{{ sample.name }}(ctx):
 def location_compute_parents(ctx):
     """Compute parent_left, parent_right"""
     deferred_compute_parents(ctx, 'stock.location')
-
-
-@anthem.log
-def add_xmlid_to_existing_locations(ctx):
-    # this works if `base_dj` is installed
-    model = ctx.env['stock.location'].with_context(dj_export=1)
-    for item in model.search([]):
-        item.__export_xml_id()

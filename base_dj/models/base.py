@@ -44,6 +44,10 @@ class Base(models.AbstractModel):
                 name.append(value)
         return '_'.join(name)
 
+    def _dj_export_xmlid(self):
+        """Shortcut to force dj xmlid generation."""
+        return self.with_context(dj_export=1)._BaseModel__export_xml_id()
+
     def _BaseModel__export_xml_id(self):
         """Customize xmlid creation.
 
