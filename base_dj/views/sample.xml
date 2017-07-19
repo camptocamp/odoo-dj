@@ -25,6 +25,9 @@
               </group>
             </page>
           </notebook>
+          <footer>
+            <button name="download_csv_preview" string="Preview CSV" type="object" class="btn-primary"/>
+          </footer>
         </sheet>
       </form>
     </field>

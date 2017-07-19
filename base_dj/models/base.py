@@ -56,7 +56,6 @@ class Base(models.AbstractModel):
         Being a private method we are forced to name it like this.
         See https://docs.python.org/2/tutorial/classes.html#private-variables-and-class-local-references
         """  # noqa
-
         if not self.env.context.get('dj_export'):
             return super(Base, self).__export_xml_id()
 

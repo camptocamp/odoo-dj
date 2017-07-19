@@ -247,8 +247,7 @@ class Sample(models.Model):
     def burn_track(self):
         """Search items and burn the track for the compilations."""
         self.ensure_one()
-        items = self.sample_model.search(self.eval_domain())
-        csv_path, csv_data = self.make_csv(items)
+        csv_path, csv_data = self.make_csv()
         return [
             (csv_path, csv_data),
         ]
@@ -291,8 +290,9 @@ class Sample(models.Model):
             xmlid_fields_map[sample.model_name] = sample._get_xmlid_fields()
         return xmlid_fields_map
 
-    def make_csv(self, items):
+    def make_csv(self, items=None):
         """Create the csv and return path and content."""
+        items = items or self.sample_model.search(self.eval_domain())
         field_names = self.get_csv_field_names()
         xmlid_fields_map = self._get_xmlid_fields_map()
         export_data = items.with_context(
@@ -303,3 +303,13 @@ class Sample(models.Model):
             self.real_csv_path(),
             self.csv_from_data(field_names, export_data)
         )
+
+    @api.multi
+    def download_csv_preview(self):
+        """Download a preview of CSV file."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'new',
+            'url': u'/dj/download/sample/{}'.format(slug(self))
+        }
