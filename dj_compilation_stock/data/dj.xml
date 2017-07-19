@@ -17,10 +17,10 @@
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_picking_type"/>
     <!-- <field name="field_list">name,code,warehouse_id/id</field> -->
-    <field name="model_fields_ids" eval="[(6,0,[
+    <!-- <field name="model_fields_ids" eval="[(6,0,[
       ref('stock.field_stock_picking_type_name'),
       ref('stock.field_stock_picking_type_code'),
-      ref('stock.field_stock_picking_type_warehouse_id')])]"/>
+      ref('stock.field_stock_picking_type_warehouse_id')])]"/> -->
   </record>
 
   <record model="dj.sample" id="dj_sample_stock_location">
