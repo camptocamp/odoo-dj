@@ -12,6 +12,7 @@
               <group>
                 <field name="model_id" context="{'model_tech_name_only': 1}" />
                 <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                 <field name="model_name" invisible="1" />
                 <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
               </group>

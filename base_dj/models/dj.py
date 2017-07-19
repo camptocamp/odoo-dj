@@ -14,7 +14,22 @@ from cStringIO import StringIO
 from odoo import models, fields, api, exceptions, _
 from odoo.tools.safe_eval import safe_eval
 from odoo.modules.module import get_module_resource
-from odoo.addons.website.models.website import slugify
+from odoo.addons.website.models.website import slugify, slug
+
+
+IGNORED_FORM_FIELDS = [
+    'display_name',
+    '__last_update',
+    # TODO: retrieve from inherited schema
+    'message_ids',
+    'message_follower_ids',
+    'message_follower',
+    'message_last_post',
+    'message_unread',
+    'message_unread_counter',
+    'message_needaction_counter',
+    'website_message_ids',
+] + models.MAGIC_COLUMNS
 
 
 class TemplateMixin(models.AbstractModel):
@@ -171,7 +186,14 @@ class Sample(models.Model):
     model_name = fields.Char(related='model_id.model', readonly=True)
     model_fields_ids = fields.Many2many(
         comodel_name='ir.model.fields',
+        relation='sample_model_fields_rel',
         string='Fields',
+        domain="[('store', '=', True), ('model_id', '=', model_id)]",
+    )
+    model_fields_blacklist_ids = fields.Many2many(
+        comodel_name='ir.model.fields',
+        relation='sample_model_fields_blacklist_rel',
+        string='Fields blacklist',
         domain="[('store', '=', True), ('model_id', '=', model_id)]",
     )
     name = fields.Char(compute='_compute_sample_name')
@@ -252,10 +274,25 @@ class Sample(models.Model):
             (csv_path, csv_data),
         ]
 
+    def _get_all_fields(self):
+        names = set(
+            self.sample_model.fields_get().keys()
+        ).difference(set(IGNORED_FORM_FIELDS))
+        return self.env['ir.model.fields'].search([
+            ('model', '=', self.model_name),
+            ('name', 'in', list(names))
+        ])
+
     def get_csv_field_names(self):
         """Retrieve CSV field names."""
         field_names = ['id']
-        for field in self.model_fields_ids:
+        _fields = self.model_fields_ids
+        if not _fields:
+            _fields = self._get_all_fields()
+        blacklisted = self.model_fields_blacklist_ids.mapped('name')
+        for field in _fields:
+            if field.name in blacklisted:
+                continue
             name = field.name
             # we always want xmlids
             # many2many are handled specifically by `export_data`
