@@ -17,10 +17,46 @@ from odoo.modules.module import get_module_resource
 from odoo.addons.website.models.website import slugify
 
 
+class TemplateMixin(models.AbstractModel):
+
+    _name = 'dj.template.mixin'
+
+    template_path = fields.Char(
+        default=lambda self: self._default_dj_template_path,
+        required=True,
+    )
+
+    _default_dj_template_path = ''
+
+    @api.multi
+    def dj_template_vars(self):
+        """Return context variables to render template."""
+        self.ensure_one()
+        return {}
+
+    @api.multi
+    def dj_template(self):
+        """Retrieve Jinja template."""
+        self.ensure_one()
+        # load Jinja template
+        mod, filepath = self.template_path.split(':')
+        filepath = get_module_resource(mod, filepath)
+        path, filename = os.path.split(filepath)
+        return jinja2.Environment(
+            loader=jinja2.FileSystemLoader(path)
+        ).get_template(filename)
+
+    def dj_render_template(self):
+        template = self.dj_template()
+        return template.render(**self.dj_template_vars())
+
+
 class DJcompilation(models.Model):
     """Use discs to create songs from scratch and save it in compact format"""
 
     _name = 'dj.compilation'
+    _inherit = 'dj.template.mixin'
+    _default_dj_template_path = 'base_dj:discs/disc.tmpl'
 
     name = fields.Char()
     genre = fields.Selection([])
@@ -32,12 +68,8 @@ class DJcompilation(models.Model):
         default='install',
     )
     sample_ids = fields.One2many('dj.sample', 'compilation_id')
-    disc_template = fields.Char(
-        default='base_dj:discs/default.disc',
-        required=True,
-    )
     disc_path = fields.Char(
-        default='songs/{data_mode}/{name}.py',
+        default='songs/{data_mode}/{genre}.py',
         required=True,
     )
     compact_disc = fields.Binary(
@@ -47,6 +79,14 @@ class DJcompilation(models.Model):
         attachment=True
     )
     album_title = fields.Char(default='songs.zip')
+
+    @api.multi
+    def dj_template_vars(self):
+        """Return context variables to render disc's template."""
+        self.ensure_one()
+        values = super(DJcompilation, self).dj_template_vars()
+        values.update({'samples': self.sample_ids})
+        return values
 
     @api.model
     def check_company_codename(self):
@@ -77,30 +117,11 @@ class DJcompilation(models.Model):
         return files
 
     @api.multi
-    def get_template_vars(self):
-        """Return context variables to render disc's template."""
-        self.ensure_one()
-        return {'samples': self.sample_ids}
-
-    @api.multi
-    def get_disc_template(self):
-        """Retrieve Jinja template for current disc."""
-        self.ensure_one()
-        # load Jinja template
-        mod, filepath = self.disc_template.split(':')
-        filepath = get_module_resource(mod, filepath)
-        path, filename = os.path.split(filepath)
-        return jinja2.Environment(
-            loader=jinja2.FileSystemLoader(path)
-        ).get_template(filename)
-
-    @api.multi
     def burn_disc(self):
         """Burn the disc with songs."""
         self.ensure_one()
-        template = self.get_disc_template()
-        path = self.disc_path.format(name=self.name, data_mode=self.data_mode)
-        return path, template.render(**self.get_template_vars())
+        path = self.disc_path.format(**self.read()[0])
+        return path, self.dj_render_template()
 
     @api.multi
     def burn(self):
@@ -126,7 +147,9 @@ class DJcompilation(models.Model):
 
 class Sample(models.Model):
     _name = 'dj.sample'
+    _inherit = 'dj.template.mixin'
     _order = 'sequence ASC, create_date ASC'
+    _default_dj_template_path = 'base_dj:discs/song.tmpl'
 
     compilation_id = fields.Many2one(
         string='Compilation',
@@ -155,15 +178,17 @@ class Sample(models.Model):
     csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
     domain = fields.Char(default="[]")
     model_context = fields.Char(default="{'tracking_disable':1}")
-    # field_list = fields.Char(
-    #     default="name",
-    #     help="List of field to export separated by ','"
-    # )
     xmlid_fields = fields.Char(
         help="List of field to use to generate unique "
              "xmlid separated by ','.",
         default='',
     )
+
+    @api.multi
+    def dj_template_vars(self):
+        """Return context variables to render template."""
+        self.ensure_one()
+        return {'sample': self}
 
     @api.multi
     @api.depends('model_id.model')

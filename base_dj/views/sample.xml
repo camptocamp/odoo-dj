@@ -18,6 +18,7 @@
             </page>
             <page name="advanced" string="Advanced">
               <group>
+                <field name="template_path"/>
                 <field name="csv_path"/>
                 <field name="model_context"/>
                 <field name="xmlid_fields"/>

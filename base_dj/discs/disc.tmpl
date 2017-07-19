@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+# Copyright {{ year }} Camptocamp SA
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+# -- This file has been generated --
+
+import anthem
+from anthem.lyrics.loaders import load_csv
+
+
+{% for sample in samples %}
+{{ sample.dj_render_template() }}
+
+{% endfor %}
+
+
+@anthem.log
+def main(ctx):
+    {% for s in samples %}
+    load_{{ s.name }}(ctx){% endfor %}

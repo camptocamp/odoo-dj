@@ -1,0 +1,6 @@
+@anthem.log
+def load_{{ sample.name }}(ctx):
+    """ Import {{ sample.model_id.model }} from csv """
+    model = ctx.env['{{ sample.model_id.model }}'].with_context({{ sample.model_context }})  # noqa
+    csv_content = resource_filename(req, '{{ sample.real_csv_path() }}')
+    load_csv(ctx, model, csv_content)

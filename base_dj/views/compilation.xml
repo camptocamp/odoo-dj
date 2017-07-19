@@ -29,7 +29,7 @@
             </page>
             <page name="advanced" string="Advanced">
               <group>
-                <field name="disc_template"/>
+                <field name="template_path"/>
                 <field name="disc_path"/>
               </group>
             </page>

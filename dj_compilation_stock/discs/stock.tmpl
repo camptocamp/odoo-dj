@@ -5,15 +5,14 @@
 
 import anthem
 from anthem.lyrics.loaders import load_csv
+from ..common import (
+    deferred_import,
+    deferred_compute_parents
+)
 
 
-{% for s in samples %}
-@anthem.log
-def load_{{ s.name }}(ctx):
-    """ Import {{ s.model_id.model }} from csv """
-    model = ctx.env['{{ s.model_id.model }}'].with_context({{ s.model_context }})  # noqa
-    csv_content = resource_filename(req, '{{ s.real_csv_path() }}')
-    load_csv(ctx, model, csv_content)
+{% for sample in samples %}
+{{ sample.dj_render_template() }}
 
 {% endfor %}
 
