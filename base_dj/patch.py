@@ -17,16 +17,7 @@ def Selection__convert_to_export(self, value, record):
     """We want to export the real value of the field, not display value."""
     if not record.env.context.get('dj_export'):
         return self.orig_convert_to_export(value, record)
-
-    # barely copied
-    if not isinstance(self.selection, list):
-        # FIXME: this reproduces an existing buggy behavior!
-        return value if value else ''
-    for item in self._description_selection(record.env):
-        if item[0] == value:
-            # Return real value
-            return item[0]
-    return False
+    return value if value else ''
 
 # XXX: this bit is not used at all by `export_data`
 # as m2m values are forced already to xmlid
