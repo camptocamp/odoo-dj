@@ -15,6 +15,7 @@ from cStringIO import StringIO
 from odoo import models, fields, api, exceptions, _
 from odoo.tools.safe_eval import safe_eval
 from odoo.modules.module import get_module_resource
+from odoo.addons.website.models.website import slugify
 
 _logger = logging.getLogger(__name__)
 
@@ -121,7 +122,9 @@ class DJcompilation(models.Model):
 
     def make_album_title(self):
         dt = datetime.datetime.now().strftime('%Y%m%d_%H%M')
-        return '{}_{}-{}.zip'.format(self.name, self.data_mode, dt)
+        return '{}_{}-{}.zip'.format(
+            slugify(self.name).replace('-', '_'),
+            self.data_mode, dt)
 
 
 class Sample(models.Model):
@@ -159,9 +162,11 @@ class Sample(models.Model):
     #     default="name",
     #     help="List of field to export separated by ','"
     # )
-    # TODO
-    # xmlid_fields = fields.Char(help="List of field to use to generate unique"
-    #                                 " xmlid separated by ','")
+    xmlid_fields = fields.Char(
+        help="List of field to use to generate unique "
+             "xmlid separated by ','.",
+        default='',
+    )
 
     @api.multi
     @api.depends('model_id.model')
@@ -225,7 +230,7 @@ class Sample(models.Model):
             (csv_path, csv_data),
         ]
 
-    def get_burn_field_names(self):
+    def get_csv_field_names(self):
         field_names = ['id']
         for field in self.model_fields_ids:
             name = field.name
@@ -238,10 +243,18 @@ class Sample(models.Model):
         return field_names
 
     def make_csv(self, items):
-        # TODO create xmlid starting with __setup__
-        # XXX detect auto generated xmlids
-        field_names = self.get_burn_field_names()
-        export_data = items.export_data(field_names).get('datas', [])
+        field_names = self.get_csv_field_names()
+        xmlid_fields = []
+        if self.xmlid_fields:
+            xmlid_fields = [
+                x.strip() for x in self.xmlid_fields.split(',')
+                if x.strip() and x.strip() in self.sample_model
+            ]
+        # TODO detect auto generated xmlids for related items
+        export_data = items.with_context(
+            dj_export=True,
+            dj_xmlid_fields=xmlid_fields,
+        ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),
             self.csv_from_data(field_names, export_data)

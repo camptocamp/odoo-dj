@@ -1,3 +1,4 @@
+
 <odoo>
 
   <record id="dj_sample_form" model="ir.ui.view">
@@ -19,6 +20,7 @@
               <group>
                 <field name="csv_path"/>
                 <field name="model_context"/>
+                <field name="xmlid_fields"/>
               </group>
             </page>
           </notebook>

@@ -21,6 +21,7 @@
     <field name="model_fields_ids" eval="[(6,0,[
       ref('stock.field_stock_location_name'),
       ref('stock.field_stock_location_location_id')])]"/>
+    <field name="xmlid_fields">name</field>
   </record>
 
   <record model="dj.sample" id="dj_sample_stock_location_route">
