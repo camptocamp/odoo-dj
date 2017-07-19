@@ -173,12 +173,11 @@ class Sample(models.Model):
 
     @api.model
     def eval_domain(self):
-        # TODO: use domain widget
-        # https://github.com/OCA/web/pull/672
         return safe_eval(self.domain) or []
 
     @api.model
     def csv_from_data(self, fields, rows):
+        """Copied from std odoo export in controller."""
         fp = StringIO()
         writer = csv.writer(fp, quoting=csv.QUOTE_ALL)
 
@@ -213,6 +212,7 @@ class Sample(models.Model):
         return self.env[self.model_id.model]
 
     def real_csv_path(self):
+        """Final csv path into zip file."""
         return self.csv_path.format(
             model=self.sample_model._name,
             data_mode=self.compilation_id.data_mode,
@@ -220,6 +220,7 @@ class Sample(models.Model):
 
     @api.multi
     def burn_track(self):
+        """Search items and burn the track for the compilations."""
         self.ensure_one()
         items = self.sample_model.search(self.eval_domain())
         csv_path, csv_data = self.make_csv(items)
@@ -228,6 +229,7 @@ class Sample(models.Model):
         ]
 
     def get_csv_field_names(self):
+        """Retrieve CSV field names."""
         field_names = ['id']
         for field in self.model_fields_ids:
             name = field.name
@@ -242,18 +244,35 @@ class Sample(models.Model):
             field_names.append('company_id/id')
         return field_names
 
-    def make_csv(self, items):
-        field_names = self.get_csv_field_names()
+    def _get_xmlid_fields(self):
+        """Retrieve fields to generate xmlids."""
         xmlid_fields = []
         if self.xmlid_fields:
             xmlid_fields = [
                 x.strip() for x in self.xmlid_fields.split(',')
                 if x.strip() and x.strip() in self.sample_model
             ]
-        # TODO detect auto generated xmlids for related items
+        return xmlid_fields
+
+    def _get_xmlid_fields_map(self):
+        """Build a map for xmlid fields by model.
+
+        We might export related items w/ their xmlids.
+        These xmlids must respect the rules defined in each sample
+        for the respective model.
+        """
+        xmlid_fields_map = {}
+        for sample in self.compilation_id.sample_ids:
+            xmlid_fields_map[sample.model_name] = sample._get_xmlid_fields()
+        return xmlid_fields_map
+
+    def make_csv(self, items):
+        """Create the csv and return path and content."""
+        field_names = self.get_csv_field_names()
+        xmlid_fields_map = self._get_xmlid_fields_map()
         export_data = items.with_context(
             dj_export=True,
-            dj_xmlid_fields=xmlid_fields,
+            dj_xmlid_fields_map=xmlid_fields_map,
         ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),

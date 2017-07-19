@@ -21,18 +21,24 @@ class Base(models.AbstractModel):
     def _dj_xmlid_export_name(self):
         """Customize xmlid name for dj compilation.
 
-        You can specify field names into context variable `dj_xmlid_fields`
-        to be used for xmlid generation. Strings will be normalized.
+        You can specify field names by model name
+        into context variable `dj_xmlid_fields_map`
+        to be used for xmlid generation.
+        Strings will be normalized.
         """
         name = [self._table, str(self.id)]
-        if self.env.context.get('dj_xmlid_fields'):
+        mapping = self.env.context.get('dj_xmlid_fields_map', {})
+        xmlid_fields = mapping.get(self._name, [])
+        if xmlid_fields:
             name = [self._table, ]
-            for key in self.env.context.get('dj_xmlid_fields'):
+            for key in xmlid_fields:
                 if not self[key]:
                     continue
                 value = self[key]
                 if isinstance(value, basestring):
-                    value = slugify(self[key]).replace('-', '_')
+                    value = slugify(value).replace('-', '_')
+                elif isinstance(value, models.BaseModel):
+                    value = slugify(value.display_name).replace('-', '_')
                 elif isinstance(value, (int, float)):
                     value = str(value)
                 name.append(value)
