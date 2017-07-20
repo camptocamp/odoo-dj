@@ -26,7 +26,7 @@
                   <footer>
                     <button name="download_compilation" string="Burn and download" type="object" class="btn-primary"/>
                     <div name="share">
-                      <p>Share download link (right click on it and hit 'Copy link address'):<br />
+                      <p>or share download link (right click on it and hit 'Copy link address'):<br />
                       <field name="download_url" readonly="1" widget="url" /></p>
                     </div>
                   </footer>
@@ -68,7 +68,7 @@
                     In the song for you'll find more instructions.
                   </li>
                   <li>
-                    Once the compilation is ready you can burn and downaload it as zip file.<br />
+                    Once the compilation is ready you can <strong>Burn and download</strong> it as zip file.<br />
                     The file will contain all the CSVs and songs code snippets that developers can integrate in our project.
                   </li>
                 </ol>

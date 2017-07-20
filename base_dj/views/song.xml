@@ -33,19 +33,31 @@
           </div>
           <div class="col-md-4 col-xs-12">
             <div class="alert alert-info" role="alert">
-              <ul>
+              <p>A song defines a set of records to be exported.</p>
+              <h3>Usage</h3>
+              <ol>
                 <li>
-                  1. Lorem ipsum dolor sit amet, usu eu delectus deseruisse
+                  Select the <strong>model</strong> you want to export.
                 </li>
                 <li>
-                  2. nihil expetendis ei sit, ei dico labore omnium eum.
+                  Select the <strong>fields</strong> you want to export.<br />
+                  If no fields are specified, all fields will be exported (except internal ones like `create_date`).
                 </li>
                 <li>
-                  3. Ex nec mazim suavitate. Ius ex periculis appellantur.
-                  Eu virtute recusabo definiebas ius. Ne aperiri moderatius eam, idque convenire per cu.
-                  Essent epicuri no mel, no mei laoreet eloquentiam. Id per deserunt tacimates, vel erant admodum ne.
+                  If you want all fields you might want to exclude some of them via <strong>fields blacklist</strong>.<br />
+                  For instance: when you export sequence you might want to drop `next number` to start from zero.
                 </li>
-              </ul>
+                <li>
+                  Then use <strong>domain</strong> to filter records to export.<br />
+                  Thanks to new widget you can filter on all model fields as you do in standard searches.<br />
+                  You can even have a preview of which records will be exported by clicking on `NR record(s)` link.
+                </li>
+                <li>
+                  Once you have configured and saved it, you might want to check the resulting CSV.<br />
+                  If you click on <strong>Preview CSV</strong> button you'll get the CSV file
+                  without having to download the full compilation.
+                </li>
+              </ol>
             </div>
           </div>
         </sheet>
