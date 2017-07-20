@@ -25,4 +25,5 @@
     ],
     'installable': True,
     'auto_install': False,
+    "post_load": "patch_fields",
 }
