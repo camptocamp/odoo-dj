@@ -84,7 +84,7 @@ class DJcompilation(models.Model):
     )
     song_ids = fields.One2many('dj.song', 'compilation_id')
     disc_path = fields.Char(
-        default='songs/{data_mode}/{genre}.py',
+        default='songs/{data_mode}/generated/{genre}.py',
         required=True,
     )
     download_url = fields.Char(compute='_compute_download_url')
@@ -215,7 +215,7 @@ class song(models.Model):
         ]""",
     )
     name = fields.Char(compute='_compute_song_name')
-    csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
+    csv_path = fields.Char(default='data/{data_mode}/generated/{model}.csv')
     domain = fields.Char(default="[]")
     model_context = fields.Char(default="{'tracking_disable':1}")
     xmlid_fields = fields.Char(
