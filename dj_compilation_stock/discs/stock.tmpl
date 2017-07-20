@@ -4,18 +4,16 @@
 # -- This file has been generated --
 
 import anthem
-from ..common import (
+from ...common import (
     load_csv,
     deferred_import,
     deferred_compute_parents
 )
 
-
 {% for song in songs %}
 {{ song.dj_render_template() }}
 
 {% endfor %}
-
 
 @anthem.log
 def main(ctx):

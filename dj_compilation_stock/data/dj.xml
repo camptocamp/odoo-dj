@@ -6,6 +6,13 @@
     <field name="template_path">dj_compilation_stock:discs/stock.tmpl</field>
   </record>
 
+  <record model="dj.song" id="dj_song_stock_location">
+    <field name="compilation_id" ref="dj_stock_fresh"/>
+    <field name="model_id" ref="stock.model_stock_location"/>
+    <field name="xmlid_fields">name</field>
+    <field name="template_path">dj_compilation_stock:discs/location_song.tmpl</field>
+  </record>
+
   <record model="dj.song" id="dj_song_sequence">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
@@ -16,43 +23,16 @@
   <record model="dj.song" id="dj_song_picking_type">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_picking_type"/>
-    <!-- <field name="field_list">name,code,warehouse_id/id</field> -->
-    <!-- <field name="model_fields_ids" eval="[(6,0,[
-      ref('stock.field_stock_picking_type_name'),
-      ref('stock.field_stock_picking_type_code'),
-      ref('stock.field_stock_picking_type_warehouse_id')])]"/> -->
-  </record>
-
-  <record model="dj.song" id="dj_song_stock_location">
-    <field name="compilation_id" ref="dj_stock_fresh"/>
-    <field name="model_id" ref="stock.model_stock_location"/>
-    <!-- <field name="field_list">name,location_id/id</field> -->
-    <field name="model_fields_ids" eval="[(6,0,[
-      ref('stock.field_stock_location_name'),
-      ref('stock.field_stock_location_location_id')])]"/>
-    <field name="xmlid_fields">name</field>
-    <field name="template_path">dj_compilation_stock:discs/location_song.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_stock_location_route">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location_route"/>
-    <field name="model_fields_ids" eval="[(6,0,[
-      ref('stock.field_stock_location_name'),])]"/>
   </record>
 
   <record model="dj.song" id="dj_song_procurement_rule">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_procurement_rule"/>
-    <field name="model_fields_ids" eval="[(6,0,[
-      ref('procurement.field_procurement_rule_name'),
-      ref('procurement.field_procurement_rule_action'),
-      ref('stock.field_procurement_rule_location_id'),
-      ref('stock.field_procurement_rule_warehouse_id'),
-      ref('stock.field_procurement_rule_location_src_id'),
-      ref('stock.field_procurement_rule_procure_method'),
-      ref('stock.field_procurement_rule_picking_type_id'),
-    ])]"/>
   </record>
 <!--  -->
 </odoo>

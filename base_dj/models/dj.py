@@ -2,7 +2,6 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-import base64
 import csv
 import zipfile
 import io
@@ -239,7 +238,10 @@ class song(models.Model):
     def dj_template_vars(self):
         """Return context variables to render template."""
         self.ensure_one()
-        return {'song': self}
+        return {
+            'song': self,
+            'header_exclude': self.get_csv_field_names_exclude(),
+        }
 
     @api.multi
     @api.depends('model_id.model')
@@ -335,6 +337,20 @@ class song(models.Model):
                 'company_id/id' not in field_names):
             field_names.append('company_id/id')
         return field_names
+
+    def get_csv_field_names_exclude(self):
+        """Return fields that must be imported in 2 steps.
+
+        For instance, a picking could have `return_picking_type_id`
+        equal to another picking that is not imported yet.
+        In such cases we want those fields to be imported later.
+        We assume that relations to the same model must be imported in 2 steps.
+        """
+        exclude = []
+        for fname, field in self.song_model.fields_get().iteritems():
+            if field.get('relation') == self.song_model._name:
+                exclude.append(fname + '/id')
+        return exclude
 
     def _get_xmlid_fields(self):
         """Retrieve fields to generate xmlids."""
