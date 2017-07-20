@@ -47,8 +47,9 @@
                   <li>
                     Select a <strong>genre</strong>, which is a kind of categorization. <br />
                     This applies no constraints on the models you can select
-                    (you could set genre = accounting and select stock pickings at the same time).
-                    Nevertheless, the genre might be used by developers to apply custom behaviors
+                    (you could set genre = accounting and select stock pickings at the same time).<br />
+                    Nevertheless, the genre is used to name the final songs file
+                    and it might be used by developers to apply custom behaviors
                     to the export machinery. So, please, select a good one :)
                   </li>
                   <li>

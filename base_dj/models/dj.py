@@ -50,11 +50,12 @@ class TemplateMixin(models.AbstractModel):
         return {}
 
     @api.multi
-    def dj_template(self):
+    def dj_template(self, path=None):
         """Retrieve Jinja template."""
         self.ensure_one()
+        path = path or self.template_path
         # load Jinja template
-        mod, filepath = self.template_path.split(':')
+        mod, filepath = path.split(':')
         filepath = get_module_resource(mod, filepath)
         path, filename = os.path.split(filepath)
         return jinja2.Environment(
@@ -130,14 +131,24 @@ class DJcompilation(models.Model):
         for song in self.song_ids:
             files.extend(song.burn_track())
         files.append(self.burn_disc())
+        files.append(self.burn_dev_readme())
         return files
+
+    def disc_full_path(self):
+        return self.disc_path.format(**self.read()[0])
 
     @api.multi
     def burn_disc(self):
         """Burn the disc with songs."""
         self.ensure_one()
-        path = self.disc_path.format(**self.read()[0])
-        return path, self.dj_render_template()
+        return self.disc_full_path(), self.dj_render_template()
+
+    @api.multi
+    def burn_dev_readme(self):
+        """Burn and additional readme for developers."""
+        self.ensure_one()
+        template = self.dj_template(path='base_dj:discs/DEV_README.tmpl')
+        return 'DEV_README.rst', template.render(compilation=self)
 
     @api.multi
     def burn(self):

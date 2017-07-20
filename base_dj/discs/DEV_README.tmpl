@@ -1,0 +1,23 @@
+Developer README
+================
+
+Songs file generated for "{{ compilation.name }}" compilation:
+
+* {{ compilation.disc_full_path() }}.
+
+
+You are supposed to:
+
+- copy/paste the whole `data/{{ compilation.data_mode}}/generated` into `odoo/data/{{ compilation.data_mode}}/`
+- copy/paste the whole `songs/{{ compilation.data_mode}}/generated` into `odoo/songs/{{ compilation.data_mode}}/`
+
+
+You should include it in the project `odoo/migration.yml` like this:
+
+- anthem {{ compilation.disc_full_path().replace('/', '.').replace('.py', '') }}::main
+
+
+Full list of generated songs:
+
+{% for song in compilation.song_ids %}
+- anthem {{ compilation.disc_full_path().replace('/', '.').replace('.py', '') }}::load_{{ song.name }}{% endfor %}
