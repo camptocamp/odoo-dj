@@ -87,13 +87,14 @@ class DJcompilation(models.Model):
         default='songs/{data_mode}/{genre}.py',
         required=True,
     )
-    compact_disc = fields.Binary(
-        # TODO: make this volatile (use a controller for instance
-        # or cleanup attachments w/ a cron?)
-        help="Resulting Zip file with all songs and related files",
-        attachment=True
-    )
-    album_title = fields.Char(default='songs.zip')
+    download_url = fields.Char(compute='_compute_download_url')
+
+    @api.multi
+    @api.depends()
+    def _compute_download_url(self):
+        for item in self:
+            item.download_url = \
+                u'/dj/download/compilation/{}'.format(slug(self))
 
     @api.multi
     def dj_template_vars(self):
@@ -141,23 +142,32 @@ class DJcompilation(models.Model):
     @api.multi
     def burn(self):
         """Burn disc into a zip file."""
+        self.ensure_one()
         self.check_company_codename()
-        for rec in self:
-            files = rec.get_all_tracks()
-            in_mem_zip = io.BytesIO()
-            with zipfile.ZipFile(in_mem_zip, "w", zipfile.ZIP_DEFLATED) as zf:
-                for filepath, data in files:
-                    zf.writestr(filepath, data)
-            in_mem_zip.seek(0)
-            zip_file = base64.encodestring(in_mem_zip.read())
-            rec.album_title = rec.make_album_title()
-            rec.compact_disc = zip_file
+        files = self.get_all_tracks()
+        in_mem_zip = io.BytesIO()
+        with zipfile.ZipFile(in_mem_zip, "w", zipfile.ZIP_DEFLATED) as zf:
+            for filepath, data in files:
+                zf.writestr(filepath, data)
+        in_mem_zip.seek(0)
+        filename = self.make_album_title()
+        return filename, in_mem_zip.read()
 
     def make_album_title(self):
         dt = datetime.datetime.now().strftime('%Y%m%d_%H%M')
         return '{}_{}-{}.zip'.format(
             slugify(self.name).replace('-', '_'),
             self.data_mode, dt)
+
+    @api.multi
+    def download_compilation(self):
+        """Download zip file."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'new',
+            'url': self.download_url,
+        }
 
 
 class Sample(models.Model):

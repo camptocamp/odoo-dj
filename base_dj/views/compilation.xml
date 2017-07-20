@@ -5,35 +5,76 @@
     <field name="arch" type="xml">
       <form string="Make songs">
         <sheet>
-          <notebook>
-            <page name="main" string="Main">
-              <group>
-                <field name="genre"/>
-                <field name="name"/>
-                <field name="data_mode"/>
-              </group>
-              <field name="sample_ids" context="{'model_tech_name_only': 1}">
-                <tree>
-                  <field name="sequence" widget="handle" />
-                  <field name="model_id" />
-                  <field name="model_fields_ids" context="{'model_tech_name_only': 1}" />
-                </tree>
-              </field>
-              <footer>
-                <button name="burn" string="Burn" type="object" class="btn-primary"/>
-                <div name="download">
-                  <field name="album_title" invisible="1" />
-                  <p>Here is your zip file containting songs and csv files: <field name="compact_disc" readonly="1" filename="album_title"/></p>
-                </div>
-              </footer>
-            </page>
-            <page name="advanced" string="Advanced">
-              <group>
-                <field name="template_path"/>
-                <field name="disc_path"/>
-              </group>
-            </page>
-          </notebook>
+          <div class="row">
+            <div class="col-md-8 col-xs-12">
+              <h1>Compilation setup</h1>
+              <notebook>
+                <page name="main" string="Main">
+                  <group>
+                    <field name="genre"/>
+                    <field name="name"/>
+                    <field name="data_mode"/>
+                  </group>
+                  <separator string="Exportable songs" />
+                  <field name="song_ids" context="{'model_tech_name_only': 1}">
+                    <tree>
+                      <field name="sequence" widget="handle" />
+                      <field name="model_id" />
+                      <field name="model_fields_ids" context="{'model_tech_name_only': 1}" />
+                    </tree>
+                  </field>
+                  <footer>
+                    <button name="download_compilation" string="Burn and download" type="object" class="btn-primary"/>
+                    <div name="share">
+                      <p>Share download link (right click on it and hit 'Copy link address'):<br />
+                      <field name="download_url" readonly="1" widget="url" /></p>
+                    </div>
+                  </footer>
+                </page>
+                <page name="advanced" string="Advanced">
+                  <group>
+                    <field name="template_path"/>
+                    <field name="disc_path"/>
+                  </group>
+                </page>
+              </notebook>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="alert alert-info" role="alert">
+                <p>A compilation defines a set of records to be exported to setup songs.</p>
+                <h3>Usage</h3>
+                <ol>
+                  <li>
+                    Select a <strong>genre</strong>, which is a kind of categorization. <br />
+                    This applies no constraints on the models you can select
+                    (you could set genre = accounting and select stock pickings at the same time).
+                    Nevertheless, the genre might be used by developers to apply custom behaviors
+                    to the export machinery. So, please, select a good one :)
+                  </li>
+                  <li>
+                    Fill in a <strong>name</strong>. This will be used to generate zip filename,
+                    and will help you finding the right compilation if you have more than one.
+                  </li>
+                  <li>
+                    Select a <strong>data mode</strong>. This will be used to organize songs in the zip file
+                    in the proper path.
+                  </li>
+                  <li>
+                    Now the most important part: add songs to <strong>exportable songs</strong>.
+                    Each song is responsible for exporting a single model
+                    and a customizable set of records.<br />
+                    You can choose which fields to export and which to not.
+                    If you select none, all the fields will be exported. <br />
+                    In the song for you'll find more instructions.
+                  </li>
+                  <li>
+                    Once the compilation is ready you can burn and downaload it as zip file.<br />
+                    The file will contain all the CSVs and songs code snippets that developers can integrate in our project.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
         </sheet>
       </form>
     </field>

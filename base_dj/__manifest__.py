@@ -21,7 +21,7 @@
         'security/ir.model.access.csv',
         'views/company.xml',
         'views/compilation.xml',
-        'views/sample.xml',
+        'views/song.xml',
     ],
     'installable': True,
     'auto_install': False,

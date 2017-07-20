@@ -7,17 +7,8 @@ from odoo.http import request
 import os
 
 
-class Samples(http.Controller):
-    """Controller dj samples."""
-
-    @http.route(
-        '/dj/download/sample/<model("dj.sample"):sample>',
-        type='http', auth="user", website=False)
-    def download_sample(self, sample, **kwargs):
-        path, content = sample.make_csv()
-        filename = os.path.basename(path)
-        headers = self._make_download_headers(content, filename, 'text/csv')
-        return request.make_response(content, headers=headers)
+class DJ(http.Controller):
+    """Controller for dj tools."""
 
     def _make_download_headers(self, data, filename, content_type):
         return [
@@ -32,3 +23,21 @@ class Samples(http.Controller):
                 public'),
             ('Expires', "0"),
         ]
+
+    @http.route(
+        '/dj/download/song/<model("dj.song"):song>',
+        type='http', auth="user", website=False)
+    def download_song(self, song, **kwargs):
+        path, content = song.make_csv()
+        filename = os.path.basename(path)
+        headers = self._make_download_headers(content, filename, 'text/csv')
+        return request.make_response(content, headers=headers)
+
+    @http.route(
+        '/dj/download/compilation/<model("dj.compilation"):compilation>',
+        type='http', auth="user", website=False)
+    def download_compilation(self, compilation, **kwargs):
+        filename, content = compilation.burn()
+        headers = self._make_download_headers(
+            content, filename, 'application/zip')
+        return request.make_response(content, headers=headers)
