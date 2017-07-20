@@ -1,5 +1,5 @@
 @anthem.log
-def load_{{ sample.name }}(ctx):
-    """ Import {{ sample.model_id.model }} from csv """
-    model = ctx.env['{{ sample.model_id.model }}'].with_context({{ sample.model_context }})  # noqa
-    load_csv(ctx, '{{ sample.real_csv_path() }}', model)
+def load_{{ song.name }}(ctx):
+    """ Import {{ song.model_id.model }} from csv """
+    model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.model_context }})  # noqa
+    load_csv(ctx, '{{ song.real_csv_path() }}', model)

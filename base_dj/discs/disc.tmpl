@@ -6,13 +6,13 @@
 import anthem
 from ..common import load_csv
 
-{% for sample in samples %}
-{{ sample.dj_render_template() }}
+{% for song in songs %}
+{{ song.dj_render_template() }}
 
 {% endfor %}
 
 
 @anthem.log
 def main(ctx):
-    {% for s in samples %}
+    {% for s in songs %}
     load_{{ s.name }}(ctx){% endfor %}

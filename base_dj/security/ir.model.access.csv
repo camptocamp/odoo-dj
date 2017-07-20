@@ -1,5 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_dj_compilation_manager,base_dj.access_dj_compilation manager,model_dj_compilation,base.group_system,1,1,1,1
-access_dj_sample_manager,base_dj.access_dj_sample manager,model_dj_sample,base.group_system,1,1,1,1
+access_dj_song_manager,base_dj.access_dj_song manager,model_dj_song,base.group_system,1,1,1,1
 access_dj_compilation,base_dj.access_dj_compilation,model_dj_compilation,,0,0,0,0
-access_dj_sample,base_dj.access_dj_sample,model_dj_sample,,0,0,0,0
+access_dj_song,base_dj.access_dj_song,model_dj_song,,0,0,0,0

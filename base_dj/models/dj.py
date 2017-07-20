@@ -82,7 +82,7 @@ class DJcompilation(models.Model):
         ],
         default='install',
     )
-    sample_ids = fields.One2many('dj.sample', 'compilation_id')
+    song_ids = fields.One2many('dj.song', 'compilation_id')
     disc_path = fields.Char(
         default='songs/{data_mode}/{genre}.py',
         required=True,
@@ -101,7 +101,7 @@ class DJcompilation(models.Model):
         """Return context variables to render disc's template."""
         self.ensure_one()
         values = super(DJcompilation, self).dj_template_vars()
-        values.update({'samples': self.sample_ids})
+        values.update({'songs': self.song_ids})
         return values
 
     @api.model
@@ -127,8 +127,8 @@ class DJcompilation(models.Model):
         """Return all files to burn into the compilation."""
         self.ensure_one()
         files = []
-        for sample in self.sample_ids:
-            files.extend(sample.burn_track())
+        for song in self.song_ids:
+            files.extend(song.burn_track())
         files.append(self.burn_disc())
         return files
 
@@ -170,8 +170,8 @@ class DJcompilation(models.Model):
         }
 
 
-class Sample(models.Model):
-    _name = 'dj.sample'
+class song(models.Model):
+    _name = 'dj.song'
     _inherit = 'dj.template.mixin'
     _order = 'sequence ASC, create_date ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
@@ -196,7 +196,7 @@ class Sample(models.Model):
     model_name = fields.Char(related='model_id.model', readonly=True)
     model_fields_ids = fields.Many2many(
         comodel_name='ir.model.fields',
-        relation='sample_model_fields_rel',
+        relation='song_model_fields_rel',
         string='Fields',
         domain="""[
             ('store', '=', True),
@@ -206,7 +206,7 @@ class Sample(models.Model):
     )
     model_fields_blacklist_ids = fields.Many2many(
         comodel_name='ir.model.fields',
-        relation='sample_model_fields_blacklist_rel',
+        relation='song_model_fields_blacklist_rel',
         string='Fields blacklist',
         domain="""[
             ('store', '=', True),
@@ -214,7 +214,7 @@ class Sample(models.Model):
             ('compute', '=', False),
         ]""",
     )
-    name = fields.Char(compute='_compute_sample_name')
+    name = fields.Char(compute='_compute_song_name')
     csv_path = fields.Char(default='data/{data_mode}/{model}.csv')
     domain = fields.Char(default="[]")
     model_context = fields.Char(default="{'tracking_disable':1}")
@@ -228,11 +228,11 @@ class Sample(models.Model):
     def dj_template_vars(self):
         """Return context variables to render template."""
         self.ensure_one()
-        return {'sample': self}
+        return {'song': self}
 
     @api.multi
     @api.depends('model_id.model')
-    def _compute_sample_name(self):
+    def _compute_song_name(self):
         for item in self:
             item.name = (item.model_id.model or '').replace('.', '_')
 
@@ -273,13 +273,13 @@ class Sample(models.Model):
         return data
 
     @property
-    def sample_model(self):
+    def song_model(self):
         return self.env[self.model_id.model]
 
     def real_csv_path(self):
         """Final csv path into zip file."""
         return self.csv_path.format(
-            model=self.sample_model._name,
+            model=self.song_model._name,
             data_mode=self.compilation_id.data_mode,
         )
 
@@ -294,7 +294,7 @@ class Sample(models.Model):
 
     def _get_all_fields(self):
         names = set(
-            self.sample_model.fields_get().keys()
+            self.song_model.fields_get().keys()
         ).difference(set(IGNORED_FORM_FIELDS))
         return self.env['ir.model.fields'].search([
             ('model', '=', self.model_name),
@@ -320,7 +320,7 @@ class Sample(models.Model):
                 name += '/id'
             field_names.append(name)
         # we always want company_id if the field is there
-        if ('company_id' in self.sample_model and
+        if ('company_id' in self.song_model and
                 'company_id/id' not in field_names):
             field_names.append('company_id/id')
         return field_names
@@ -331,7 +331,7 @@ class Sample(models.Model):
         if self.xmlid_fields:
             xmlid_fields = [
                 x.strip() for x in self.xmlid_fields.split(',')
-                if x.strip() and x.strip() in self.sample_model
+                if x.strip() and x.strip() in self.song_model
             ]
         return xmlid_fields
 
@@ -339,17 +339,17 @@ class Sample(models.Model):
         """Build a map for xmlid fields by model.
 
         We might export related items w/ their xmlids.
-        These xmlids must respect the rules defined in each sample
+        These xmlids must respect the rules defined in each song
         for the respective model.
         """
         xmlid_fields_map = {}
-        for sample in self.compilation_id.sample_ids:
-            xmlid_fields_map[sample.model_name] = sample._get_xmlid_fields()
+        for song in self.compilation_id.song_ids:
+            xmlid_fields_map[song.model_name] = song._get_xmlid_fields()
         return xmlid_fields_map
 
     def make_csv(self, items=None):
         """Create the csv and return path and content."""
-        items = items or self.sample_model.search(self.eval_domain())
+        items = items or self.song_model.search(self.eval_domain())
         field_names = self.get_csv_field_names()
         xmlid_fields_map = self._get_xmlid_fields_map()
         export_data = items.with_context(
@@ -368,5 +368,5 @@ class Sample(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': u'/dj/download/sample/{}'.format(slug(self))
+            'url': u'/dj/download/song/{}'.format(slug(self))
         }

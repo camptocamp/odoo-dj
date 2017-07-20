@@ -1,0 +1,99 @@
+
+<odoo>
+
+  <record id="dj_song_form" model="ir.ui.view">
+    <field name="name">DJ song form</field>
+    <field name="model">dj.song</field>
+    <field name="arch" type="xml">
+      <form string="Configure song">
+        <sheet>
+          <div class="col-md-8 col-xs-12">
+            <notebook>
+              <page name="main" string="Main">
+                <group>
+                  <field name="model_id" context="{'model_tech_name_only': 1}" />
+                  <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                  <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                  <field name="model_name" invisible="1" />
+                  <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+                </group>
+                <footer>
+                  <button name="download_csv_preview" string="Preview CSV" type="object" class="btn-primary"/>
+                </footer>
+              </page>
+              <page name="advanced" string="Advanced">
+                <group>
+                  <field name="template_path"/>
+                  <field name="csv_path"/>
+                  <field name="model_context"/>
+                  <field name="xmlid_fields"/>
+                </group>
+              </page>
+            </notebook>
+          </div>
+          <div class="col-md-4 col-xs-12">
+            <div class="alert alert-info" role="alert">
+              <ul>
+                <li>
+                  1. Lorem ipsum dolor sit amet, usu eu delectus deseruisse
+                </li>
+                <li>
+                  2. nihil expetendis ei sit, ei dico labore omnium eum.
+                </li>
+                <li>
+                  3. Ex nec mazim suavitate. Ius ex periculis appellantur.
+                  Eu virtute recusabo definiebas ius. Ne aperiri moderatius eam, idque convenire per cu.
+                  Essent epicuri no mel, no mei laoreet eloquentiam. Id per deserunt tacimates, vel erant admodum ne.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="dj_song_tree" model="ir.ui.view">
+    <field name="name">DJ song tree</field>
+    <field name="model">dj.song</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="compilation_id"/>
+        <field name="model_name" />
+        <field name="model_fields_ids"/>
+        <field name="domain"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="dj_song_search" model="ir.ui.view">
+    <field name="name">DJ song search</field>
+    <field name="model">dj.song</field>
+    <field name="arch" type="xml">
+      <search string="songs Search">
+        <field name="compilation_id"/>
+        <field name="model_id"/>
+        <group expand="1" string="Group By">
+          <filter string="Model" name="model" context="{'group_by':'model_id'}"/>
+          <filter string="Compilation" name="compilation" context="{'group_by':'compilation_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <record id="action_dj_songs" model="ir.actions.act_window">
+    <field name="name">songs</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.song</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <menuitem
+    parent="menu_dj_console"
+    id="menu_dj_songs"
+    name="songs"
+    action="action_dj_songs"
+    />
+
+</odoo>

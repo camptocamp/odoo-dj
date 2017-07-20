@@ -13,7 +13,7 @@ def enable_currency(ctx):
     cc.write({'active': True})
 
 {% endif %}
-{% for s in samples %}
+{% for s in songs %}
 @anthem.log
 def load_{{ s.name }}(ctx):
     """ Import {{ s.model_id.name }} from csv """
@@ -107,7 +107,7 @@ def setup_invoice_sequences(ctx, cp_xmlid):
 def main(ctx):
     """ Setup accounting """
     {% if currencies %}enable_currency(ctx){% endif %}
-    {% for s in samples %}
+    {% for s in songs %}
     load_{{ s.name }}(ctx){% endfor %}
 
     set_fiscalyear(ctx)

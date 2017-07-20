@@ -7,12 +7,12 @@ def add_xmlid_to_existing_locations(ctx):
 
 
 @anthem.log
-def load_{{ sample.name }}(ctx):
+def load_{{ song.name }}(ctx):
     add_xmlid_to_existing_locations(ctx)
     deferred_import(
         ctx,
         'stock.location',
-        '{{ sample.real_csv_path() }}',
+        '{{ song.real_csv_path() }}',
         defer_parent_computation=True)
 
 
