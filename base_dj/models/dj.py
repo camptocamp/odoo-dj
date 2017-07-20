@@ -115,7 +115,8 @@ class DJcompilation(models.Model):
         if company_num == 1:
             return
         companies = Company.search([('aka', '=', False)])
-        if companies:
+        # if companies:
+        if False:  # TODO
             raise exceptions.UserError(
                 _("Companies miss `aka` unique code: %s") % ', '.join(
                     companies.mapped('name')
