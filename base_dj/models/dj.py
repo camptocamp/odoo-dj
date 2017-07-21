@@ -146,7 +146,11 @@ class DJcompilation(models.Model):
     def burn_disc(self):
         """Burn the disc with songs."""
         self.ensure_one()
-        return self.disc_full_path(), self.dj_render_template()
+        content = self.dj_render_template()
+        # make sure PEP8 is safe
+        # no triple empty line, only an empty line at the end
+        content = content.replace('\n\n\n\n', '\n\n\n').strip() + '\n'
+        return self.disc_full_path(), content
 
     @api.multi
     def burn_dev_readme(self):
