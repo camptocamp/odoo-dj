@@ -99,7 +99,7 @@ def setup_invoice_sequences(ctx, cp_xmlid):
 
 @anthem.log
 def main(ctx):
-    {% if currencies %}enable_currency(ctx){% endif %}
+    """ Setup accounting """
     {% for s in songs %}
     load_{{ s.name }}(ctx){% endfor %}
 
@@ -108,9 +108,3 @@ def main(ctx):
     for cp in companies:
         setup_invoice_sequences(ctx, cp_sequence_prefixes)
     configure_currency_rate_live(ctx)
-
-@anthem.log
-def main(ctx):
-    """ Setup accounting """
-    {% for s in songs %}
-    load_{{ s.name }}(ctx){% endfor %}
