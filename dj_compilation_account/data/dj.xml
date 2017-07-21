@@ -1,0 +1,65 @@
+<odoo>
+  <record model="dj.compilation" id="compilation_account">
+    <field name="genre">accounting</field>
+    <field name="name">account default</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_res_bank">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="base.model_res_bank"/>
+    <field name="domain">[]</field>
+    <!-- <field name="field_list">code,name,street,street2,zip,city,phone</field> -->
+  </record>
+
+  <record model="dj.song" id="dj_song_account_type">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_account_type"/>
+    <field name="domain">[]</field>
+    <!-- <field name="field_list">name,include_initial_balance,type</field> -->
+  </record>
+
+  <record model="dj.song" id="dj_song_account">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_account"/>
+    <field name="domain">[]</field>
+    <!-- <field name="field_list">code,name,user_type_id,reconcile,currency_id</field> -->
+  </record>
+
+  <record model="dj.song" id="dj_song_account_tax">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_tax"/>
+    <field name="domain">[]</field>
+    <!-- <field name="field_list">sequence,type_tax_use,name,description,amount,amount_type,price_include,account_id,refund_account_id</field> -->
+  </record>
+
+  <record model="dj.song" id="dj_song_ir_property">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="base.model_ir_property"/>
+    <field name="csv_path">data/{data_mode}/{model}-account.csv</field>
+    <field name="domain">[('name', 'in', ('property_account_receivable_id','property_account_payable_id','property_account_expense_categ_id','property_account_income_categ_id','property_stock_account_output','property_stock_account_input','property_stock_account_output_categ_id','property_stock_account_input_categ_id'))]</field>
+    <!-- <field name="field_list">fields_id,name,type,value_reference</field> -->
+  </record>
+
+  <!-- TODO ir.sequence referenced by journals
+  <record model="dj.song" id="dj_song_ir_sequence">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="base.model_ir_sequence"/>
+    <field name="csv_path">data/install/ir.sequence-account.csv</field>
+    <field name="domain">[]</field>
+    <field name="field_list">company_id,name,number_next,number_next_actual,prefix,padding,number_increment,use_date_range</field>
+  </record>
+  -->
+
+  <record model="dj.song" id="dj_song_account_journal">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_journal"/>
+    <field name="domain">[]</field>
+    <!-- <field name="field_list">type,sequence,code,name,currency_id,default_credit_account_id,default_debit_account_id,update_posted,bank_account_id,bank_acc_number,bank_id</field> -->
+  </record>
+
+
+  <!-- account.analytic -->
+  <!-- account.payment.mode -->
+  <!-- account.financial.html.report -->
+  <!-- account.financial.html.report.line -->
+</odoo>

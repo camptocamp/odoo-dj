@@ -1,0 +1,111 @@
+
+<odoo>
+
+  <record id="dj_song_form" model="ir.ui.view">
+    <field name="name">DJ song form</field>
+    <field name="model">dj.song</field>
+    <field name="arch" type="xml">
+      <form string="Configure song">
+        <sheet>
+          <div class="col-md-8 col-xs-12">
+            <notebook>
+              <page name="main" string="Main">
+                <group>
+                  <field name="model_id" context="{'model_tech_name_only': 1}" />
+                  <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                  <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                  <field name="model_name" invisible="1" />
+                  <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+                </group>
+                <footer>
+                  <button name="download_csv_preview" string="Preview CSV" type="object" class="btn-primary"/>
+                </footer>
+              </page>
+              <page name="advanced" string="Advanced">
+                <group>
+                  <field name="template_path"/>
+                  <field name="csv_path"/>
+                  <field name="model_context"/>
+                  <field name="xmlid_fields"/>
+                </group>
+              </page>
+            </notebook>
+          </div>
+          <div class="col-md-4 col-xs-12">
+            <div class="alert alert-info" role="alert">
+              <p>A song defines a set of records to be exported.</p>
+              <h3>Usage</h3>
+              <ol>
+                <li>
+                  Select the <strong>model</strong> you want to export.
+                </li>
+                <li>
+                  Select the <strong>fields</strong> you want to export.<br />
+                  If no fields are specified, all fields will be exported (except internal ones like `create_date`).
+                </li>
+                <li>
+                  If you want all fields you might want to exclude some of them via <strong>fields blacklist</strong>.<br />
+                  For instance: when you export sequence you might want to drop `next number` to start from zero.
+                </li>
+                <li>
+                  Then use <strong>domain</strong> to filter records to export.<br />
+                  Thanks to new widget you can filter on all model fields as you do in standard searches.<br />
+                  You can even have a preview of which records will be exported by clicking on `NR record(s)` link.
+                </li>
+                <li>
+                  Once you have configured and saved it, you might want to check the resulting CSV.<br />
+                  If you click on <strong>Preview CSV</strong> button you'll get the CSV file
+                  without having to download the full compilation.
+                </li>
+              </ol>
+            </div>
+          </div>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="dj_song_tree" model="ir.ui.view">
+    <field name="name">DJ song tree</field>
+    <field name="model">dj.song</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="compilation_id"/>
+        <field name="model_name" />
+        <field name="model_fields_ids"/>
+        <field name="domain"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="dj_song_search" model="ir.ui.view">
+    <field name="name">DJ song search</field>
+    <field name="model">dj.song</field>
+    <field name="arch" type="xml">
+      <search string="songs Search">
+        <field name="compilation_id"/>
+        <field name="model_id"/>
+        <group expand="1" string="Group By">
+          <filter string="Model" name="model" context="{'group_by':'model_id'}"/>
+          <filter string="Compilation" name="compilation" context="{'group_by':'compilation_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <record id="action_dj_songs" model="ir.actions.act_window">
+    <field name="name">songs</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.song</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <menuitem
+    parent="menu_dj_console"
+    id="menu_dj_songs"
+    name="Songs"
+    action="action_dj_songs"
+    />
+
+</odoo>

@@ -1,0 +1,131 @@
+<odoo>
+  <record id="dj_compilation_form" model="ir.ui.view">
+    <field name="name">DJ compilation form</field>
+    <field name="model">dj.compilation</field>
+    <field name="arch" type="xml">
+      <form string="Make songs">
+        <sheet>
+          <div class="row">
+            <div class="col-md-8 col-xs-12">
+              <h1>Compilation setup</h1>
+              <notebook>
+                <page name="main" string="Main">
+                  <group>
+                    <field name="genre"/>
+                    <field name="name"/>
+                    <field name="data_mode"/>
+                  </group>
+                  <separator string="Exportable songs" />
+                  <field name="song_ids" context="{'model_tech_name_only': 1}">
+                    <tree>
+                      <field name="sequence" widget="handle" />
+                      <field name="model_id" />
+                      <field name="model_fields_ids" context="{'model_tech_name_only': 1}" />
+                    </tree>
+                  </field>
+                  <footer>
+                    <button name="download_compilation" string="Burn and download" type="object" class="btn-primary"/>
+                    <div name="share">
+                      <p>or share download link (right click on it and hit 'Copy link address'):<br />
+                      <field name="download_url" readonly="1" widget="url" /></p>
+                    </div>
+                  </footer>
+                </page>
+                <page name="advanced" string="Advanced">
+                  <group>
+                    <field name="template_path"/>
+                    <field name="disc_path"/>
+                  </group>
+                </page>
+              </notebook>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="alert alert-info" role="alert">
+                <p>A compilation defines a set of records to be exported to setup songs.</p>
+                <h3>Usage</h3>
+                <ol>
+                  <li>
+                    Select a <strong>genre</strong>, which is a kind of categorization. <br />
+                    This applies no constraints on the models you can select
+                    (you could set genre = accounting and select stock pickings at the same time).<br />
+                    Nevertheless, the genre is used to name the final songs file
+                    and it might be used by developers to apply custom behaviors
+                    to the export machinery. So, please, select a good one :)
+                  </li>
+                  <li>
+                    Fill in a <strong>name</strong>. This will be used to generate zip filename,
+                    and will help you finding the right compilation if you have more than one.
+                  </li>
+                  <li>
+                    Select a <strong>data mode</strong>. This will be used to organize songs in the zip file
+                    in the proper path.
+                  </li>
+                  <li>
+                    Now the most important part: add songs to <strong>exportable songs</strong>.
+                    Each song is responsible for exporting a single model
+                    and a customizable set of records.<br />
+                    You can choose which fields to export and which to not.
+                    If you select none, all the fields will be exported. <br />
+                    In the song for you'll find more instructions.
+                  </li>
+                  <li>
+                    Once the compilation is ready you can <strong>Burn and download</strong> it as zip file.<br />
+                    The file will contain all the CSVs and songs code snippets that developers can integrate in our project.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="dj_compilation_tree" model="ir.ui.view">
+    <field name="name">DJ compilation tree</field>
+    <field name="model">dj.compilation</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="genre"/>
+        <field name="name"/>
+        <field name="data_mode"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="dj_compilation_search" model="ir.ui.view">
+    <field name="name">DJ compilation search</field>
+    <field name="model">dj.compilation</field>
+    <field name="arch" type="xml">
+      <search string="Compilation Search">
+        <field name="genre"/>
+        <field name="name"/>
+        <field name="data_mode"/>
+        <group expand="0" string="Group By">
+          <filter string="Genre" name="genre" context="{'group_by':'genre'}"/>
+          <filter string="Data mode" name="data_mode" context="{'group_by':'data_mode'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <record id="action_dj_compilation" model="ir.actions.act_window">
+    <field name="name">Compilations</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.compilation</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <menuitem
+    parent="base.menu_administration"
+    id="menu_dj_console"
+    name="DJ Console"
+    />
+  <menuitem
+    parent="menu_dj_console"
+    id="menu_dj_compilation"
+    name="Compilations"
+    action="action_dj_compilation"
+    />
+</odoo>
