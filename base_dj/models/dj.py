@@ -33,6 +33,7 @@ IGNORED_FORM_FIELDS = [
 
 
 class TemplateMixin(models.AbstractModel):
+    """Provide Jinja rendering capabilities."""
 
     _name = 'dj.template.mixin'
 
@@ -68,7 +69,7 @@ class TemplateMixin(models.AbstractModel):
 
 
 class DJcompilation(models.Model):
-    """Use discs to create songs from scratch and save it in compact format"""
+    """Create compilations of songs and burn them."""
 
     _name = 'dj.compilation'
     _inherit = 'dj.template.mixin'
@@ -202,7 +203,7 @@ class DJcompilation(models.Model):
 class song(models.Model):
     _name = 'dj.song'
     _inherit = 'dj.template.mixin'
-    _order = 'sequence ASC, create_date ASC'
+    _order = 'sequence ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
 
     compilation_id = fields.Many2one(
