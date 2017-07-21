@@ -16,13 +16,6 @@ from ...common import (
 {% endfor %}
 
 @anthem.log
-def load_{{ s.name }}(ctx):
-    """ Import {{ s.model_id.name }} from csv """
-    csv_content = resource_filename(req, '{{ s.csv_path }}')
-    load_csv(ctx, '{{ s.model_id.model }}', csv_content)
-
-{% endfor %}
-@anthem.log
 def set_fiscalyear(ctx):
     date_range_type = ctx.env.ref('account_fiscal_year.fiscalyear')
     values = {'date_start': '2016-01-01',
