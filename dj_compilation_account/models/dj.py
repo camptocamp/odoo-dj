@@ -11,15 +11,6 @@ class AccountingDJ(models.Model):
     _inherit = 'dj'
 
     genre = fields.Selection(selection_add=[('accounting', 'Accounting')])
-    active_currencies = fields.Boolean(default=True)
-
-    @api.multi
-    def get_active_currencies(self):
-        if not self.active_currencies:
-            return False
-        # get active currencies
-        cc = self.env['res.currency'].search([])
-        return cc.mapped('name')
 
     @api.multi
     def get_currency_rate_live_tvars(self):
@@ -53,7 +44,6 @@ class AccountingDJ(models.Model):
     @api.multi
     def get_template_vars(self):
         tvars = super(AccountingDJ, self).get_template_vars()
-        tvars['currencies'] = self.get_active_currencies()
         tvars.update(self.get_currency_rate_live_tvars())
         tvars['sequence_config'] = self.get_sequence_config()
         return tvars

@@ -542,6 +542,30 @@ class Song(models.Model):
         """Retrieve scratch handler and play it."""
         return getattr(self, self.song_type)()
 
+    @api.multi
+    def write(self, vals):
+        if vals.get('field_list'):
+            model_id = vals.get('model_id') or self.model_id.id
+            fields = self._get_fields(model_id, vals.pop('field_list'))
+            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        return super(song ,self).write(vals)
+
+    @api.model
+    def create(self, vals):
+        if vals.get('field_list') and vals.get('model_id'):
+            fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
+            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        return super(song ,self).create(vals)
+
+    def _get_fields(self, model_id, field_list):
+        """ helper to set fields from a list """
+        model_name = self.env['ir.model'].browse(model_id).name
+        field_names = [f.strip() for f in field_list.split(',')]
+        return self.env['ir.model.fields'].search([
+            ('model_id', '=', model_name),
+            ('name', 'in', field_names)
+            ])
+
     def _get_all_fields(self):
         names = set(
             self.song_model.fields_get().keys()
