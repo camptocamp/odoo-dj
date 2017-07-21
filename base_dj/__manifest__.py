@@ -7,7 +7,7 @@
     'summary': """
     Use the DJ console to create compilations w/ your favourite anthem songs.
     """,
-    'version': 'version',
+    'version': '10.1.0.0',
     'author': 'Camptocamp',
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',

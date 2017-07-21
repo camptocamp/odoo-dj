@@ -74,7 +74,7 @@ class Base(models.AbstractModel):
         data = ir_model_data.search([
             ('model', '=', self._name),
             ('res_id', '=', self.id),
-            ('module', 'not in', ('__export__', '__setup__')),
+            ('module', 'not in', ('__export__', module)),
         ], order='create_date desc', limit=1)
         if data:
             if data.module:

@@ -20,6 +20,8 @@ from odoo.addons.website.models.website import slugify, slug
 IGNORED_FORM_FIELDS = [
     'display_name',
     '__last_update',
+    'parent_left',
+    'parent_right',
     # TODO: retrieve from inherited schema
     'message_ids',
     'message_follower_ids',
