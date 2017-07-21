@@ -10,7 +10,7 @@ from odoo import api, fields, models
 class AccountingDJ(models.Model):
     _inherit = 'dj'
 
-    name = fields.Selection(selection_add=[('accounting', 'Accounting')])
+    genre = fields.Selection(selection_add=[('accounting', 'Accounting')])
     active_currencies = fields.Boolean(default=True)
 
     @api.multi
