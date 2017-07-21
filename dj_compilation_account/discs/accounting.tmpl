@@ -4,16 +4,17 @@
 # -- This file has been generated --
 from datetime import date
 import anthem
-from anthem.lyrics.loaders import load_csv
+from ...common import (
+    load_csv,
+    deferred_import,
+    deferred_compute_parents
+)
 
-{% if currencies %}
-@anthem.log
-def enable_currency(ctx):
-    cc = ctx.env['res.currency'].search([('name', 'in', ('{{ currencies|join("', '") }}'))])
-    cc.write({'active': True})
+{% for song in songs %}
+{{ song.dj_render_template() }}
 
-{% endif %}
-{% for s in songs %}
+{% endfor %}
+
 @anthem.log
 def load_{{ s.name }}(ctx):
     """ Import {{ s.model_id.name }} from csv """
@@ -105,7 +106,6 @@ def setup_invoice_sequences(ctx, cp_xmlid):
 
 @anthem.log
 def main(ctx):
-    """ Setup accounting """
     {% if currencies %}enable_currency(ctx){% endif %}
     {% for s in songs %}
     load_{{ s.name }}(ctx){% endfor %}
@@ -115,3 +115,9 @@ def main(ctx):
     for cp in companies:
         setup_invoice_sequences(ctx, cp_sequence_prefixes)
     configure_currency_rate_live(ctx)
+
+@anthem.log
+def main(ctx):
+    """ Setup accounting """
+    {% for s in songs %}
+    load_{{ s.name }}(ctx){% endfor %}

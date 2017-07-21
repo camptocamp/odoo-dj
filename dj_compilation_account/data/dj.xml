@@ -2,6 +2,8 @@
   <record model="dj.compilation" id="compilation_account">
     <field name="genre">accounting</field>
     <field name="name">account default</field>
+    <!-- we need this template as it contains more imports -->
+    <field name="template_path">dj_compilation_account:discs/accounting.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_res_bank">
