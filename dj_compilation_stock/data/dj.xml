@@ -12,6 +12,7 @@
     <field name="xmlid_fields">name</field>
     <field name="template_path">dj_compilation_stock:discs/location_song.tmpl</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
+      ref('stock.field_stock_location_complete_name'),
       ref('stock.field_stock_location_child_ids')])]"/>
   </record>
 
