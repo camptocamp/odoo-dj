@@ -8,6 +8,7 @@ import io
 import jinja2
 import os
 import datetime
+import time
 from cStringIO import StringIO
 
 from odoo import models, fields, api, exceptions, _
@@ -167,7 +168,9 @@ class DJcompilation(models.Model):
                 # TypeError: 'unicode' does not have the buffer interface
                 if isinstance(data, unicode):
                     data = data.encode('utf-8')
-                info = zipfile.ZipInfo(filepath)
+                # use info to keep date and set permissions
+                info = zipfile.ZipInfo(
+                    filepath, date_time=time.localtime(time.time()))
                 # set proper permissions
                 info.external_attr = 0644 << 16L
                 zf.writestr(info, data)
