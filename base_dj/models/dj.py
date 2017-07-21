@@ -130,6 +130,10 @@ class DJcompilation(models.Model):
         files = []
         for song in self.song_ids:
             files.extend(song.burn_track())
+        # add __init__..py to song module folder
+        init_file = os.path.join(
+            os.path.dirname(self.disc_full_path()), '__init__.py')
+        files.append((init_file, '#'))
         files.append(self.burn_disc())
         files.append(self.burn_dev_readme())
         return files
