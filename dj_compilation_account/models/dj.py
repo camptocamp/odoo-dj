@@ -8,7 +8,7 @@ from odoo import api, fields, models
 
 
 class AccountingDJ(models.Model):
-    _inherit = 'dj'
+    _inherit = 'dj.compilation'
 
     genre = fields.Selection(selection_add=[('accounting', 'Accounting')])
 
