@@ -20,6 +20,8 @@ from odoo.addons.website.models.website import slugify, slug
 IGNORED_FORM_FIELDS = [
     'display_name',
     '__last_update',
+    'parent_left',
+    'parent_right',
     # TODO: retrieve from inherited schema
     'message_ids',
     'message_follower_ids',
@@ -33,6 +35,7 @@ IGNORED_FORM_FIELDS = [
 
 
 class TemplateMixin(models.AbstractModel):
+    """Provide Jinja rendering capabilities."""
 
     _name = 'dj.template.mixin'
 
@@ -68,7 +71,7 @@ class TemplateMixin(models.AbstractModel):
 
 
 class DJcompilation(models.Model):
-    """Use discs to create songs from scratch and save it in compact format"""
+    """Create compilations of songs and burn them."""
 
     _name = 'dj.compilation'
     _inherit = 'dj.template.mixin'
@@ -146,7 +149,11 @@ class DJcompilation(models.Model):
     def burn_disc(self):
         """Burn the disc with songs."""
         self.ensure_one()
-        return self.disc_full_path(), self.dj_render_template()
+        content = self.dj_render_template()
+        # make sure PEP8 is safe
+        # no triple empty line, only an empty line at the end
+        content = content.replace('\n\n\n\n', '\n\n\n').strip() + '\n'
+        return self.disc_full_path(), content
 
     @api.multi
     def burn_dev_readme(self):
@@ -198,7 +205,7 @@ class DJcompilation(models.Model):
 class song(models.Model):
     _name = 'dj.song'
     _inherit = 'dj.template.mixin'
-    _order = 'sequence ASC, create_date ASC'
+    _order = 'sequence ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
 
     compilation_id = fields.Many2one(

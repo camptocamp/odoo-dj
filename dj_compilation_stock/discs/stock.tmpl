@@ -17,5 +17,5 @@ from ...common import (
 
 @anthem.log
 def main(ctx):
-    {% for s in songs %}
-    load_{{ s.name }}(ctx){% endfor %}
+    {% for s in songs %}load_{{ s.name }}(ctx)
+    {% endfor %}

@@ -11,25 +11,32 @@
     <field name="model_id" ref="stock.model_stock_location"/>
     <field name="xmlid_fields">name</field>
     <field name="template_path">dj_compilation_stock:discs/location_song.tmpl</field>
+    <field name="model_fields_blacklist_ids" eval="[(6,0,[
+      ref('stock.field_stock_location_complete_name'),
+      ref('stock.field_stock_location_child_ids')])]"/>
   </record>
 
-  <record model="dj.song" id="dj_song_sequence">
+  <record model="dj.song" id="dj_song_ir_sequence">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
       ref('base.field_ir_sequence_number_next_actual')])]"/>
+    <field name="xmlid_fields">prefix,name</field>
   </record>
 
   <record model="dj.song" id="dj_song_picking_type">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_picking_type"/>
-    <field name="xmlid_fields">prefix,name</field>
+    <field name="xmlid_fields">name</field>
   </record>
 
   <record model="dj.song" id="dj_song_stock_location_route">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location_route"/>
     <field name="xmlid_fields">name</field>
+    <field name="model_fields_blacklist_ids" eval="[(6,0,[
+      ref('stock.field_stock_location_route_pull_ids'),
+      ref('stock.field_stock_location_route_product_ids')])]"/>
   </record>
 
   <record model="dj.song" id="dj_song_procurement_rule">
