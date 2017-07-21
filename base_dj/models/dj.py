@@ -159,7 +159,14 @@ class DJcompilation(models.Model):
         in_mem_zip = io.BytesIO()
         with zipfile.ZipFile(in_mem_zip, "w", zipfile.ZIP_DEFLATED) as zf:
             for filepath, data in files:
-                zf.writestr(filepath, data)
+                # File "/usr/lib/python2.7/zipfile.py", line 1247, in writestr
+                # TypeError: 'unicode' does not have the buffer interface
+                if isinstance(data, unicode):
+                    data = data.encode('utf-8')
+                info = zipfile.ZipInfo(filepath)
+                # set proper permissions
+                info.external_attr = 0644 << 16L
+                zf.writestr(info, data)
         in_mem_zip.seek(0)
         filename = self.make_album_title()
         return filename, in_mem_zip.read()
