@@ -11,7 +11,7 @@
               <notebook>
                 <page name="main" string="Main">
                   <group>
-                    <field name="genre"/>
+                    <field name="genre_id"/>
                     <field name="name"/>
                     <field name="data_mode"/>
                   </group>

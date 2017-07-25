@@ -70,6 +70,30 @@ class TemplateMixin(models.AbstractModel):
         return template.render(**self.dj_template_vars())
 
 
+class Genre(models.Model):
+    """Pick your favourite music genre."""
+
+    _name = 'dj.genre'
+
+    name = fields.Char(required=True, help='Name will be normalized.')
+
+    _sql_constraints = [
+        ('name_uniq', 'unique (name)', _('The name must be unique')),
+    ]
+
+    @api.model
+    def create(self, vals):
+        if vals.get('name'):
+            vals['name'] = slugify(vals['name']).replace('-', '_')
+        return super(Genre, self).create(vals)
+
+    @api.multi
+    def write(self, vals):
+        if vals.get('name'):
+            vals['name'] = slugify(vals['name']).replace('-', '_')
+        return super(Genre, self).write(vals)
+
+
 class DJcompilation(models.Model):
     """Create compilations of songs and burn them."""
 
@@ -78,7 +102,12 @@ class DJcompilation(models.Model):
     _default_dj_template_path = 'base_dj:discs/disc.tmpl'
 
     name = fields.Char()
-    genre = fields.Selection([])
+    genre_id = fields.Many2one(
+        string='Genre',
+        comodel_name='dj.genre',
+        required=True,
+    )
+    genre = fields.Char(related='genre_id.name')
     data_mode = fields.Selection(
         selection=[
             ('install', 'Install'),

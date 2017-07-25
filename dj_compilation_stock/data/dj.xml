@@ -1,7 +1,11 @@
 <odoo>
+  <record model="dj.genre" id="dj_stock_genre">
+    <field name="name">stock</field>
+  </record>
+
   <record model="dj.compilation" id="dj_stock_fresh">
     <field name="name">stock default</field>
-    <field name="genre">stock</field>
+    <field name="genre_id" ref="dj_stock_genre" />
     <!-- we need this template as it contains more imports -->
     <field name="template_path">dj_compilation_stock:discs/stock.tmpl</field>
   </record>
