@@ -14,7 +14,7 @@ from cStringIO import StringIO
 from odoo import models, fields, api, exceptions, _
 from odoo.tools.safe_eval import safe_eval
 from odoo.modules.module import get_module_resource
-from odoo.addons.website.models.website import slugify, slug
+from odoo.addons.website.models.website import slugify
 
 
 IGNORED_FORM_FIELDS = [
@@ -98,7 +98,7 @@ class DJcompilation(models.Model):
     def _compute_download_url(self):
         for item in self:
             item.download_url = \
-                u'/dj/download/compilation/{}'.format(slug(self))
+                u'/dj/download/compilation/{}'.format(item.id)
 
     @api.multi
     def dj_template_vars(self):
@@ -417,5 +417,5 @@ class song(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': u'/dj/download/song/{}'.format(slug(self))
+            'url': u'/dj/download/song/{}'.format(self.id)
         }
