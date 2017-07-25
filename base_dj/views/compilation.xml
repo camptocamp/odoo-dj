@@ -117,15 +117,4 @@
     <field name="view_mode">tree,form</field>
   </record>
 
-  <menuitem
-    parent="base.menu_administration"
-    id="menu_dj_console"
-    name="DJ Console"
-    />
-  <menuitem
-    parent="menu_dj_console"
-    id="menu_dj_compilation"
-    name="Compilations"
-    action="action_dj_compilation"
-    />
 </odoo>

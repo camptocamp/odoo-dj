@@ -1,0 +1,26 @@
+
+<odoo>
+
+  <menuitem
+    id="menu_dj_root"
+    name="DJ console"
+    groups="base.group_system"
+    sequence="999"
+    web_icon="base_dj,static/description/icon.png"
+    />
+
+  <menuitem
+    parent="menu_dj_root"
+    id="menu_dj_compilation"
+    name="Compilations"
+    action="action_dj_compilation"
+    />
+
+  <menuitem
+    parent="menu_dj_root"
+    id="menu_dj_songs"
+    name="Songs"
+    action="action_dj_songs"
+    />
+
+</odoo>

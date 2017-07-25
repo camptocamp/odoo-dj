@@ -101,11 +101,4 @@
     <field name="view_mode">tree,form</field>
   </record>
 
-  <menuitem
-    parent="menu_dj_console"
-    id="menu_dj_songs"
-    name="Songs"
-    action="action_dj_songs"
-    />
-
 </odoo>

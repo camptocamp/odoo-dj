@@ -22,6 +22,7 @@
         'views/company.xml',
         'views/compilation.xml',
         'views/song.xml',
+        'views/menuitems.xml',
     ],
     'installable': True,
     'auto_install': False,
