@@ -1,0 +1,52 @@
+
+<odoo>
+
+  <record id="dj_equalizer_xmlid_form" model="ir.ui.view">
+    <field name="name">DJ xmlid config form</field>
+    <field name="model">dj.equalizer.xmlid</field>
+    <field name="arch" type="xml">
+      <form string="Configure xmlid config">
+        <sheet>
+          <group name="main">
+            <field name="model" />
+            <field name="xmlid_fields" />
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+
+  <record id="dj_equalizer_xmlid_tree" model="ir.ui.view">
+    <field name="name">DJ equalizer_xmlid tree</field>
+    <field name="model">dj.equalizer.xmlid</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="model" />
+        <field name="xmlid_fields" />
+      </tree>
+    </field>
+  </record>
+
+  <record id="dj_equalizer_xmlid_search" model="ir.ui.view">
+    <field name="name">DJ equalizer_xmlid search</field>
+    <field name="model">dj.equalizer.xmlid</field>
+    <field name="arch" type="xml">
+      <search string="equalizer_xmlids Search">
+        <field name="model"/>
+        <group expand="1" string="Group By">
+          <filter string="Model" name="model" context="{'group_by':'model'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <record id="action_dj_equalizer_xmlids" model="ir.actions.act_window">
+    <field name="name">XMLID equalizer</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.equalizer.xmlid</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+</odoo>

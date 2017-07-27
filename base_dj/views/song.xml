@@ -79,6 +79,7 @@
         <field name="model_name" />
         <field name="model_fields_ids"/>
         <field name="domain"/>
+        <field name="records_count"/>
       </tree>
     </field>
   </record>

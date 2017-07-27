@@ -5,7 +5,7 @@
 
 import anthem
 from ...common import load_csv
-{% if 'load_csv_deferred' in songs.mapped('song_type') %}
+{% if 'load_csv_defer_parent' in songs.mapped('song_type') %}
 from ...common import (
     deferred_import,
     deferred_compute_parents

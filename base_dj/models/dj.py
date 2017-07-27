@@ -38,10 +38,15 @@ SONG_TYPES = {
         'only_config': False,
         'template_path': 'base_dj:discs/song.tmpl',
     },
-    'load_csv_deferred': {
+    'load_csv_defer_parent': {
         'only_config': False,
-        'template_path': 'base_dj:discs/song_deferred.tmpl',
+        'template_path': 'base_dj:discs/song_defer_parent.tmpl',
     },
+    # TODO
+    # 'load_csv_heavy': {
+    #     'only_config': False,
+    #     'template_path': 'base_dj:discs/song_defer_parent.tmpl',
+    # },
     'generate_xmlids': {
         'only_config': True,
         'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
@@ -49,14 +54,37 @@ SONG_TYPES = {
 }
 SONG_TYPES_SEL = [
     ('load_csv', 'Load CSV'),
-    ('load_csv_deferred', 'Load CSV deferred (heavy files)'),
+    ('load_csv_defer_parent', 'Load CSV defer parent computation'),
+    # TODO
+    # ('load_csv_heavy', 'Load CSV heavy file'),
     ('generate_xmlids', 'Generate xmlids (for existing records)'),
 ]
 SONG_TYPES_NAME_PREFIXES = {
     'load_csv': 'load_',
-    'load_csv_deferred': 'load_',
+    'load_csv_defer_parent': 'load_',
+    # TODO
+    # 'load_csv_heavy': 'load_',
     'generate_xmlids': 'add_xmlid_to_existing_',
 }
+# TODO
+# switch automatically to `load_csv_heavy
+# when this amount of records is reached
+# HEAVY_IMPORT_THRESHOLD = 1000
+
+
+class EqualizerXMLID(models.Model):
+    """Hold models' configuration to generate xmlid."""
+
+    _name = 'dj.equalizer.xmlid'
+
+    model = fields.Char()
+    xmlid_fields = fields.Char()
+
+    @api.multi
+    def get_xmlid_fields(self):
+        self.ensure_one()
+        return [x.strip() for x in self.xmlid_fields.split(',')
+                if x.strip()]
 
 
 class TemplateMixin(models.AbstractModel):
@@ -165,19 +193,19 @@ class DJcompilation(models.Model):
         values.update({'songs': self.song_ids})
         return values
 
+    def _is_multicompany_env(self):
+        return bool(self.env['res.company'].search_count([]) > 1)
+
     @api.model
     def check_company_codename(self):
         """Check company short codenames have been setup in multi company.
 
         We need those to create unique codenames
         """
-        Company = self.env['res.company']
-        company_num = Company.search_count([])
-        if company_num == 1:
+        if not self._is_multicompany_env():
             return
-        companies = Company.search([('aka', '=', False)])
-        # if companies:
-        if False:  # TODO
+        companies = self.env['res.company'].search([('aka', '=', False)])
+        if companies:
             raise exceptions.UserError(
                 _("Companies miss `aka` unique code: %s") % ', '.join(
                     companies.mapped('name')
@@ -224,7 +252,6 @@ class DJcompilation(models.Model):
     def burn(self):
         """Burn disc into a zip file."""
         self.ensure_one()
-        self.check_company_codename()
         files = self.get_all_tracks()
         in_mem_zip = io.BytesIO()
         with zipfile.ZipFile(in_mem_zip, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -252,12 +279,17 @@ class DJcompilation(models.Model):
     @api.multi
     def download_compilation(self):
         """Download zip file."""
+        self.check_company_codename()
         self.ensure_one()
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
             'url': self.download_url,
         }
+
+    def anthem_path(self):
+        path = self.disc_full_path().replace('/', '.').replace('.py', '')
+        return '{}::main'.format(path)
 
 
 class Song(models.Model):
@@ -277,6 +309,7 @@ class Song(models.Model):
         help="Sequence for the handle.",
         default=10
     )
+    name = fields.Char(compute='_compute_song_name')
     model_id = fields.Many2one(
         string='Model',
         comodel_name='ir.model',
@@ -309,7 +342,6 @@ class Song(models.Model):
             ('compute', '=', False),
         ]""",
     )
-    name = fields.Char(compute='_compute_song_name')
     csv_path = fields.Char(default='data/{data_mode}/generated/{model}.csv')
     domain = fields.Char(default="[]")
     model_context = fields.Char(default="{'tracking_disable':1}")
@@ -323,6 +355,10 @@ class Song(models.Model):
              "and it won't generate CSV data to be imported.",
         default=False
     )
+    records_count = fields.Integer(
+        compute='_compute_records_count',
+        readonly=True
+    )
 
     @api.onchange('song_type')
     def onchange_song_type(self):
@@ -332,6 +368,16 @@ class Song(models.Model):
             # self.write does play good w/ NewId records
             for k, v in defaults.iteritems():
                 self[k] = v
+
+    @api.onchange('records_count')
+    def onchange_records_count(self):
+        """Switch song type if needed."""
+        # TODO: decide if we want this or something similar
+        # if self.records_count > HEAVY_IMPORT_THRESHOLD:
+        #     self.song_type = 'load_csv_defer_parent'
+        # else:
+        #     self.song_type = 'load_csv'
+        pass
 
     @api.multi
     def dj_template_vars(self):
@@ -351,6 +397,12 @@ class Song(models.Model):
                 prefix,
                 (item.model_id.model or '').replace('.', '_'),
             )
+
+    @api.multi
+    @api.depends('model_id.model', 'domain')
+    def _compute_records_count(self):
+        for item in self:
+            item.records_count = len(item._get_exportable_records())
 
     @api.model
     def eval_domain(self):
@@ -477,13 +529,20 @@ class Song(models.Model):
             xmlid_fields_map[song.model_name] = song._get_xmlid_fields()
         return xmlid_fields_map
 
+    def _get_exportable_records(self):
+        return self.song_model.search(self.eval_domain())
+
+    def _is_multicompany_env(self):
+        return self.compilation_id._is_multicompany_env()
+
     def make_csv(self, items=None):
         """Create the csv and return path and content."""
-        items = items or self.song_model.search(self.eval_domain())
+        items = items or self._get_exportable_records()
         field_names = self.get_csv_field_names()
         xmlid_fields_map = self._get_xmlid_fields_map()
         export_data = items.with_context(
             dj_export=True,
+            dj_multicompany=self._is_multicompany_env(),
             dj_xmlid_fields_map=xmlid_fields_map,
         ).export_data(field_names).get('datas', [])
         return (
@@ -500,3 +559,8 @@ class Song(models.Model):
             'target': 'new',
             'url': u'/dj/download/song/{}'.format(self.id)
         }
+
+    def anthem_path(self):
+        path = self.compilation_id.disc_full_path(
+        ).replace('/', '.').replace('.py', '')
+        return '{}::{}'.format(path, self.name)
