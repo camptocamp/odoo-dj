@@ -1,5 +1,5 @@
 @anthem.log
-def load_{{ song.name }}(ctx):
+def {{ song.name }}(ctx):
     """ Import {{ song.model_id.model }} from csv """
     model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.model_context }})  # noqa{% if header_exclude %}
     header_exclude = {{ header_exclude }}

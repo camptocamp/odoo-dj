@@ -6,15 +6,23 @@
   <record model="dj.compilation" id="dj_stock_fresh">
     <field name="name">stock default</field>
     <field name="genre_id" ref="dj_stock_genre" />
-    <!-- we need this template as it contains more imports -->
-    <field name="template_path">dj_compilation_stock:discs/stock.tmpl</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_stock_location_xmlids">
+    <field name="compilation_id" ref="dj_stock_fresh"/>
+    <field name="model_id" ref="stock.model_stock_location"/>
+    <field name="xmlid_fields">name</field>
+    <field name="song_type">generate_xmlids</field>
+    <field name="only_config" eval="True" />
+    <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
+    <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_stock_location">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location"/>
+    <field name="song_type">load_csv_deferred</field>
     <field name="xmlid_fields">name</field>
-    <field name="template_path">dj_compilation_stock:discs/location_song.tmpl</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
       ref('stock.field_stock_location_complete_name'),
       ref('stock.field_stock_location_child_ids')])]"/>
@@ -23,9 +31,11 @@
   <record model="dj.song" id="dj_song_ir_sequence">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
-    <field name="model_fields_blacklist_ids" eval="[(6,0,[
-      ref('base.field_ir_sequence_number_next_actual')])]"/>
     <field name="xmlid_fields">prefix,name</field>
+    <field name="song_type">generate_xmlids</field>
+    <field name="only_config" eval="True" />
+    <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
+    <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_picking_type">
@@ -48,6 +58,6 @@
     <field name="model_id" ref="stock.model_procurement_rule"/>
     <field name="xmlid_fields">name</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
-      ref('procurement.field_procurement_rule_partner_address_id')])]"/>
+      ref('stock.field_procurement_rule_partner_address_id')])]"/>
   </record>
 </odoo>

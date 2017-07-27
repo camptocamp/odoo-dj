@@ -33,6 +33,31 @@ IGNORED_FORM_FIELDS = [
     'website_message_ids',
 ] + models.MAGIC_COLUMNS
 
+SONG_TYPES = {
+    'load_csv': {
+        'only_config': False,
+        'template_path': 'base_dj:discs/song.tmpl',
+    },
+    'load_csv_deferred': {
+        'only_config': False,
+        'template_path': 'base_dj:discs/song_deferred.tmpl',
+    },
+    'generate_xmlids': {
+        'only_config': True,
+        'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
+    },
+}
+SONG_TYPES_SEL = [
+    ('load_csv', 'Load CSV'),
+    ('load_csv_deferred', 'Load CSV deferred (heavy files)'),
+    ('generate_xmlids', 'Generate xmlids (for existing records)'),
+]
+SONG_TYPES_NAME_PREFIXES = {
+    'load_csv': 'load_',
+    'load_csv_deferred': 'load_',
+    'generate_xmlids': 'add_xmlid_to_existing_',
+}
+
 
 class TemplateMixin(models.AbstractModel):
     """Provide Jinja rendering capabilities."""
@@ -60,6 +85,9 @@ class TemplateMixin(models.AbstractModel):
         # load Jinja template
         mod, filepath = path.split(':')
         filepath = get_module_resource(mod, filepath)
+        if not filepath:
+            raise LookupError(
+                _('Template not found: `%s`') % self.template_path)
         path, filename = os.path.split(filepath)
         return jinja2.Environment(
             loader=jinja2.FileSystemLoader(path)
@@ -162,7 +190,8 @@ class DJcompilation(models.Model):
         self.ensure_one()
         files = []
         for song in self.song_ids:
-            files.extend(song.burn_track())
+            if not song.only_config:
+                files.extend(song.burn_track())
         # add __init__..py to song module folder
         init_file = os.path.join(
             os.path.dirname(self.disc_full_path()), '__init__.py')
@@ -231,7 +260,7 @@ class DJcompilation(models.Model):
         }
 
 
-class song(models.Model):
+class Song(models.Model):
     _name = 'dj.song'
     _inherit = 'dj.template.mixin'
     _order = 'sequence ASC'
@@ -252,6 +281,11 @@ class song(models.Model):
         string='Model',
         comodel_name='ir.model',
         required=True
+    )
+    song_type = fields.Selection(
+        selection=SONG_TYPES_SEL,
+        default='load_csv',
+        help='Load pre-configured song type.'
     )
     # basically used on for the domain widget
     model_name = fields.Char(related='model_id.model', readonly=True)
@@ -284,6 +318,20 @@ class song(models.Model):
              "xmlid separated by ','.",
         default='',
     )
+    only_config = fields.Boolean(
+        help="This record is only for configuration "
+             "and it won't generate CSV data to be imported.",
+        default=False
+    )
+
+    @api.onchange('song_type')
+    def onchange_song_type(self):
+        """Load defaults by song type."""
+        if self.song_type:
+            defaults = SONG_TYPES.get(self.song_type, {})
+            # self.write does play good w/ NewId records
+            for k, v in defaults.iteritems():
+                self[k] = v
 
     @api.multi
     def dj_template_vars(self):
@@ -295,10 +343,14 @@ class song(models.Model):
         }
 
     @api.multi
-    @api.depends('model_id.model')
+    @api.depends('model_id.model', 'song_type')
     def _compute_song_name(self):
         for item in self:
-            item.name = (item.model_id.model or '').replace('.', '_')
+            prefix = SONG_TYPES_NAME_PREFIXES.get(item.song_type, 'load_')
+            item.name = u'{}{}'.format(
+                prefix,
+                (item.model_id.model or '').replace('.', '_'),
+            )
 
     @api.model
     def eval_domain(self):
