@@ -8,4 +8,29 @@
       </field>
     </field>
   </record>
+
+  <record id="view_company_aka_tree" model="ir.ui.view">
+    <field name="model">res.company</field>
+    <field name="arch" type="xml">
+      <tree editable="bottom">
+        <field name="name"/>
+        <field name="aka"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="action_company_aka" model="ir.actions.act_window">
+    <field name="name">Compilations</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">res.company</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree</field>
+  </record>
+
+  <record id="action_company_aka_view" model="ir.actions.act_window.view">
+      <field eval="10" name="sequence"/>
+      <field name="view_mode">tree</field>
+      <field name="view_id" ref="view_company_aka_tree"/>
+      <field name="act_window_id" ref="action_company_aka"/>
+  </record>
 </odoo>
