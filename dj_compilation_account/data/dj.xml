@@ -1,7 +1,11 @@
 <odoo>
+  <record model="dj.genre" id="dj_accounting_genre">
+    <field name="name">accounting</field>
+  </record>
+
   <record model="dj.compilation" id="compilation_account">
-    <field name="genre">accounting</field>
     <field name="name">account default</field>
+    <field name="genre_id" ref="dj_accounting_genre" />
     <!-- we need this template as it contains more imports -->
     <field name="template_path">dj_compilation_account:discs/accounting.tmpl</field>
   </record>

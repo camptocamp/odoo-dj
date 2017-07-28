@@ -4,13 +4,11 @@
 
 import json
 
-from odoo import api, fields, models
+from odoo import api, models
 
 
 class AccountingDJ(models.Model):
     _inherit = 'dj.compilation'
-
-    genre = fields.Selection(selection_add=[('accounting', 'Accounting')])
 
     @api.multi
     def get_currency_rate_live_tvars(self):
