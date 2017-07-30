@@ -19,9 +19,11 @@
     'website': 'www.camptocamp.com',
     'data': [
         'security/ir.model.access.csv',
+        'data/equalizer_xmlid.xml',
         'views/company.xml',
         'views/compilation.xml',
         'views/song.xml',
+        'views/equalizer_xmlid.xml',
         'views/menuitems.xml',
     ],
     'installable': True,

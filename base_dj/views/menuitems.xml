@@ -23,4 +23,11 @@
     action="action_dj_songs"
     />
 
+  <menuitem
+    parent="menu_dj_root"
+    id="menu_dj_equalizer_xmlids"
+    name="XMLID equalizer"
+    action="action_dj_equalizer_xmlids"
+    />
+
 </odoo>

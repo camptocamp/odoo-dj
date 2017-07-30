@@ -5,6 +5,11 @@
 
 import anthem
 from ...common import load_csv
+{% if 'load_csv_defer_parent' in songs.mapped('song_type') %}
+from ...common import (
+    deferred_import,
+    deferred_compute_parents
+){% endif %}
 
 {% for song in songs %}
 {{ song.dj_render_template() }}
@@ -13,5 +18,5 @@ from ...common import load_csv
 
 @anthem.log
 def main(ctx):
-    {% for s in songs %}load_{{ s.name }}(ctx)
+    {% for s in songs %}{{ s.name }}(ctx)
     {% endfor %}

@@ -1,0 +1,9 @@
+@anthem.log
+def {{ song.name }}(ctx):
+    # this works if `base_dj` is installed
+    model = ctx.env['{{ song.model_id.model }}'].with_context(
+        dj_xmlid_fields_map={'{{ song.model_id.model }}': {{ song._get_xmlid_fields() }} },
+        dj_multicompany={{ song._is_multicompany_env() }},
+    )
+    for item in model.search([]):
+        item._dj_export_xmlid()

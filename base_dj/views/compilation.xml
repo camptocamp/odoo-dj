@@ -19,8 +19,11 @@
                   <field name="song_ids" context="{'model_tech_name_only': 1}">
                     <tree>
                       <field name="sequence" widget="handle" />
+                      <field name="song_type" />
                       <field name="model_id" />
                       <field name="model_fields_ids" context="{'model_tech_name_only': 1}" />
+                      <field name="domain"/>
+                      <field name="records_count"/>
                     </tree>
                   </field>
                   <footer>

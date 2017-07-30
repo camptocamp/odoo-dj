@@ -18,6 +18,17 @@ class Base(models.AbstractModel):
         """
         return self.env.context.get('dj_xmlid_module', '__setup__')
 
+    def _dj_xmlid_global_config(self):
+        """Retrieve default global config for xmlid fields."""
+        config = self.env['dj.equalizer.xmlid'].search([
+            ('model', '=', self._name),
+        ], limit=1)
+        _fields = config and config.get_xmlid_fields() or []
+        if not _fields and 'name' in self and 'name' not in _fields:
+            # we assume we can use name as default
+            _fields.append('name')
+        return _fields
+
     def _dj_xmlid_export_name(self):
         """Customize xmlid name for dj compilation.
 
@@ -28,7 +39,8 @@ class Base(models.AbstractModel):
         """
         name = [self._table, str(self.id)]
         mapping = self.env.context.get('dj_xmlid_fields_map', {})
-        xmlid_fields = mapping.get(self._name, [])
+        xmlid_fields = \
+            mapping.get(self._name) or self._dj_xmlid_global_config()
         if xmlid_fields:
             name = [self._table, ]
             for key in xmlid_fields:
@@ -42,6 +54,10 @@ class Base(models.AbstractModel):
                 elif isinstance(value, (int, float)):
                     value = str(value)
                 name.append(value)
+        if (self.env.context.get('dj_multicompany') and
+                'company_id' in self and self.company_id.aka):
+            # discriminate by company `aka` code
+            name.insert(0, self.company_id.normalized_aka())
         return '_'.join(name)
 
     def _dj_export_xmlid(self):
