@@ -17,7 +17,7 @@ from odoo.modules.module import get_module_resource
 from odoo.addons.website.models.website import slugify
 
 
-IGNORED_FORM_FIELDS = [
+SPECIAL_FIELDS = [
     'display_name',
     '__last_update',
     'parent_left',
@@ -34,6 +34,10 @@ IGNORED_FORM_FIELDS = [
 ] + models.MAGIC_COLUMNS
 
 SONG_TYPES = {
+    'settings': {
+        'only_config': True,
+        'template_path': 'base_dj:discs/song_settings.tmpl',
+    },
     'load_csv': {
         'only_config': False,
         'template_path': 'base_dj:discs/song.tmpl',
@@ -53,6 +57,7 @@ SONG_TYPES = {
     },
 }
 SONG_TYPES_SEL = [
+    ('settings', 'Config settings'),
     ('load_csv', 'Load CSV'),
     ('load_csv_defer_parent', 'Load CSV defer parent computation'),
     # TODO
@@ -60,6 +65,7 @@ SONG_TYPES_SEL = [
     ('generate_xmlids', 'Generate xmlids (for existing records)'),
 ]
 SONG_TYPES_NAME_PREFIXES = {
+    'settings': '',
     'load_csv': 'load_',
     'load_csv_defer_parent': 'load_',
     # TODO
@@ -463,7 +469,7 @@ class Song(models.Model):
     def _get_all_fields(self):
         names = set(
             self.song_model.fields_get().keys()
-        ).difference(set(IGNORED_FORM_FIELDS))
+        ).difference(set(SPECIAL_FIELDS))
         return self.env['ir.model.fields'].search([
             ('model', '=', self.model_name),
             ('store', '=', True),
@@ -564,3 +570,37 @@ class Song(models.Model):
         path = self.compilation_id.disc_full_path(
         ).replace('/', '.').replace('.py', '')
         return '{}::{}'.format(path, self.name)
+
+    def dj_get_settings_vals(self):
+        """Prepare values for res.config settings song."""
+        # TODO: handle multicompany
+        values = self.song_model.create({}).read(load='_classic_write')[0]
+
+        res = {}
+        fields_info = self.song_model.fields_get()
+        for fname, val in values.iteritems():
+            if fname in SPECIAL_FIELDS:
+                continue
+            finfo = fields_info[fname]
+            if val and finfo['type'] == 'many2one':
+                domain = [('model', '=', finfo['relation']),
+                          ('res_id', '=', val)]
+                # Find xmlid if it exists
+                ext_id = self.env['ir.model.data'].search(domain, limit=1)
+                if ext_id:
+                    val = self.anthem_xmlid_value(ext_id.complete_name)
+            # knowing which field does what is always difficult
+            # if you don't check settings schema definition.
+            # Let's add some helpful info.
+            label = finfo['string']
+            if finfo['type'] == 'selection':
+                label += u': {}'.format(dict(finfo['selection'])[val])
+            res[fname] = {
+                'val': val,
+                'label': label,
+            }
+        return res
+
+    def anthem_xmlid_value(self, xmlid):
+        # anthem specific
+        return "ctx.env.ref('{}').id".format(xmlid)
