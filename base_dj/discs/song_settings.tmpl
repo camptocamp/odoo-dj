@@ -1,0 +1,9 @@
+@anthem.log
+def {{ song.name }}(ctx):
+    """ Setup {{ song.model_id.model }} """
+    model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.model_context }})
+    model.create({
+        {% for key, value in song.dj_get_settings_vals().iteritems() %}# {{ value['label'] }}  # noqa
+        '{{ key }}': {{ value['val'] }},
+        {% endfor %}
+    }).execute()
