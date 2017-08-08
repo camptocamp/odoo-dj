@@ -33,6 +33,34 @@ SPECIAL_FIELDS = [
     'website_message_ids',
 ] + models.MAGIC_COLUMNS
 
+ADDONDS_BLACKLIST = (
+    # useless to track these modules amongst installed addons
+    # TODO: anything else to ignore?
+    # XXX: shall we exclude modules that are installed via config settings?
+    'base',
+    'base_action_rule',
+    'base_import',
+    'board',
+    'bus',
+    'calendar',
+    'grid',
+    'maintenance',
+    'report',
+    'resource',
+    'web',
+    'web_calendar',
+    'web_editor',
+    'web_enterprise',
+    'web_gantt',
+    'web_kanban',
+    'web_kanban_gauge',
+    'web_mobile',
+    'web_planner',
+    'web_settings_dashboard',
+    'web_tour',
+)
+ADDONS_NAME_DOMAIN = '("name", "not in", (%s))' % \
+    ','.join(["'%s'" % x for x in ADDONDS_BLACKLIST])
 SONG_TYPES = {
     'settings': {
         'only_config': True,
@@ -55,8 +83,15 @@ SONG_TYPES = {
         'only_config': True,
         'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
     },
+    'scratch_installed_addons': {
+        'only_config': True,
+        'template_path': 'base_dj:discs/song_addons.tmpl',
+        'model_id': 'xmlid:base.model_ir_module_module',
+        'domain': '[("state", "=", "installed"), %s]' % ADDONS_NAME_DOMAIN,
+    },
 }
 SONG_TYPES_SEL = [
+    ('scratch_installed_addons', 'List installed addons'),
     ('settings', 'Config settings'),
     ('load_csv', 'Load CSV'),
     ('load_csv_defer_parent', 'Load CSV defer parent computation'),
@@ -71,6 +106,7 @@ SONG_TYPES_NAME_PREFIXES = {
     # TODO
     # 'load_csv_heavy': 'load_',
     'generate_xmlids': 'add_xmlid_to_existing_',
+    'scratch_installed_addons': '',
 }
 # TODO
 # switch automatically to `load_csv_heavy
@@ -127,9 +163,10 @@ class TemplateMixin(models.AbstractModel):
             loader=jinja2.FileSystemLoader(path)
         ).get_template(filename)
 
-    def dj_render_template(self):
+    def dj_render_template(self, template_vars=None):
         template = self.dj_template()
-        return template.render(**self.dj_template_vars())
+        template_vars = template_vars or self.dj_template_vars()
+        return template.render(**template_vars)
 
 
 class Genre(models.Model):
@@ -196,7 +233,10 @@ class DJcompilation(models.Model):
         """Return context variables to render disc's template."""
         self.ensure_one()
         values = super(DJcompilation, self).dj_template_vars()
-        values.update({'songs': self.song_ids})
+        values.update({
+            # get all songs but scratchable ones
+            'songs': self.song_ids.filtered(lambda x: not x.scratchable())
+        })
         return values
 
     def _is_multicompany_env(self):
@@ -224,8 +264,9 @@ class DJcompilation(models.Model):
         self.ensure_one()
         files = []
         for song in self.song_ids:
-            if not song.only_config:
-                files.extend(song.burn_track())
+            track = song.burn_track()
+            if track:
+                files.append(track)
         # add __init__..py to song module folder
         init_file = os.path.join(
             os.path.dirname(self.disc_full_path()), '__init__.py')
@@ -373,7 +414,13 @@ class Song(models.Model):
             defaults = SONG_TYPES.get(self.song_type, {})
             # self.write does play good w/ NewId records
             for k, v in defaults.iteritems():
+                if isinstance(v, basestring):
+                    if v.startswith('xmlid:'):
+                        v = self.env.ref(v[6:]).id
                 self[k] = v
+            if 'model_id' not in defaults:
+                # reset model
+                self.model_id = False
 
     @api.onchange('records_count')
     def onchange_records_count(self):
@@ -466,10 +513,27 @@ class Song(models.Model):
     def burn_track(self):
         """Search items and burn the track for the compilations."""
         self.ensure_one()
-        csv_path, csv_data = self.make_csv()
-        return [
-            (csv_path, csv_data),
-        ]
+        path = data = None
+        if not self.only_config and not self.scratchable():
+            path, data = self.make_csv()
+        if self.scratchable():
+            path, data = self.scratch_it()
+        if path and data:
+            return path, data
+        return None
+
+    def scratchable(self):
+        """Tell you if the song is scratchable.
+
+        `scratchable` songs are songs that play differently
+        and you can scratch them as you like
+        to make them produce the result you want.
+        """
+        return self.song_type.startswith('scratch_')
+
+    def scratch_it(self):
+        """Retrieve scratch handler and play it."""
+        return getattr(self, self.song_type)()
 
     def _get_all_fields(self):
         names = set(
@@ -540,8 +604,8 @@ class Song(models.Model):
             xmlid_fields_map[song.model_name] = song._get_xmlid_fields()
         return xmlid_fields_map
 
-    def _get_exportable_records(self):
-        return self.song_model.search(self.eval_domain())
+    def _get_exportable_records(self, order=None):
+        return self.song_model.search(self.eval_domain(), order=order)
 
     def _is_multicompany_env(self):
         return self.compilation_id._is_multicompany_env()
@@ -562,8 +626,8 @@ class Song(models.Model):
         )
 
     @api.multi
-    def download_csv_preview(self):
-        """Download a preview of CSV file."""
+    def download_preview(self):
+        """Download a preview file."""
         self.ensure_one()
         return {
             'type': 'ir.actions.act_url',
@@ -609,3 +673,10 @@ class Song(models.Model):
     def anthem_xmlid_value(self, xmlid):
         # anthem specific
         return "ctx.env.ref('{}').id".format(xmlid)
+
+    def scratch_installed_addons(self):
+        path = 'installed_addons.txt'
+        return path, self.dj_render_template({
+            'song': self,
+            'addons': self._get_exportable_records(order='name asc'),
+        })

@@ -5,6 +5,7 @@
 from odoo import http
 from odoo.http import request
 import os
+import mimetypes
 
 
 class DJ(http.Controller):
@@ -28,9 +29,13 @@ class DJ(http.Controller):
         '/dj/download/song/<model("dj.song"):song>',
         type='http', auth="user", website=False)
     def download_song(self, song, **kwargs):
-        path, content = song.make_csv()
+        track = song.burn_track()
+        if not track:
+            return 'Sorry, nothing to view here.'
+        path, content = track
         filename = os.path.basename(path)
-        headers = self._make_download_headers(content, filename, 'text/csv')
+        ctype = mimetypes.guess_type(filename)[0] or 'text/csv'
+        headers = self._make_download_headers(content, filename, ctype)
         return request.make_response(content, headers=headers)
 
     @http.route(

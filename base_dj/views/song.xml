@@ -22,8 +22,7 @@
                   <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
                 </group>
                 <footer>
-                  <button name="download_csv_preview" string="Preview CSV" type="object" class="btn-primary"
-                          attrs="{'invisible': [('only_config', '=', True)]}"/>
+                  <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
                 </footer>
               </page>
               <page name="advanced" string="Advanced">
