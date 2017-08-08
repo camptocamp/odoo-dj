@@ -448,7 +448,12 @@ class Song(models.Model):
 
     @property
     def song_model(self):
-        return self.env[self.model_id.model]
+        # When _register_hook of module queue_job parse models
+        # it tries to add this and fail because
+        # model is empty. This return nothing instead.
+        if not self.model_id:
+            return
+        return self.env.get(self.model_id.model)
 
     def real_csv_path(self):
         """Final csv path into zip file."""
