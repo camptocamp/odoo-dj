@@ -54,49 +54,6 @@ def configure_currency_rate_live(ctx):
         'currency_next_execution_date': fields.Date.to_string(next_update)
     })
 
-{# dict containing sequence configuration
-Ex:
-{
-    "base.main_company": {
-        "BILL": [
-            "BILL/%(range_year)s/",
-            4,
-            "RBILL/%(range_year)s/",
-            4
-        ],
-        "INV": [
-            "INV/%(range_year)s/",
-            4,
-            "RINV/%(range_year)s/",
-            4
-        ]
-    },
-
-#}
-SEQ_CONFIG = {{ sequence_config }}
-
-@anthem.log
-def setup_invoice_sequences(ctx, cp_xmlid):
-    """ Setup sequences for invoices and refund for customer and supplier """
-    config = SEQ_CONFIG[cp_xmlid]
-
-    cp = ctx.env.ref(cp_xmlid)
-    Journal = ctx.env['account.journal']
-    for code in ('INV', 'BILL'):
-        j = Journal.search([
-            ('code', '=', code),
-            ('company_id', '=', cp.id)]
-        )
-        j.write({'refund_sequence': True})
-        if not j.refund_sequence_id:
-            j.refund_sequence_id = j.sudo()._create_sequence(
-                {'name': j.name + " Refund", 'code': j.code}, refund=True)
-        j.sequence_id.prefix = config[code][0]
-        j.sequence_id.padding = config[code][1]
-        j.refund_sequence_id.prefix = config[code][2]
-        j.refund_sequence_id.padding = config[code][3]
-
-
 @anthem.log
 def main(ctx):
     """ Setup accounting """
@@ -105,6 +62,4 @@ def main(ctx):
 
     set_fiscalyear(ctx)
 
-    for cp in companies:
-        setup_invoice_sequences(ctx, cp_sequence_prefixes)
     configure_currency_rate_live(ctx)

@@ -54,21 +54,26 @@
     <!-- <field name="field_list">fields_id,name,type,value_reference</field> -->
   </record>
 
-  <!-- TODO ir.sequence referenced by journals
+  <record model="dj.song" id="dj_song_stock_location_xmlids">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="base.model_ir_sequence"/>
+    <field name="song_type">generate_xmlids</field>
+    <field name="only_config" eval="True" />
+    <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
+    <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
+  </record>
+
   <record model="dj.song" id="dj_song_ir_sequence">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
-    <field name="csv_path">data/install/ir.sequence-account.csv</field>
-    <field name="domain">[]</field>
-    <field name="field_list">company_id,name,number_next,number_next_actual,prefix,padding,number_increment,use_date_range</field>
+    <field name="csv_path">data/{data_mode}/generated/{model}-account.csv</field>
+    <field name="domain">[('name', 'in', ['Customer Invoices', 'Customer Invoices: Refund', 'Vendor Bills', 'Vendor Bills: Refund'])]</field>
   </record>
-  -->
 
   <record model="dj.song" id="dj_song_account_journal">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="account.model_account_journal"/>
     <field name="domain">[]</field>
-    <!-- <field name="field_list">type,sequence,code,name,currency_id,default_credit_account_id,default_debit_account_id,update_posted,bank_account_id,bank_acc_number,bank_id</field> -->
   </record>
 
 
