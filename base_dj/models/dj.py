@@ -548,14 +548,14 @@ class Song(models.Model):
             model_id = vals.get('model_id') or self.model_id.id
             fields = self._get_fields(model_id, vals.pop('field_list'))
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
-        return super(song ,self).write(vals)
+        return super(Song ,self).write(vals)
 
     @api.model
     def create(self, vals):
         if vals.get('field_list') and vals.get('model_id'):
             fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
-        return super(song ,self).create(vals)
+        return super(Song ,self).create(vals)
 
     def _get_fields(self, model_id, field_list):
         """ helper to set fields from a list """
