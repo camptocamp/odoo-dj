@@ -487,10 +487,16 @@ class Song(models.Model):
                 if col is False:
                     col = None
 
-                # Spreadsheet apps
-                # tend to detect formulas on leading =, + and -
-                if type(col) is str and col.startswith(('=', '-', '+')):
-                    col = "'" + col
+                # ---- START CHANGE ----
+                # Here we remove this feature as csv with negative values
+                # are unimportable with an additional quote
+                # ----------------------
+
+                # # Spreadsheet apps
+                # # tend to detect formulas on leading =, + and -
+                # if type(col) is str and col.startswith(('=', '-', '+')):
+                #     col = "'" + col
+                # ----- END CHANGE -----
 
                 row.append(col)
             writer.writerow(row)
