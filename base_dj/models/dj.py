@@ -65,6 +65,7 @@ SONG_TYPES = {
     'settings': {
         'only_config': True,
         'template_path': 'base_dj:discs/song_settings.tmpl',
+        'has_records': False,
     },
     'load_csv': {
         'only_config': False,
@@ -82,12 +83,14 @@ SONG_TYPES = {
     'generate_xmlids': {
         'only_config': True,
         'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
+        'has_records': False,
     },
     'scratch_installed_addons': {
         'only_config': True,
         'template_path': 'base_dj:discs/song_addons.tmpl',
         'model_id': 'xmlid:base.model_ir_module_module',
         'domain': '[("state", "=", "installed"), %s]' % ADDONS_NAME_DOMAIN,
+        'has_records': True,
     },
 }
 SONG_TYPES_SEL = [
@@ -401,6 +404,10 @@ class Song(models.Model):
         help="This record is only for configuration "
              "and it won't generate CSV data to be imported.",
         default=False
+    )
+    has_records = fields.Boolean(
+        help="Control flag to display records settings (like domain).",
+        default=True,
     )
     records_count = fields.Integer(
         compute='_compute_records_count',
