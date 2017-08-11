@@ -61,55 +61,68 @@ ADDONS_BLACKLIST = (
 )
 ADDONS_NAME_DOMAIN = '("name", "not in", (%s))' % \
     ','.join(["'%s'" % x for x in ADDONS_BLACKLIST])
+
+# TODO: move this to independent records
+# then we can filter particular song types by genre
 SONG_TYPES = {
     'settings': {
-        'only_config': True,
-        'template_path': 'base_dj:discs/song_settings.tmpl',
-        'has_records': False,
+        'name': _('Config settings'),
+        'prefix': '',
+        'sequence': 0,
+        'defaults': {
+            'only_config': True,
+            'template_path': 'base_dj:discs/song_settings.tmpl',
+            'has_records': False,
+        },
     },
     'load_csv': {
-        'only_config': False,
-        'template_path': 'base_dj:discs/song.tmpl',
+        'name': _('Load CSV'),
+        'prefix': 'load_',
+        'sequence': 10,
+        'defaults': {
+            'only_config': False,
+            'template_path': 'base_dj:discs/song.tmpl',
+        },
     },
     'load_csv_defer_parent': {
-        'only_config': False,
-        'template_path': 'base_dj:discs/song_defer_parent.tmpl',
+        'name': _('Load CSV defer parent computation'),
+        'prefix': 'load_',
+        'sequence': 20,
+        'defaults': {
+            'only_config': False,
+            'template_path': 'base_dj:discs/song_defer_parent.tmpl',
+        }
     },
     # TODO
     # 'load_csv_heavy': {
     #     'only_config': False,
     #     'template_path': 'base_dj:discs/song_defer_parent.tmpl',
     # },
+    # switch automatically to `load_csv_heavy
+    # when this amount of records is reached
+    # HEAVY_IMPORT_THRESHOLD = 1000
     'generate_xmlids': {
-        'only_config': True,
-        'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
-        'has_records': False,
+        'name': _('Generate xmlids (for existing records)'),
+        'prefix': 'add_xmlid_to_existing_',
+        'sequence': 30,
+        'defaults': {
+            'only_config': True,
+            'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
+            'has_records': False,
+        },
     },
     'scratch_installed_addons': {
-        'only_config': True,
-        'template_path': 'base_dj:discs/song_addons.tmpl',
-        'model_id': 'xmlid:base.model_ir_module_module',
-        'domain': '[("state", "=", "installed"), %s]' % ADDONS_NAME_DOMAIN,
-        'has_records': True,
+        'name': _('List installed addons'),
+        'prefix': '',
+        'sequence': 40,
+        'defaults': {
+            'only_config': True,
+            'template_path': 'base_dj:discs/song_addons.tmpl',
+            'model_id': 'xmlid:base.model_ir_module_module',
+            'domain': '[("state", "=", "installed"), %s]' % ADDONS_NAME_DOMAIN,
+            'has_records': True,
+        },
     },
-}
-SONG_TYPES_SEL = [
-    ('scratch_installed_addons', 'List installed addons'),
-    ('settings', 'Config settings'),
-    ('load_csv', 'Load CSV'),
-    ('load_csv_defer_parent', 'Load CSV defer parent computation'),
-    # TODO
-    # ('load_csv_heavy', 'Load CSV heavy file'),
-    ('generate_xmlids', 'Generate xmlids (for existing records)'),
-]
-SONG_TYPES_NAME_PREFIXES = {
-    'settings': '',
-    'load_csv': 'load_',
-    'load_csv_defer_parent': 'load_',
-    # TODO
-    # 'load_csv_heavy': 'load_',
-    'generate_xmlids': 'add_xmlid_to_existing_',
-    'scratch_installed_addons': '',
 }
 
 DEFAULT_PYTHON_CODE = """# Available variable:
@@ -355,6 +368,8 @@ class Song(models.Model):
     _order = 'sequence ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
 
+    available_song_types = SONG_TYPES
+
     compilation_id = fields.Many2one(
         string='Compilation',
         comodel_name='dj.compilation',
@@ -373,7 +388,7 @@ class Song(models.Model):
         required=True
     )
     song_type = fields.Selection(
-        selection=SONG_TYPES_SEL,
+        selection='_select_song_type',
         default='load_csv',
         help='Load pre-configured song type.'
     )
@@ -432,11 +447,19 @@ class Song(models.Model):
             if msg:
                 raise exceptions.ValidationError(msg)
 
+    def _select_song_type(self):
+        types = []
+        for key, data in self.available_song_types.iteritems():
+            # decorated sorting
+            types.append((data['sequence'], key, data['name']))
+        return [x[1:] for x in sorted(types)]
+
     @api.onchange('song_type')
     def onchange_song_type(self):
         """Load defaults by song type."""
         if self.song_type:
-            defaults = SONG_TYPES.get(self.song_type, {})
+            defaults = self.available_song_types.get(
+                self.song_type, {}).get('defaults', {})
             # self.write does play good w/ NewId records
             for k, v in defaults.iteritems():
                 if isinstance(v, basestring):
@@ -470,7 +493,8 @@ class Song(models.Model):
     @api.depends('model_id.model', 'song_type')
     def _compute_song_name(self):
         for item in self:
-            prefix = SONG_TYPES_NAME_PREFIXES.get(item.song_type, 'load_')
+            prefix = self.available_song_types.get(
+                item.song_type, {}).get('prefix', 'load_')
             item.name = u'{}{}'.format(
                 prefix,
                 (item.model_id.model or '').replace('.', '_'),
