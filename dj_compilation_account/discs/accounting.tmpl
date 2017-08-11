@@ -6,8 +6,6 @@ from datetime import date
 import anthem
 from ...common import (
     load_csv,
-    deferred_import,
-    deferred_compute_parents
 )
 
 {% for song in songs %}
@@ -58,7 +56,7 @@ def configure_currency_rate_live(ctx):
 def main(ctx):
     """ Setup accounting """
     {% for s in songs %}
-    load_{{ s.name }}(ctx){% endfor %}
+    {{ s.name }}(ctx){% endfor %}
 
     set_fiscalyear(ctx)
 
