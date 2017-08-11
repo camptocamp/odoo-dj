@@ -595,8 +595,7 @@ class Song(models.Model):
                 continue
             name = field.name
             # we always want xmlids
-            # many2many are handled specifically by `export_data`
-            if field.ttype in ('many2one', 'one2many'):
+            if field.ttype in ('many2one', 'one2many', 'many2many'):
                 name += '/id'
             field_names.append(name)
         # we always want company_id if the field is there
