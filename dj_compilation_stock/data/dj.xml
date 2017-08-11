@@ -12,8 +12,9 @@
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_config_settings"/>
     <field name="song_type">settings</field>
-    <field name="only_config" eval="True" />
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
+    <field name="only_config" eval="True" />
+    <field name="has_records" eval="False" />
     <field name="template_path">base_dj:discs/song_settings.tmpl</field>
   </record>
 
@@ -21,8 +22,9 @@
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location"/>
     <field name="song_type">generate_xmlids</field>
-    <field name="only_config" eval="True" />
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
+    <field name="only_config" eval="True" />
+    <field name="has_records" eval="False" />
     <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
   </record>
 
@@ -39,8 +41,9 @@
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
     <field name="song_type">generate_xmlids</field>
-    <field name="only_config" eval="True" />
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
+    <field name="only_config" eval="True" />
+    <field name="has_records" eval="False" />
     <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
   </record>
 

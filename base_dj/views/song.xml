@@ -15,22 +15,22 @@
                   <field name="model_id" context="{'model_tech_name_only': 1}" />
                   <field name="model_name" invisible="1" />
                   <field name="only_config" />
+                  <field name="has_records" readonly="1" />
                 </group>
-                <group name="config" attrs="{'invisible': [('only_config', '=', True)]}">
+                <group name="config" attrs="{'invisible': [('has_records', '=', False)]}">
                   <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                   <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                   <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
                 </group>
                 <footer>
-                  <button name="download_csv_preview" string="Preview CSV" type="object" class="btn-primary"
-                          attrs="{'invisible': [('only_config', '=', True)]}"/>
+                  <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
                 </footer>
               </page>
               <page name="advanced" string="Advanced">
                 <group>
                   <field name="xmlid_fields"/>
                   <field name="template_path"/>
-                  <field name="csv_path" attrs="{'invisible': [('only_config', '=', True)]}"/>
+                  <field name="csv_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
                   <field name="model_context"/>
                 </group>
               </page>
