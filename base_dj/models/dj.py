@@ -33,7 +33,7 @@ SPECIAL_FIELDS = [
     'website_message_ids',
 ] + models.MAGIC_COLUMNS
 
-ADDONDS_BLACKLIST = (
+ADDONS_BLACKLIST = (
     # useless to track these modules amongst installed addons
     # TODO: anything else to ignore?
     # XXX: shall we exclude modules that are installed via config settings?
@@ -60,7 +60,7 @@ ADDONDS_BLACKLIST = (
     'web_tour',
 )
 ADDONS_NAME_DOMAIN = '("name", "not in", (%s))' % \
-    ','.join(["'%s'" % x for x in ADDONDS_BLACKLIST])
+    ','.join(["'%s'" % x for x in ADDONS_BLACKLIST])
 SONG_TYPES = {
     'settings': {
         'only_config': True,
