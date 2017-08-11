@@ -21,6 +21,7 @@
                   <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                   <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                   <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+                  <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
                 </group>
                 <footer>
                   <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
@@ -56,6 +57,12 @@
                   Then use <strong>domain</strong> to filter records to export.<br />
                   Thanks to new widget you can filter on all model fields as you do in standard searches.<br />
                   You can even have a preview of which records will be exported by clicking on `NR record(s)` link.
+                </li>
+                <li>
+                  You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
+                  It has <strong>env</strong> available and needs to return record set. <br />
+                  For instance to get all object related to an other model you can do: <br />
+                  env['model'].search([]).field_id
                 </li>
                 <li>
                   Once you have configured and saved it, you might want to check the resulting CSV.<br />

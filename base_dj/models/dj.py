@@ -12,7 +12,7 @@ import time
 from cStringIO import StringIO
 
 from odoo import models, fields, api, exceptions, _
-from odoo.tools.safe_eval import safe_eval
+from odoo.tools.safe_eval import safe_eval, test_python_expr
 from odoo.modules.module import get_module_resource
 from odoo.addons.website.models.website import slugify
 
@@ -111,6 +111,11 @@ SONG_TYPES_NAME_PREFIXES = {
     'generate_xmlids': 'add_xmlid_to_existing_',
     'scratch_installed_addons': '',
 }
+
+DEFAULT_PYTHON_CODE = """# Available variable:
+#  - env: Odoo Environement
+# You have to return a record set
+"""
 # TODO
 # switch automatically to `load_csv_heavy
 # when this amount of records is reached
@@ -394,6 +399,10 @@ class Song(models.Model):
     )
     csv_path = fields.Char(default='data/{data_mode}/generated/{model}.csv')
     domain = fields.Char(default="[]")
+    python_code = fields.Text(
+        default=DEFAULT_PYTHON_CODE,
+        help="Get a list of ids with a python expression, if both domain and"
+             " python_code are used data will be an union of both.")
     model_context = fields.Char(default="{'tracking_disable':1}")
     xmlid_fields = fields.Char(
         help="List of field to use to generate unique "
@@ -413,6 +422,13 @@ class Song(models.Model):
         compute='_compute_records_count',
         readonly=True
     )
+
+    @api.constrains('python_code')
+    def _check_python_code(self):
+        for song in self.filtered('python_code'):
+            msg = test_python_expr(expr=self.python_code.strip(), mode="exec")
+            if msg:
+                raise exceptions.ValidationError(msg)
 
     @api.onchange('song_type')
     def onchange_song_type(self):
@@ -467,6 +483,21 @@ class Song(models.Model):
     @api.model
     def eval_domain(self):
         return safe_eval(self.domain) or []
+
+    @api.model
+    def eval_python_code(self):
+        """ Get record sets from python code for instance :
+
+        result = env['account.journal'].search([]).sequence_id
+        """
+        eval_context = {'env': self.env}
+        recs = safe_eval(self.python_code.strip(), eval_context)
+        if self.model_id.model != recs._name:
+            raise exceptions.UserError(
+                _("Python code must return records for %s got %s instead.")
+                % (self.model_id.model, recs._name)
+            )
+        return recs
 
     @api.model
     def csv_from_data(self, fields, rows):
@@ -641,7 +672,12 @@ class Song(models.Model):
         return xmlid_fields_map
 
     def _get_exportable_records(self, order=None):
-        return self.song_model.search(self.eval_domain(), order=order)
+        recs = self.song_model.search(self.eval_domain(), order=order)
+        if self.python_code:
+            recs2 = self.eval_python_code()
+            if recs2:
+                recs |= recs2
+        return recs
 
     def _is_multicompany_env(self):
         return self.compilation_id._is_multicompany_env()
