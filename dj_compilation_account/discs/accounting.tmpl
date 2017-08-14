@@ -1,0 +1,63 @@
+# -*- coding: utf-8 -*-
+# Copyright {{ year }} Camptocamp SA
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+# -- This file has been generated --
+from datetime import date
+import anthem
+from ...common import (
+    load_csv,
+)
+
+{% for song in songs %}
+{{ song.dj_render_template() }}
+
+{% endfor %}
+
+@anthem.log
+def set_fiscalyear(ctx):
+    date_range_type = ctx.env.ref('account_fiscal_year.fiscalyear')
+    values = {'date_start': '2016-01-01',
+              'name': '2016',
+              'date_end': '2016-12-31',
+              'type_id': date_range_type.id,
+              'company_id': False,
+              'active': True,
+              }
+    create_or_update(ctx, 'date.range', '__setup__.date_range_2016', values)
+
+    values = {'date_start': '2015-01-01',
+              'name': '2015',
+              'date_end': '2015-12-31',
+              'type_id': date_range_type.id,
+              'company_id': False,
+              'active': True,
+              }
+    create_or_update(ctx, 'date.range', '__setup__.date_range_2015', values)
+
+
+@anthem.log
+def configure_currency_rate_live(ctx):
+    """ configure enterprise module currency_rate_live """
+    companies = ctx.env['res.company'].search([])
+
+    today = date.today()
+    if today.month == 12:
+        next_update = today.replace(day=1, month=1, year=today.year + 1)
+    else:
+        next_update = today.replace(day=1, month=today.month + 1)
+
+    companies.write({
+        'currency_interval_unit': '{{ currency_interval_unit }}',
+        'currency_provider': '{{ currency_provider }}',
+        'currency_next_execution_date': fields.Date.to_string(next_update)
+    })
+
+@anthem.log
+def main(ctx):
+    """ Setup accounting """
+    {% for s in songs %}
+    {{ s.name }}(ctx){% endfor %}
+
+    set_fiscalyear(ctx)
+
+    configure_currency_rate_live(ctx)

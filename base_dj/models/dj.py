@@ -12,7 +12,7 @@ import time
 from cStringIO import StringIO
 
 from odoo import models, fields, api, exceptions, _
-from odoo.tools.safe_eval import safe_eval
+from odoo.tools.safe_eval import safe_eval, test_python_expr
 from odoo.modules.module import get_module_resource
 from odoo.addons.website.models.website import slugify
 
@@ -111,6 +111,11 @@ SONG_TYPES_NAME_PREFIXES = {
     'generate_xmlids': 'add_xmlid_to_existing_',
     'scratch_installed_addons': '',
 }
+
+DEFAULT_PYTHON_CODE = """# Available variable:
+#  - env: Odoo Environement
+# You have to return a record set
+"""
 # TODO
 # switch automatically to `load_csv_heavy
 # when this amount of records is reached
@@ -394,6 +399,10 @@ class Song(models.Model):
     )
     csv_path = fields.Char(default='data/{data_mode}/generated/{model}.csv')
     domain = fields.Char(default="[]")
+    python_code = fields.Text(
+        default=DEFAULT_PYTHON_CODE,
+        help="Get a list of ids with a python expression, if both domain and"
+             " python_code are used data will be an union of both.")
     model_context = fields.Char(default="{'tracking_disable':1}")
     xmlid_fields = fields.Char(
         help="List of field to use to generate unique "
@@ -413,6 +422,13 @@ class Song(models.Model):
         compute='_compute_records_count',
         readonly=True
     )
+
+    @api.constrains('python_code')
+    def _check_python_code(self):
+        for song in self.filtered('python_code'):
+            msg = test_python_expr(expr=self.python_code.strip(), mode="exec")
+            if msg:
+                raise exceptions.ValidationError(msg)
 
     @api.onchange('song_type')
     def onchange_song_type(self):
@@ -469,6 +485,21 @@ class Song(models.Model):
         return safe_eval(self.domain) or []
 
     @api.model
+    def eval_python_code(self):
+        """ Get record sets from python code for instance :
+
+        result = env['account.journal'].search([]).sequence_id
+        """
+        eval_context = {'env': self.env}
+        recs = safe_eval(self.python_code.strip(), eval_context)
+        if self.model_id.model != recs._name:
+            raise exceptions.UserError(
+                _("Python code must return records for %s got %s instead.")
+                % (self.model_id.model, recs._name)
+            )
+        return recs
+
+    @api.model
     def csv_from_data(self, fields, rows):
         """Copied from std odoo export in controller."""
         fp = StringIO()
@@ -487,10 +518,16 @@ class Song(models.Model):
                 if col is False:
                     col = None
 
-                # Spreadsheet apps
-                # tend to detect formulas on leading =, + and -
-                if type(col) is str and col.startswith(('=', '-', '+')):
-                    col = "'" + col
+                # ---- START CHANGE ----
+                # Here we remove this feature as csv with negative values
+                # are unimportable with an additional quote
+                # ----------------------
+
+                # # Spreadsheet apps
+                # # tend to detect formulas on leading =, + and -
+                # if type(col) is str and col.startswith(('=', '-', '+')):
+                #     col = "'" + col
+                # ----- END CHANGE -----
 
                 row.append(col)
             writer.writerow(row)
@@ -542,6 +579,30 @@ class Song(models.Model):
         """Retrieve scratch handler and play it."""
         return getattr(self, self.song_type)()
 
+    @api.multi
+    def write(self, vals):
+        if vals.get('field_list'):
+            model_id = vals.get('model_id') or self.model_id.id
+            fields = self._get_fields(model_id, vals.pop('field_list'))
+            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        return super(Song ,self).write(vals)
+
+    @api.model
+    def create(self, vals):
+        if vals.get('field_list') and vals.get('model_id'):
+            fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
+            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        return super(Song ,self).create(vals)
+
+    def _get_fields(self, model_id, field_list):
+        """ helper to set fields from a list """
+        model_name = self.env['ir.model'].browse(model_id).name
+        field_names = [f.strip() for f in field_list.split(',')]
+        return self.env['ir.model.fields'].search([
+            ('model_id', '=', model_name),
+            ('name', 'in', field_names)
+            ])
+
     def _get_all_fields(self):
         names = set(
             self.song_model.fields_get().keys()
@@ -565,8 +626,7 @@ class Song(models.Model):
                 continue
             name = field.name
             # we always want xmlids
-            # many2many are handled specifically by `export_data`
-            if field.ttype in ('many2one', 'one2many'):
+            if field.ttype in ('many2one', 'one2many', 'many2many'):
                 name += '/id'
             field_names.append(name)
         # we always want company_id if the field is there
@@ -612,7 +672,12 @@ class Song(models.Model):
         return xmlid_fields_map
 
     def _get_exportable_records(self, order=None):
-        return self.song_model.search(self.eval_domain(), order=order)
+        recs = self.song_model.search(self.eval_domain(), order=order)
+        if self.python_code:
+            recs2 = self.eval_python_code()
+            if recs2:
+                recs |= recs2
+        return recs
 
     def _is_multicompany_env(self):
         return self.compilation_id._is_multicompany_env()

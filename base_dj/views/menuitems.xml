@@ -30,4 +30,11 @@
     action="action_dj_equalizer_xmlids"
     />
 
+  <menuitem
+    parent="menu_dj_root"
+    id="menu_aka_company"
+    name="Company aliases"
+    action="action_company_aka"
+    />
+
 </odoo>
