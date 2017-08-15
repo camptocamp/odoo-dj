@@ -3,6 +3,13 @@
     <field name="name">accounting</field>
   </record>
 
+  <record model="dj.compilation" id="compilation_account">
+    <field name="name">account default</field>
+    <field name="genre_id" ref="dj_accounting_genre" />
+    <!-- we need this template as it contains more imports -->
+    <field name="template_path">dj_compilation_account:discs/accounting.tmpl</field>
+  </record>
+
   <record model="dj.song" id="dj_song_ir_sequence_xmlids">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
@@ -10,13 +17,6 @@
     <field name="only_config" eval="True" />
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
     <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
-  </record>
-
-  <record model="dj.compilation" id="compilation_account">
-    <field name="name">account default</field>
-    <field name="genre_id" ref="dj_accounting_genre" />
-    <!-- we need this template as it contains more imports -->
-    <field name="template_path">dj_compilation_account:discs/accounting.tmpl</field>
   </record>
 
   <!-- take all active currency -->

@@ -114,7 +114,9 @@ SONG_TYPES_NAME_PREFIXES = {
 
 DEFAULT_PYTHON_CODE = """# Available variable:
 #  - env: Odoo Environement
-# You have to return a record set
+# You have to return a recordset by assigning
+# variable recs.
+# recs = env[model].search([])
 """
 # TODO
 # switch automatically to `load_csv_heavy
@@ -491,10 +493,22 @@ class Song(models.Model):
         result = env['account.journal'].search([]).sequence_id
         """
         eval_context = {'env': self.env}
-        recs = safe_eval(self.python_code.strip(), eval_context)
+        safe_eval(self.python_code.strip(), eval_context,
+                  mode="exec", nocopy=True)
+        recs = eval_context.get('recs', None)
+        if recs is None:
+            return
+        if not isinstance(recs, models.Model):
+            raise exceptions.UserError(
+                _("Wrong type.\n"
+                  "Python code must return a recordset for %s.")
+                % self.model_id.model
+            )
+
         if self.model_id.model != recs._name:
             raise exceptions.UserError(
-                _("Python code must return records for %s got %s instead.")
+                _("Wrong recordset model.\n"
+                  "Python code must return a recordset for %s got %s instead.")
                 % (self.model_id.model, recs._name)
             )
         return recs
