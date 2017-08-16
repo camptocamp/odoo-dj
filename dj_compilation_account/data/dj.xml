@@ -100,6 +100,4 @@
     <field name="domain">[]</field>
   </record>
 
-  <!-- account.financial.html.report -->
-  <!-- account.financial.html.report.line -->
 </odoo>
