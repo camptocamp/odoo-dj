@@ -52,6 +52,7 @@ def configure_currency_rate_live(ctx):
         'currency_next_execution_date': fields.Date.to_string(next_update)
     })
 
+
 @anthem.log
 def main(ctx):
     """ Setup accounting """

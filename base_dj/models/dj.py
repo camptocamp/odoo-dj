@@ -774,6 +774,8 @@ class Song(models.Model):
             label = finfo['string']
             if finfo['type'] == 'selection':
                 label += u': {}'.format(dict(finfo['selection'])[val])
+            elif finfo['type'] == 'text':
+                val = u'"""{}"""'.format(val)
             res[fname] = {
                 'val': val,
                 'label': label,
