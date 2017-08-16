@@ -12,7 +12,7 @@
 
   <record model="dj.song" id="dj_song_accounting_config_settings">
     <field name="compilation_id" ref="compilation_account"/>
-    <field name="model_id" ref="stock.model_account_config_settings"/>
+    <field name="model_id" ref="account.model_account_config_settings"/>
     <field name="song_type">settings</field>
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
     <field name="only_config" eval="True" />
