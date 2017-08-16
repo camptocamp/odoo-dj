@@ -7,8 +7,8 @@
     'summary': """
     Use the DJ console to create compilations w/ your favourite anthem songs.
     """,
-    'version': '10.1.0.0',
-    'author': 'Camptocamp',
+    'version': '10.0.1.0.0',
+    'author': 'Camptocamp,Odoo Community Association (OCA)',
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',
     'category': 'songs',
