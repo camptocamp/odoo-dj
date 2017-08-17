@@ -258,12 +258,22 @@ class Song(models.Model):
         """Retrieve scratch handler and play it."""
         return getattr(self, self.song_type)()
 
+    def _get_dependant_songs(self):
+        self.ensure_one()
+        return self.env['dj.song.dependency'].search([
+            ('master_song_id', '=', self.id)
+        ]).mapped('song_id')
+
     @api.multi
     def write(self, vals):
         if vals.get('field_list'):
             model_id = vals.get('model_id') or self.model_id.id
             fields = self._get_fields(model_id, vals.pop('field_list'))
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        for item in self:
+            # update dependant songs
+            for dep in self._get_dependant_songs():
+                dep.onchange_depends_on_ids()
         return super(Song, self).write(vals)
 
     @api.model
