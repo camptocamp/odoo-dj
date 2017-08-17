@@ -2,10 +2,8 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-import csv
-from cStringIO import StringIO
-
 from odoo import models, fields, api, exceptions, _
+from odoo.osv import expression
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 
 
@@ -205,6 +203,11 @@ class Song(models.Model):
         compute='_compute_records_count',
         readonly=True
     )
+    depends_on_ids = fields.One2many(
+        string='Depends on',
+        comodel_name='dj.song.dependency',
+        inverse_name='song_id',
+    )
 
     @api.constrains('python_code')
     def _check_python_code(self):
@@ -235,6 +238,27 @@ class Song(models.Model):
             if 'model_id' not in defaults:
                 # reset model
                 self.model_id = False
+
+    @api.onchange('depends_on_ids')
+    def onchange_depends_on_ids(self):
+        """Collect record IDS from master songs and update domain."""
+        ids = set([])
+        for dep in self.depends_on_ids:
+            ids.update(dep._get_dependant_record_ids())
+        if not ids:
+            return
+        # NOTE: we can end up w/ duplicated domain leafs
+        # as there's no easy way (or odoo util AFAIK)
+        # to merge existing domains.
+        # Eg: ['&', ('id', 'in', [125]), ('id', 'in', [125])]
+        # So, here we just put existing ones in AND
+        # as is not going to hurt in most of the use cases.
+        # Still, you can then edit the final domain
+        # via the domain widget.
+        domain = expression.AND([
+            self.eval_domain(), [('id', 'in', list(ids))]
+        ])
+        self.domain = str(domain)
 
     @api.onchange('records_count')
     def onchange_records_count(self):
@@ -558,3 +582,53 @@ class Song(models.Model):
             'song': self,
             'addons': self._get_exportable_records(order='name asc'),
         })
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        args = args or []
+        domain = []
+        if name:
+            domain = [('model_id.model', 'ilike', u'%{}%'.format(name))]
+        items = self.search(domain + args, limit=limit)
+        return items.name_get()
+
+
+class SongDependency(models.Model):
+    _name = 'dj.song.dependency'
+    _rec_name = 'song_id'
+
+    song_id = fields.Many2one(
+        comodel_name='dj.song',
+        string='Song',
+    )
+    master_song_id = fields.Many2one(
+        comodel_name='dj.song',
+        string='Master song',
+        required=True,
+    )
+    master_song_model = fields.Char(
+        related='master_song_id.model_name',
+        readonly=True
+    )
+    model_field_id = fields.Many2one(
+        comodel_name='ir.model.fields',
+        string='Relation field',
+        required=True,
+    )
+
+    @api.onchange('master_song_id')
+    def onchange_master_song_id(self):
+        if self.master_song_id:
+            return {'domain': {
+                'model_field_id': [
+                    ('store', '=', True),
+                    ('compute', '=', False),
+                    ('model_id', '=', self.master_song_id.model_id.id),
+                    ('relation', '=', self.env.context['relation_model']),
+                ]
+            }}
+
+    def _get_dependant_record_ids(self):
+        master_records = self.master_song_id._get_exportable_records()
+        records = master_records.mapped(self.model_field_id.name)
+        return records.ids

@@ -5,44 +5,40 @@
     <field name="arch" type="xml">
       <form string="Make songs">
         <sheet>
-          <div class="row">
-            <div class="col-md-8 col-xs-12">
-              <h1>Compilation setup</h1>
-              <notebook>
-                <page name="main" string="Main">
-                  <group>
-                    <field name="genre_id"/>
-                    <field name="name"/>
-                    <field name="data_mode"/>
-                  </group>
-                  <separator string="Exportable songs" />
-                  <field name="song_ids" context="{'model_tech_name_only': 1}">
-                    <tree>
-                      <field name="sequence" widget="handle" />
-                      <field name="song_type" />
-                      <field name="model_id" />
-                      <field name="model_fields_ids" context="{'model_tech_name_only': 1}" />
-                      <field name="domain"/>
-                      <field name="records_count"/>
-                    </tree>
-                  </field>
-                  <footer>
-                    <button name="download_compilation" string="Burn and download" type="object" class="btn-primary"/>
-                    <div name="share">
-                      <p>or share download link (right click on it and hit 'Copy link address'):<br />
-                      <field name="download_url" readonly="1" widget="url" /></p>
-                    </div>
-                  </footer>
-                </page>
-                <page name="advanced" string="Advanced">
-                  <group>
-                    <field name="template_path"/>
-                    <field name="disc_path"/>
-                  </group>
-                </page>
-              </notebook>
-            </div>
-            <div class="col-md-4 col-xs-12">
+          <h1>Compilation setup</h1>
+          <notebook>
+            <page name="main" string="Main">
+              <group>
+                <field name="genre_id"/>
+                <field name="name"/>
+                <field name="data_mode"/>
+              </group>
+              <separator string="Exportable songs" />
+              <field name="song_ids" context="{'model_tech_name_only': 1, 'default_compilation_id': active_id}">
+                <tree>
+                  <field name="sequence" widget="handle" />
+                  <field name="song_type" />
+                  <field name="model_id" />
+                  <field name="domain"/>
+                  <field name="records_count"/>
+                  <field name="depends_on_ids"/>
+                </tree>
+              </field>
+              <footer>
+                <button name="download_compilation" string="Burn and download" type="object" class="btn-primary"/>
+                <div name="share">
+                  <p>or share download link (right click on it and hit 'Copy link address'):<br />
+                  <field name="download_url" readonly="1" widget="url" /></p>
+                </div>
+              </footer>
+            </page>
+            <page name="advanced" string="Advanced">
+              <group>
+                <field name="template_path"/>
+                <field name="disc_path"/>
+              </group>
+            </page>
+            <page name="help" string="Help">
               <div class="alert alert-info" role="alert">
                 <p>A compilation defines a set of records to be exported to setup songs.</p>
                 <h3>Usage</h3>
@@ -77,8 +73,8 @@
                   </li>
                 </ol>
               </div>
-            </div>
-          </div>
+            </page>
+          </notebook>
         </sheet>
       </form>
     </field>
