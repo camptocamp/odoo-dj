@@ -25,30 +25,32 @@
                 <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
                 <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
               </group>
-              <separator string="Domain configuration" />
-              <label string="Depends on" />
-              <p class="help-block">You can select an existing song to be used as master to collect records.
-              For instance: you wan to export partners from exported `procurement.rule`.
-              Solution: select the procurement rule song and the field "Partner address".
-              The domain will be automatically updated with a filter on existing partner address ids.
-              </p>
-              <field name="depends_on_ids" >
-                <tree editable="bottom">
-                  <field name="master_song_id" options="{'no_create': True}" context="{'relation_model': parent.model_name}" />
-                  <field name="master_song_model" />
-                  <field name="model_field_id" options="{'no_create': True}"/>
-                </tree>
-              </field>
-              <label string="Domain" />
-              <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
-              <br />
-              <label string="Python code" />
-              <p class="help-block">You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
-                It has <strong>env</strong> available and needs to return record set. <br />
-                For instance to get all object related to an other model you can do: <br />
-                <pre>env['model'].search([]).field_id</pre>
-              </p>
-              <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
+              <div name="domain_conf" attrs="{'invisible': [('has_records', '=', False)]}">
+                <separator string="Domain configuration" />
+                <label string="Depends on" />
+                <p class="help-block">You can select an existing song to be used as master to collect records.
+                For instance: you wan to export partners from exported `procurement.rule`.
+                Solution: select the procurement rule song and the field "Partner address".
+                The domain will be automatically updated with a filter on existing partner address ids.
+                </p>
+                <field name="depends_on_ids" >
+                  <tree editable="bottom">
+                    <field name="master_song_id" options="{'no_create': True}" context="{'relation_model': parent.model_name}" />
+                    <field name="master_song_model" />
+                    <field name="model_field_id" options="{'no_create': True}"/>
+                  </tree>
+                </field>
+                <label string="Domain" />
+                <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+                <br />
+                <label string="Python code" />
+                <p class="help-block">You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
+                  It has <strong>env</strong> available and needs to return record set. <br />
+                  For instance to get all object related to an other model you can do: <br />
+                  <pre>env['model'].search([]).field_id</pre>
+                </p>
+                <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
+              </div>
               <footer>
                 <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
               </footer>
