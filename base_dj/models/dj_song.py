@@ -5,125 +5,12 @@
 from odoo import models, fields, api, exceptions, _
 from odoo.osv import expression
 from odoo.tools.safe_eval import safe_eval, test_python_expr
-
-
-SPECIAL_FIELDS = [
-    'display_name',
-    '__last_update',
-    'parent_left',
-    'parent_right',
-    # TODO: retrieve from inherited schema
-    'message_ids',
-    'message_follower_ids',
-    'message_follower',
-    'message_last_post',
-    'message_unread',
-    'message_unread_counter',
-    'message_needaction_counter',
-    'website_message_ids',
-] + models.MAGIC_COLUMNS
-
-ADDONS_BLACKLIST = (
-    # useless to track these modules amongst installed addons
-    # TODO: anything else to ignore?
-    'base',
-    'base_action_rule',
-    'base_import',
-    'board',
-    'bus',
-    'calendar',
-    'grid',
-    'maintenance',
-    'report',
-    'resource',
-    'web',
-    'web_calendar',
-    'web_editor',
-    'web_enterprise',
-    'web_gantt',
-    'web_kanban',
-    'web_kanban_gauge',
-    'web_mobile',
-    'web_planner',
-    'web_settings_dashboard',
-    'web_tour',
+from ..utils import csv_from_data
+from ..config import (
+    SPECIAL_FIELDS,
+    SONG_TYPES,
+    DEFAULT_PYTHON_CODE,
 )
-ADDONS_NAME_DOMAIN = '("name", "not in", (%s))' % \
-    ','.join(["'%s'" % x for x in ADDONS_BLACKLIST])
-
-# TODO: move this to independent records
-# then we can filter particular song types by genre
-SONG_TYPES = {
-    'settings': {
-        'name': _('Config settings'),
-        'prefix': '',
-        'sequence': 0,
-        'defaults': {
-            'only_config': True,
-            'template_path': 'base_dj:discs/song_settings.tmpl',
-            'has_records': False,
-        },
-    },
-    'load_csv': {
-        'name': _('Load CSV'),
-        'prefix': 'load_',
-        'sequence': 10,
-        'defaults': {
-            'only_config': False,
-            'template_path': 'base_dj:discs/song.tmpl',
-        },
-    },
-    'load_csv_defer_parent': {
-        'name': _('Load CSV defer parent computation'),
-        'prefix': 'load_',
-        'sequence': 20,
-        'defaults': {
-            'only_config': False,
-            'template_path': 'base_dj:discs/song_defer_parent.tmpl',
-        }
-    },
-    # TODO
-    # 'load_csv_heavy': {
-    #     'only_config': False,
-    #     'template_path': 'base_dj:discs/song_defer_parent.tmpl',
-    # },
-    # switch automatically to `load_csv_heavy
-    # when this amount of records is reached
-    # HEAVY_IMPORT_THRESHOLD = 1000
-    'generate_xmlids': {
-        'name': _('Generate xmlids (for existing records)'),
-        'prefix': 'add_xmlid_to_existing_',
-        'sequence': 30,
-        'defaults': {
-            'only_config': True,
-            'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
-            'has_records': False,
-        },
-    },
-    'scratch_installed_addons': {
-        'name': _('List installed addons'),
-        'prefix': '',
-        'sequence': 40,
-        'defaults': {
-            'only_config': True,
-            'template_path': 'base_dj:discs/song_addons.tmpl',
-            'model_id': 'xmlid:base.model_ir_module_module',
-            'domain': '[("state", "=", "installed"), %s]' % ADDONS_NAME_DOMAIN,
-            'has_records': True,
-        },
-    },
-}
-
-DEFAULT_PYTHON_CODE = """# Available variable:
-#  - env: Odoo Environement
-# You have to return a recordset by assigning
-# variable recs.
-# recs = env[model].search([])
-"""
-# TODO
-# switch automatically to `load_csv_heavy
-# when this amount of records is reached
-# HEAVY_IMPORT_THRESHOLD = 1000
 
 
 class Song(models.Model):
@@ -302,9 +189,11 @@ class Song(models.Model):
 
     @api.model
     def eval_python_code(self):
-        """ Get record sets from python code for instance :
+        """Get record sets from python code for instance.
 
-        result = env['account.journal'].search([]).sequence_id
+        Example:
+
+            result = env['account.journal'].search([]).sequence_id
         """
         eval_context = {'env': self.env}
         safe_eval(self.python_code.strip(), eval_context,
@@ -326,44 +215,6 @@ class Song(models.Model):
                 % (self.model_id.model, recs._name)
             )
         return recs
-
-    @api.model
-    def csv_from_data(self, fields, rows):
-        """Copied from std odoo export in controller."""
-        fp = StringIO()
-        writer = csv.writer(fp, quoting=csv.QUOTE_ALL)
-
-        writer.writerow([name.encode('utf-8') for name in fields])
-
-        for data in rows:
-            row = []
-            for i, col in enumerate(data):
-                if isinstance(col, unicode):
-                    try:
-                        col = col.encode('utf-8')
-                    except UnicodeError:
-                        pass
-                if col is False:
-                    col = None
-
-                # ---- START CHANGE ----
-                # Here we remove this feature as csv with negative values
-                # are unimportable with an additional quote
-                # ----------------------
-
-                # # Spreadsheet apps
-                # # tend to detect formulas on leading =, + and -
-                # if type(col) is str and col.startswith(('=', '-', '+')):
-                #     col = "'" + col
-                # ----- END CHANGE -----
-
-                row.append(col)
-            writer.writerow(row)
-
-        fp.seek(0)
-        data = fp.read()
-        fp.close()
-        return data
 
     @property
     def song_model(self):
@@ -522,7 +373,7 @@ class Song(models.Model):
         ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),
-            self.csv_from_data(field_names, export_data)
+            csv_from_data(field_names, export_data)
         )
 
     @api.multi
