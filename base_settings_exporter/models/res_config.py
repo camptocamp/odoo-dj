@@ -67,7 +67,6 @@ class SettingsExporter(models.AbstractModel):
             comment = "Configure {}".format(self.display_name)
         else:
             comment = "{} settings".format(self.display_name)
-        self.display_name
         song = ('@anthem.log\n'
                 'def settings(ctx):\n'
                 '    """ {}"""\n'
