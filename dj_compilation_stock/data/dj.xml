@@ -13,10 +13,6 @@
     <field name="model_id" ref="stock.model_stock_config_settings"/>
     <field name="sequence" eval="10" />
     <field name="song_type">settings</field>
-    <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
-    <field name="only_config" eval="True" />
-    <field name="has_records" eval="False" />
-    <field name="template_path">base_dj:discs/song_settings.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_stock_location_xmlids">
@@ -24,10 +20,6 @@
     <field name="model_id" ref="stock.model_stock_location"/>
     <field name="sequence" eval="20" />
     <field name="song_type">generate_xmlids</field>
-    <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
-    <field name="only_config" eval="True" />
-    <field name="has_records" eval="False" />
-    <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_stock_location">
@@ -45,10 +37,6 @@
     <field name="model_id" ref="base.model_ir_sequence"/>
     <field name="sequence" eval="40" />
     <field name="song_type">generate_xmlids</field>
-    <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
-    <field name="only_config" eval="True" />
-    <field name="has_records" eval="False" />
-    <field name="template_path">base_dj:discs/song_add_xmlids.tmpl</field>
   </record>
 
   <record model="dj.song" id="dj_song_picking_type">

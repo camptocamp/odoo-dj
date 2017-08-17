@@ -15,7 +15,10 @@ from ..config import (
 
 class Song(models.Model):
     _name = 'dj.song'
-    _inherit = 'dj.template.mixin'
+    _inherit = [
+        'dj.template.mixin',
+        'onchange.player.mixin',
+    ]
     _order = 'sequence ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
 
@@ -122,9 +125,6 @@ class Song(models.Model):
                     if v.startswith('xmlid:'):
                         v = self.env.ref(v[6:]).id
                 self[k] = v
-            if 'model_id' not in defaults:
-                # reset model
-                self.model_id = False
 
     @api.onchange('depends_on_ids')
     def onchange_depends_on_ids(self):
@@ -281,7 +281,13 @@ class Song(models.Model):
         if vals.get('field_list') and vals.get('model_id'):
             fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
-        return super(Song, self).create(vals)
+        item = super(Song, self).create(vals)
+        if self.env.context.get('install_mode'):
+            # if we are installing/updating the module
+            # let's play all onchanges to make sure
+            # defaults, filters, etc are set properly on each song
+            item.play_onchanges()
+        return item
 
     def _get_fields(self, model_id, field_list):
         """ helper to set fields from a list """
