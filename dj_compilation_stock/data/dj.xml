@@ -11,6 +11,7 @@
   <record model="dj.song" id="dj_song_stock_config_settings">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_config_settings"/>
+    <field name="sequence" eval="10" />
     <field name="song_type">settings</field>
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
     <field name="only_config" eval="True" />
@@ -21,6 +22,7 @@
   <record model="dj.song" id="dj_song_stock_location_xmlids">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location"/>
+    <field name="sequence" eval="20" />
     <field name="song_type">generate_xmlids</field>
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
     <field name="only_config" eval="True" />
@@ -31,6 +33,7 @@
   <record model="dj.song" id="dj_song_stock_location">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location"/>
+    <field name="sequence" eval="30" />
     <field name="song_type">load_csv_defer_parent</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
       ref('stock.field_stock_location_complete_name'),
@@ -40,6 +43,7 @@
   <record model="dj.song" id="dj_song_ir_sequence">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
+    <field name="sequence" eval="40" />
     <field name="song_type">generate_xmlids</field>
     <!-- onchange to load defaults for song type does not work w/ xmlid creation :( -->
     <field name="only_config" eval="True" />
@@ -50,11 +54,13 @@
   <record model="dj.song" id="dj_song_picking_type">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_picking_type"/>
+    <field name="sequence" eval="50" />
   </record>
 
   <record model="dj.song" id="dj_song_stock_location_route">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_stock_location_route"/>
+    <field name="sequence" eval="60" />
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
       ref('stock.field_stock_location_route_pull_ids'),
       ref('stock.field_stock_location_route_product_ids')])]"/>
@@ -63,7 +69,17 @@
   <record model="dj.song" id="dj_song_procurement_rule">
     <field name="compilation_id" ref="dj_stock_fresh"/>
     <field name="model_id" ref="stock.model_procurement_rule"/>
-    <field name="model_fields_blacklist_ids" eval="[(6,0,[
-      ref('stock.field_procurement_rule_partner_address_id')])]"/>
+    <field name="sequence" eval="70" />
   </record>
+
+  <record model="dj.song" id="dj_song_proc_rule_partner_address">
+    <field name="compilation_id" ref="dj_stock_fresh"/>
+    <field name="model_id" ref="base.model_res_partner"/>
+    <field name="depends_on_ids" eval="[
+      (0, 0, {'master_song_id': ref('dj_compilation_stock.dj_song_procurement_rule'),
+              'model_field_id': ref('stock.field_procurement_rule_partner_address_id')}),
+    ]" />
+    <field name="sequence" eval="65" />
+  </record>
+
 </odoo>

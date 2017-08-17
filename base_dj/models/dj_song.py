@@ -185,7 +185,7 @@ class Song(models.Model):
 
     @api.model
     def eval_domain(self):
-        return safe_eval(self.domain) or []
+        return safe_eval(self.domain) if self.domain else []
 
     @api.model
     def eval_python_code(self):
@@ -222,7 +222,7 @@ class Song(models.Model):
         # it tries to add this and fail because
         # model is empty. This return nothing instead.
         if not self.model_id:
-            return
+            return None
         return self.env.get(self.model_id.model)
 
     def real_csv_path(self):
@@ -351,6 +351,8 @@ class Song(models.Model):
         return xmlid_fields_map
 
     def _get_exportable_records(self, order=None):
+        if self.song_model is None:
+            return []
         recs = self.song_model.search(self.eval_domain(), order=order)
         if self.python_code:
             recs2 = self.eval_python_code()
