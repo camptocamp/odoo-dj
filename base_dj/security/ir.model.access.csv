@@ -1,9 +1,11 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_dj_compilation_manager,base_dj.access_dj_compilation manager,model_dj_compilation,base.group_system,1,1,1,1
 access_dj_song_manager,base_dj.access_dj_song manager,model_dj_song,base.group_system,1,1,1,1
+access_dj_song_dependency_manager,base_dj.access_dj_song_dependency manager,model_dj_song_dependency,base.group_system,1,1,1,1
 access_dj_genre_manager,base_dj.access_dj_genre manager,model_dj_genre,base.group_system,1,1,1,1
 access_dj_equalizer_xmlid_manager,base_dj.access_dj_equalizer_xmlid manager,model_dj_equalizer_xmlid,base.group_system,1,1,1,1
 access_dj_compilation,base_dj.access_dj_compilation,model_dj_compilation,,0,0,0,0
 access_dj_song,base_dj.access_dj_song,model_dj_song,,0,0,0,0
+access_dj_song_dependency,base_dj.access_dj_song_dependency,model_dj_song_dependency,,0,0,0,0
 access_dj_genre,base_dj.access_dj_genre,model_dj_genre,,0,0,0,0
 access_dj_equalizer_xmlid,base_dj.access_dj_equalizer_xmlid,model_dj_equalizer_xmlid,,0,0,0,0

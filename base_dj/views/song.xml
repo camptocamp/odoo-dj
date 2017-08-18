@@ -6,72 +6,94 @@
     <field name="model">dj.song</field>
     <field name="arch" type="xml">
       <form string="Configure song">
+        <field name="compilation_id" invisible="1" />
         <sheet>
-          <div class="col-md-8 col-xs-12">
-            <notebook>
-              <page name="main" string="Main">
-                <group name="main">
+          <notebook>
+            <page name="main" string="Main">
+              <group name="main" col="4">
+                <group colspan="2">
                   <field name="song_type" />
                   <field name="model_id" context="{'model_tech_name_only': 1}" />
                   <field name="model_name" invisible="1" />
+                </group>
+                <group colspan="2">
                   <field name="only_config" />
                   <field name="has_records" readonly="1" />
                 </group>
-                <group name="config" attrs="{'invisible': [('has_records', '=', False)]}">
-                  <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
-                  <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
-                  <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
-                  <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
-                </group>
-                <footer>
-                  <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
-                </footer>
-              </page>
-              <page name="advanced" string="Advanced">
-                <group>
-                  <field name="xmlid_fields"/>
-                  <field name="template_path"/>
-                  <field name="csv_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
-                  <field name="model_context"/>
-                </group>
-              </page>
-            </notebook>
-          </div>
-          <div class="col-md-4 col-xs-12">
-            <div class="alert alert-info" role="alert">
-              <p>A song defines a set of records to be exported.</p>
-              <h3>Usage</h3>
-              <ol>
-                <li>
-                  Select the <strong>model</strong> you want to export.
-                </li>
-                <li>
-                  Select the <strong>fields</strong> you want to export.<br />
-                  If no fields are specified, all fields will be exported (except internal ones like `create_date`).
-                </li>
-                <li>
-                  If you want all fields you might want to exclude some of them via <strong>fields blacklist</strong>.<br />
-                  For instance: when you export sequence you might want to drop `next number` to start from zero.
-                </li>
-                <li>
-                  Then use <strong>domain</strong> to filter records to export.<br />
-                  Thanks to new widget you can filter on all model fields as you do in standard searches.<br />
-                  You can even have a preview of which records will be exported by clicking on `NR record(s)` link.
-                </li>
-                <li>
-                  You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
+              </group>
+              <group name="fields_config" attrs="{'invisible': [('has_records', '=', False)]}">
+                <field name="model_fields_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+                <field name="model_fields_blacklist_ids" widget="many2many_tags" context="{'model_tech_name_only': 1}"/>
+              </group>
+              <div name="domain_conf" attrs="{'invisible': [('has_records', '=', False)]}">
+                <separator string="Domain configuration" />
+                <label string="Depends on" />
+                <p class="help-block">You can select an existing song to be used as master to collect records.
+                For instance: you wan to export partners from exported `procurement.rule`.
+                Solution: select the procurement rule song and the field "Partner address".
+                The domain will be automatically updated with a filter on existing partner address ids.
+                </p>
+                <field name="depends_on_ids" >
+                  <tree editable="bottom">
+                    <field name="master_song_id" options="{'no_create': True}" context="{'relation_model': parent.model_name}" />
+                    <field name="master_song_model" />
+                    <field name="model_field_id" options="{'no_create': True}"/>
+                  </tree>
+                </field>
+                <label string="Domain" />
+                <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+                <br />
+                <label string="Python code" />
+                <p class="help-block">You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
                   It has <strong>env</strong> available and needs to return record set. <br />
                   For instance to get all object related to an other model you can do: <br />
-                  env['model'].search([]).field_id
-                </li>
-                <li>
-                  Once you have configured and saved it, you might want to check the resulting CSV.<br />
-                  If you click on <strong>Preview CSV</strong> button you'll get the CSV file
-                  without having to download the full compilation.
-                </li>
-              </ol>
-            </div>
-          </div>
+                  <pre>env['model'].search([]).field_id</pre>
+                </p>
+                <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
+              </div>
+              <footer>
+                <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
+              </footer>
+            </page>
+            <page name="advanced" string="Advanced">
+              <group>
+                <field name="xmlid_fields"/>
+                <field name="template_path"/>
+                <field name="csv_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
+                <field name="model_context"/>
+              </group>
+            </page>
+            <page name="help" string="Help">
+              <div class="alert alert-info" role="alert">
+                  <p>A song defines a set of records to be exported.</p>
+                  <h3>Usage</h3>
+                  <ol>
+                    <li>
+                      Select the <strong>model</strong> you want to export.
+                    </li>
+                    <li>
+                      Select the <strong>fields</strong> you want to export.<br />
+                      If no fields are specified, all fields will be exported (except internal ones like `create_date`).
+                    </li>
+                    <li>
+                      If you want all fields you might want to exclude some of them via <strong>fields blacklist</strong>.<br />
+                      For instance: when you export sequence you might want to drop `next number` to start from zero.
+                    </li>
+                    <li>
+                      Then use <strong>domain</strong> to filter records to export.<br />
+                      Thanks to new widget you can filter on all model fields as you do in standard searches.<br />
+                      You can even have a preview of which records will be exported by clicking on `NR record(s)` link.
+                    </li>
+                    <li>
+                      Once you have configured and saved it, you might want to check the resulting CSV.<br />
+                      If you click on <strong>Preview CSV</strong> button you'll get the CSV file
+                      without having to download the full compilation.
+                    </li>
+                  </ol>
+                </div>
+            </page>
+          </notebook>
+
         </sheet>
       </form>
     </field>

@@ -2,135 +2,23 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-import csv
-from cStringIO import StringIO
-
 from odoo import models, fields, api, exceptions, _
+from odoo.osv import expression
 from odoo.tools.safe_eval import safe_eval, test_python_expr
-
-
-SPECIAL_FIELDS = [
-    'display_name',
-    '__last_update',
-    'parent_left',
-    'parent_right',
-    # TODO: retrieve from inherited schema
-    'message_ids',
-    'message_follower_ids',
-    'message_follower',
-    'message_last_post',
-    'message_unread',
-    'message_unread_counter',
-    'message_needaction_counter',
-    'website_message_ids',
-] + models.MAGIC_COLUMNS
-
-ADDONS_BLACKLIST = (
-    # useless to track these modules amongst installed addons
-    # TODO: anything else to ignore?
-    'base',
-    'base_action_rule',
-    'base_import',
-    'board',
-    'bus',
-    'calendar',
-    'grid',
-    'maintenance',
-    'report',
-    'resource',
-    'web',
-    'web_calendar',
-    'web_editor',
-    'web_enterprise',
-    'web_gantt',
-    'web_kanban',
-    'web_kanban_gauge',
-    'web_mobile',
-    'web_planner',
-    'web_settings_dashboard',
-    'web_tour',
+from ..utils import csv_from_data
+from ..config import (
+    SPECIAL_FIELDS,
+    SONG_TYPES,
+    DEFAULT_PYTHON_CODE,
 )
-ADDONS_NAME_DOMAIN = '("name", "not in", (%s))' % \
-    ','.join(["'%s'" % x for x in ADDONS_BLACKLIST])
-
-# TODO: move this to independent records
-# then we can filter particular song types by genre
-SONG_TYPES = {
-    'settings': {
-        'name': _('Config settings'),
-        'prefix': '',
-        'sequence': 0,
-        'defaults': {
-            'only_config': True,
-            'template_path': 'base_dj:discs/song_settings.tmpl',
-            'has_records': False,
-        },
-    },
-    'load_csv': {
-        'name': _('Load CSV'),
-        'prefix': 'load_',
-        'sequence': 10,
-        'defaults': {
-            'only_config': False,
-            'template_path': 'base_dj:discs/song.tmpl',
-        },
-    },
-    'load_csv_defer_parent': {
-        'name': _('Load CSV defer parent computation'),
-        'prefix': 'load_',
-        'sequence': 20,
-        'defaults': {
-            'only_config': False,
-            'template_path': 'base_dj:discs/song_defer_parent.tmpl',
-        }
-    },
-    # TODO
-    # 'load_csv_heavy': {
-    #     'only_config': False,
-    #     'template_path': 'base_dj:discs/song_defer_parent.tmpl',
-    # },
-    # switch automatically to `load_csv_heavy
-    # when this amount of records is reached
-    # HEAVY_IMPORT_THRESHOLD = 1000
-    'generate_xmlids': {
-        'name': _('Generate xmlids (for existing records)'),
-        'prefix': 'add_xmlid_to_existing_',
-        'sequence': 30,
-        'defaults': {
-            'only_config': True,
-            'template_path': 'base_dj:discs/song_add_xmlids.tmpl',
-            'has_records': False,
-        },
-    },
-    'scratch_installed_addons': {
-        'name': _('List installed addons'),
-        'prefix': '',
-        'sequence': 40,
-        'defaults': {
-            'only_config': True,
-            'template_path': 'base_dj:discs/song_addons.tmpl',
-            'model_id': 'xmlid:base.model_ir_module_module',
-            'domain': '[("state", "=", "installed"), %s]' % ADDONS_NAME_DOMAIN,
-            'has_records': True,
-        },
-    },
-}
-
-DEFAULT_PYTHON_CODE = """# Available variable:
-#  - env: Odoo Environement
-# You have to return a recordset by assigning
-# variable recs.
-# recs = env[model].search([])
-"""
-# TODO
-# switch automatically to `load_csv_heavy
-# when this amount of records is reached
-# HEAVY_IMPORT_THRESHOLD = 1000
 
 
 class Song(models.Model):
     _name = 'dj.song'
-    _inherit = 'dj.template.mixin'
+    _inherit = [
+        'dj.template.mixin',
+        'onchange.player.mixin',
+    ]
     _order = 'sequence ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
 
@@ -205,6 +93,11 @@ class Song(models.Model):
         compute='_compute_records_count',
         readonly=True
     )
+    depends_on_ids = fields.One2many(
+        string='Depends on',
+        comodel_name='dj.song.dependency',
+        inverse_name='song_id',
+    )
 
     @api.constrains('python_code')
     def _check_python_code(self):
@@ -232,9 +125,27 @@ class Song(models.Model):
                     if v.startswith('xmlid:'):
                         v = self.env.ref(v[6:]).id
                 self[k] = v
-            if 'model_id' not in defaults:
-                # reset model
-                self.model_id = False
+
+    @api.onchange('depends_on_ids')
+    def onchange_depends_on_ids(self):
+        """Collect record IDS from master songs and update domain."""
+        ids = set([])
+        for dep in self.depends_on_ids:
+            ids.update(dep._get_dependant_record_ids())
+        if not ids:
+            return
+        # NOTE: we can end up w/ duplicated domain leafs
+        # as there's no easy way (or odoo util AFAIK)
+        # to merge existing domains.
+        # Eg: ['&', ('id', 'in', [125]), ('id', 'in', [125])]
+        # So, here we just put existing ones in AND
+        # as is not going to hurt in most of the use cases.
+        # Still, you can then edit the final domain
+        # via the domain widget.
+        domain = expression.AND([
+            self.eval_domain(), [('id', 'in', list(ids))]
+        ])
+        self.domain = str(domain)
 
     @api.onchange('records_count')
     def onchange_records_count(self):
@@ -274,13 +185,15 @@ class Song(models.Model):
 
     @api.model
     def eval_domain(self):
-        return safe_eval(self.domain) or []
+        return safe_eval(self.domain) if self.domain else []
 
     @api.model
     def eval_python_code(self):
-        """ Get record sets from python code for instance :
+        """Get record sets from python code for instance.
 
-        result = env['account.journal'].search([]).sequence_id
+        Example:
+
+            result = env['account.journal'].search([]).sequence_id
         """
         eval_context = {'env': self.env}
         safe_eval(self.python_code.strip(), eval_context,
@@ -303,51 +216,13 @@ class Song(models.Model):
             )
         return recs
 
-    @api.model
-    def csv_from_data(self, fields, rows):
-        """Copied from std odoo export in controller."""
-        fp = StringIO()
-        writer = csv.writer(fp, quoting=csv.QUOTE_ALL)
-
-        writer.writerow([name.encode('utf-8') for name in fields])
-
-        for data in rows:
-            row = []
-            for i, col in enumerate(data):
-                if isinstance(col, unicode):
-                    try:
-                        col = col.encode('utf-8')
-                    except UnicodeError:
-                        pass
-                if col is False:
-                    col = None
-
-                # ---- START CHANGE ----
-                # Here we remove this feature as csv with negative values
-                # are unimportable with an additional quote
-                # ----------------------
-
-                # # Spreadsheet apps
-                # # tend to detect formulas on leading =, + and -
-                # if type(col) is str and col.startswith(('=', '-', '+')):
-                #     col = "'" + col
-                # ----- END CHANGE -----
-
-                row.append(col)
-            writer.writerow(row)
-
-        fp.seek(0)
-        data = fp.read()
-        fp.close()
-        return data
-
     @property
     def song_model(self):
         # When _register_hook of module queue_job parse models
         # it tries to add this and fail because
         # model is empty. This return nothing instead.
         if not self.model_id:
-            return
+            return None
         return self.env.get(self.model_id.model)
 
     def real_csv_path(self):
@@ -383,12 +258,22 @@ class Song(models.Model):
         """Retrieve scratch handler and play it."""
         return getattr(self, self.song_type)()
 
+    def _get_dependant_songs(self):
+        self.ensure_one()
+        return self.env['dj.song.dependency'].search([
+            ('master_song_id', '=', self.id)
+        ]).mapped('song_id')
+
     @api.multi
     def write(self, vals):
         if vals.get('field_list'):
             model_id = vals.get('model_id') or self.model_id.id
             fields = self._get_fields(model_id, vals.pop('field_list'))
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        for item in self:
+            # update dependant songs
+            for dep in self._get_dependant_songs():
+                dep.onchange_depends_on_ids()
         return super(Song, self).write(vals)
 
     @api.model
@@ -396,7 +281,13 @@ class Song(models.Model):
         if vals.get('field_list') and vals.get('model_id'):
             fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
-        return super(Song, self).create(vals)
+        item = super(Song, self).create(vals)
+        if self.env.context.get('install_mode'):
+            # if we are installing/updating the module
+            # let's play all onchanges to make sure
+            # defaults, filters, etc are set properly on each song
+            item.play_onchanges()
+        return item
 
     def _get_fields(self, model_id, field_list):
         """ helper to set fields from a list """
@@ -476,6 +367,8 @@ class Song(models.Model):
         return xmlid_fields_map
 
     def _get_exportable_records(self, order=None):
+        if self.song_model is None:
+            return []
         recs = self.song_model.search(self.eval_domain(), order=order)
         if self.python_code:
             recs2 = self.eval_python_code()
@@ -498,7 +391,7 @@ class Song(models.Model):
         ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),
-            self.csv_from_data(field_names, export_data)
+            csv_from_data(field_names, export_data)
         )
 
     @api.multi
@@ -558,3 +451,53 @@ class Song(models.Model):
             'song': self,
             'addons': self._get_exportable_records(order='name asc'),
         })
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        args = args or []
+        domain = []
+        if name:
+            domain = [('model_id.model', 'ilike', u'%{}%'.format(name))]
+        items = self.search(domain + args, limit=limit)
+        return items.name_get()
+
+
+class SongDependency(models.Model):
+    _name = 'dj.song.dependency'
+    _rec_name = 'song_id'
+
+    song_id = fields.Many2one(
+        comodel_name='dj.song',
+        string='Song',
+    )
+    master_song_id = fields.Many2one(
+        comodel_name='dj.song',
+        string='Master song',
+        required=True,
+    )
+    master_song_model = fields.Char(
+        related='master_song_id.model_name',
+        readonly=True
+    )
+    model_field_id = fields.Many2one(
+        comodel_name='ir.model.fields',
+        string='Relation field',
+        required=True,
+    )
+
+    @api.onchange('master_song_id')
+    def onchange_master_song_id(self):
+        if self.master_song_id:
+            return {'domain': {
+                'model_field_id': [
+                    ('store', '=', True),
+                    ('compute', '=', False),
+                    ('model_id', '=', self.master_song_id.model_id.id),
+                    ('relation', '=', self.env.context['relation_model']),
+                ]
+            }}
+
+    def _get_dependant_record_ids(self):
+        master_records = self.master_song_id._get_exportable_records()
+        records = master_records.mapped(self.model_field_id.name)
+        return records.ids
