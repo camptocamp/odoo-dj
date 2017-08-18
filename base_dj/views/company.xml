@@ -11,6 +11,7 @@
 
   <record id="view_company_aka_tree" model="ir.ui.view">
     <field name="model">res.company</field>
+    <field name="priority" eval="20"/>
     <field name="arch" type="xml">
       <tree editable="bottom">
         <field name="name"/>
