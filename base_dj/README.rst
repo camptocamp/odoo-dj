@@ -1,3 +1,4 @@
-Use discs and records to create songs from scratch.
+Base DJ console
+===============
 
-Discs are templates for songs.
+Use the DJ console to create compilations w/ your favourite anthem songs.
