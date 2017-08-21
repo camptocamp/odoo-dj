@@ -12,12 +12,14 @@
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="account.model_account_config_settings"/>
     <field name="song_type">settings</field>
+    <field name="sequence">100</field>
   </record>
 
   <record model="dj.song" id="dj_song_ir_sequence_xmlids">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
     <field name="song_type">generate_xmlids</field>
+    <field name="sequence">30</field>
   </record>
 
   <!-- take all active currency -->
@@ -26,18 +28,21 @@
     <field name="model_id" ref="base.model_res_currency"/>
     <field name="domain">[]</field>
     <field name="field_list">active</field>
+    <field name="sequence">10</field>
   </record>
 
   <record model="dj.song" id="dj_song_res_bank">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="base.model_res_bank"/>
     <field name="domain">[]</field>
+    <field name="sequence">20</field>
   </record>
 
   <record model="dj.song" id="dj_song_account_type">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="account.model_account_account_type"/>
     <field name="domain">[]</field>
+    <field name="sequence">40</field>
   </record>
 
   <record model="dj.song" id="dj_song_account">
@@ -45,6 +50,7 @@
     <field name="model_id" ref="account.model_account_account"/>
     <field name="domain">[]</field>
     <field name="field_list">code,name,user_type_id,reconcile,currency_id</field>
+    <field name="sequence">50</field>
   </record>
 
   <record model="dj.song" id="dj_song_account_tax">
@@ -52,6 +58,7 @@
     <field name="model_id" ref="account.model_account_tax"/>
     <field name="domain">[]</field>
     <field name="field_list">sequence,type_tax_use,name,description,amount,amount_type,price_include,account_id,refund_account_id,children_tax_ids</field>
+    <field name="sequence">80</field>
   </record>
 
   <record model="dj.song" id="dj_song_ir_property">
@@ -59,6 +66,7 @@
     <field name="model_id" ref="base.model_ir_property"/>
     <field name="csv_path">data/{data_mode}/generated/{model}-account.csv</field>
     <field name="domain">[('name', 'in', ('property_account_receivable_id','property_account_payable_id','property_account_expense_categ_id','property_account_income_categ_id','property_stock_account_output','property_stock_account_input','property_stock_account_output_categ_id','property_stock_account_input_categ_id'))]</field>
+    <field name="sequence">90</field>
   </record>
 
   <!-- sequences for invoices and journals -->
@@ -68,18 +76,21 @@
     <field name="csv_path">data/{data_mode}/generated/{model}-account.csv</field>
     <field name="domain">[('name', 'in', ['Customer Invoices', 'Customer Invoices: Refund', 'Vendor Bills', 'Vendor Bills: Refund'])]</field>
     <field name="python_code">recs = env['account.journal'].search([]).mapped('sequence_id')</field>
+    <field name="sequence">60</field>
   </record>
 
   <record model="dj.song" id="dj_song_account_journal">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="account.model_account_journal"/>
     <field name="domain">[]</field>
+    <field name="sequence">70</field>
   </record>
 
   <record model="dj.song" id="dj_song_account_analytic">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="analytic.model_account_analytic_account"/>
     <field name="domain">[]</field>
+    <field name="sequence">80</field>
   </record>
 
 </odoo>
