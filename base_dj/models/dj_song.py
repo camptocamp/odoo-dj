@@ -178,7 +178,7 @@ class Song(models.Model):
             )
 
     @api.multi
-    @api.depends('model_id.model', 'domain')
+    @api.depends('model_id.model', 'domain', 'python_code')
     def _compute_records_count(self):
         for item in self:
             item.records_count = len(item._get_exportable_records())
