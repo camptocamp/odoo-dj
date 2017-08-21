@@ -76,9 +76,16 @@
     <field name="domain">[]</field>
   </record>
 
+  <record model="dj.song" id="dj_song_account_analytic">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="analytic.model_account_analytic_account"/>
+    <field name="domain">[]</field>
+  </record>
 
-  <!-- account.analytic -->
-  <!-- account.payment.mode -->
-  <!-- account.financial.html.report -->
-  <!-- account.financial.html.report.line -->
+  <record model="dj.song" id="dj_song_account_payment_mode">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account_payment_mode.model_account_payment_mode"/>
+    <field name="domain">[]</field>
+  </record>
+
 </odoo>
