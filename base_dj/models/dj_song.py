@@ -423,7 +423,7 @@ class Song(models.Model):
             if val and finfo['type'] == 'many2one':
                 record = self.env[finfo['relation']].browse(val)
                 ext_id = record._dj_export_xmlid()
-                val = self.anthem_xmlid_value(ext_id.complete_name)
+                val = self.anthem_xmlid_value(ext_id)
             # knowing which field does what is always difficult
             # if you don't check settings schema definition.
             # Let's add some helpful info.
