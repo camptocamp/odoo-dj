@@ -7,3 +7,4 @@ from . import dj_compilation
 from . import dj_song
 from . import company
 from . import ir_model
+from . import ir_property

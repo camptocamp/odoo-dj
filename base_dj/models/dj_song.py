@@ -388,6 +388,7 @@ class Song(models.Model):
             dj_export=True,
             dj_multicompany=self._is_multicompany_env(),
             dj_xmlid_fields_map=xmlid_fields_map,
+            xmlid_value_reference=True,
         ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),
