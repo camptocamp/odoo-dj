@@ -85,6 +85,7 @@
     <field name="model_id" ref="account.model_account_journal"/>
     <field name="domain">[]</field>
     <field name="sequence">70</field>
+    <field name="field_list">bank_acc_number,bank_id,name,code,type,display_on_footer,show_on_dashboard,default_credit_account_id,default_debit_account_id,sequence_id,currency_id,company_id,inbound_payment_method_ids,outbound_payment_method_ids</field>
   </record>
 
   <record model="dj.song" id="dj_song_account_analytic">
