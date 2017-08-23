@@ -5,7 +5,7 @@
 from odoo import models, fields, api, exceptions, _
 from odoo.osv import expression
 from odoo.tools.safe_eval import safe_eval, test_python_expr
-from ..utils import csv_from_data
+from ..utils import csv_from_data, force_company
 from ..config import (
     SPECIAL_FIELDS,
     SONG_TYPES,
@@ -161,10 +161,11 @@ class Song(models.Model):
     def dj_template_vars(self):
         """Return context variables to render template."""
         self.ensure_one()
-        return {
+        res = {
             'song': self,
             'header_exclude': self.get_csv_field_names_exclude(),
         }
+        return res
 
     @api.multi
     @api.depends('model_id.model', 'song_type')
@@ -411,35 +412,51 @@ class Song(models.Model):
         return '{}::{}'.format(path, self.name)
 
     def dj_get_settings_vals(self):
-        """Prepare values for res.config settings song."""
-        # TODO: handle multicompany
-        values = self.song_model.create({}).read(load='_classic_write')[0]
+        """Prepare of values for res.config settings song.
 
-        res = {}
-        fields_info = self.song_model.fields_get()
-        for fname, val in values.iteritems():
-            if fname in SPECIAL_FIELDS:
-                continue
-            finfo = fields_info[fname]
-            if val and finfo['type'] == 'many2one':
-                record = self.env[finfo['relation']].browse(val)
-                ext_id = record._dj_export_xmlid()
-                val = self.anthem_xmlid_value(ext_id)
-            # knowing which field does what is always difficult
-            # if you don't check settings schema definition.
-            # Let's add some helpful info.
-            label = finfo['string']
-            if finfo['type'] == 'selection':
-                label += u': {}'.format(dict(finfo['selection'])[val])
-                val = u"'{}'".format(val)
-            elif finfo['type'] == 'text':
-                val = u'"""{}"""'.format(val)
-            elif finfo['type'] in ('date', 'datetime'):
-                val = u"'{}'".format(val)
-            res[fname] = {
-                'val': val,
-                'label': label,
-            }
+        Returns [(song_name, settings_values), ...]
+        """
+
+        global_settings = 'company_id' not in self.song_model
+        kwargs = {'limit': 1} if global_settings else {}
+
+        companies = self.env['res.company'].search([], **kwargs)
+
+        res = []
+        for company in companies:
+            with force_company(self.env, company.id):
+                wizard = self.song_model.create({})
+                values = wizard.read(load='_classic_write')[0]
+            cp_values = {}
+            fields_info = self.song_model.fields_get()
+            for fname, val in values.iteritems():
+                if fname in SPECIAL_FIELDS:
+                    continue
+                finfo = fields_info[fname]
+                if val and finfo['type'] == 'many2one':
+                    record = self.env[finfo['relation']].browse(val)
+                    ext_id = record._dj_export_xmlid()
+                    val = self.anthem_xmlid_value(ext_id)
+                # knowing which field does what is always difficult
+                # if you don't check settings schema definition.
+                # Let's add some helpful info.
+                label = finfo['string']
+                if finfo['type'] == 'selection':
+                    label += u': {}'.format(dict(finfo['selection'])[val])
+                    val = u"'{}'".format(val)
+                elif finfo['type'] == 'text':
+                    val = u'"""{}"""'.format(val)
+                elif finfo['type'] in ('date', 'datetime'):
+                    val = u"'{}'".format(val)
+                cp_values[fname] = {
+                    'val': val,
+                    'label': label,
+                }
+            company_codename = company.aka
+            song_name = self.name
+            if not global_settings and self._is_multicompany_env():
+                song_name += '_{}'.format(company_codename)
+            res.append((song_name, company.name, cp_values))
         return res
 
     def anthem_xmlid_value(self, xmlid):

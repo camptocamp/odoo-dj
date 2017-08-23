@@ -4,6 +4,7 @@
 
 import csv
 from cStringIO import StringIO
+from contextlib import contextmanager
 
 
 def csv_from_data(fields, rows):
@@ -42,3 +43,13 @@ def csv_from_data(fields, rows):
     data = fp.read()
     fp.close()
     return data
+
+
+@contextmanager
+def force_company(env, company_id):
+    user_company = env.user.company_id
+    env.user.update({'company_id': company_id})
+    try:
+        yield
+    finally:
+        env.user.update({'company_id': user_company})
