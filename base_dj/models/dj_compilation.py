@@ -2,14 +2,10 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-import zipfile
-import io
 import os
-import datetime
-import time
 
 from odoo import models, fields, api, exceptions, _
-from odoo.addons.website.models.website import slugify
+from ..utils import create_zipfile, make_title
 
 
 class DJcompilation(models.Model):
@@ -119,39 +115,12 @@ class DJcompilation(models.Model):
         """Burn disc into a zip file."""
         self.ensure_one()
         files = self.get_all_tracks()
-        in_mem_zip = io.BytesIO()
-        with zipfile.ZipFile(in_mem_zip, "w", zipfile.ZIP_DEFLATED) as zf:
-            for filepath, data in files:
-                # File "/usr/lib/python2.7/zipfile.py", line 1247, in writestr
-                # TypeError: 'unicode' does not have the buffer interface
-                if isinstance(data, unicode):
-                    data = data.encode('utf-8')
-                # use info to keep date and set permissions
-                info = zipfile.ZipInfo(
-                    filepath, date_time=time.localtime(time.time()))
-                # set proper permissions
-                info.external_attr = 0644 << 16L
-                zf.writestr(info, data)
-        in_mem_zip.seek(0)
+        zf = create_zipfile(files)
         filename = self.make_album_title()
-        return filename, in_mem_zip.read()
+        return filename, zf.read()
 
     def make_album_title(self):
-        dt = datetime.datetime.now().strftime('%Y%m%d_%H%M')
-        return '{}_{}-{}.zip'.format(
-            slugify(self.name).replace('-', '_'),
-            self.data_mode, dt)
-
-    @api.multi
-    def download_compilation(self):
-        """Download zip file."""
-        self.check_company_codename()
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_url',
-            'target': 'new',
-            'url': self.download_url,
-        }
+        return make_title(self.name, self.data_mode)
 
     def anthem_path(self):
         path = self.disc_full_path().replace('/', '.').replace('.py', '')
