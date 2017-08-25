@@ -8,12 +8,16 @@ from odoo import models, fields, api, exceptions, _
 from ..utils import create_zipfile, make_title
 
 
-class DJcompilation(models.Model):
+class Compilation(models.Model):
     """Create compilations of songs and burn them."""
 
     _name = 'dj.compilation'
-    _inherit = 'dj.template.mixin'
+    _inherit = [
+        'dj.template.mixin',
+        'dj.download.mixin',
+    ]
     _default_dj_template_path = 'base_dj:discs/disc.tmpl'
+    _dj_download_path = '/dj/download/compilation/'
 
     name = fields.Char()
     genre_id = fields.Many2one(
@@ -34,20 +38,18 @@ class DJcompilation(models.Model):
         default='songs/{data_mode}/generated/{genre}.py',
         required=True,
     )
-    download_url = fields.Char(compute='_compute_download_url')
 
     @api.multi
-    @api.depends()
-    def _compute_download_url(self):
-        for item in self:
-            item.download_url = \
-                u'/dj/download/compilation/{}'.format(item.id)
+    def download_it(self):
+        """Download file."""
+        self.check_company_codename()
+        return super(Compilation, self).download_it()
 
     @api.multi
     def dj_template_vars(self):
         """Return context variables to render disc's template."""
         self.ensure_one()
-        values = super(DJcompilation, self).dj_template_vars()
+        values = super(Compilation, self).dj_template_vars()
         values.update({
             # get all songs but scratchable ones
             'songs': self.song_ids.filtered(lambda x: not x.scratchable())

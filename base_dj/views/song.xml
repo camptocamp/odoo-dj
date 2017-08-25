@@ -52,7 +52,7 @@
                 <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
               </div>
               <footer>
-                <button name="download_preview" string="Preview File" type="object" class="btn-primary" />
+                <button name="download_it" string="Preview File" type="object" class="btn-primary" />
               </footer>
             </page>
             <page name="advanced" string="Advanced">
