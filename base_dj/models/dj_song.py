@@ -482,11 +482,12 @@ class SongDependency(models.Model):
     song_id = fields.Many2one(
         comodel_name='dj.song',
         string='Song',
+        ondelete='cascade',
     )
     master_song_id = fields.Many2one(
         comodel_name='dj.song',
         string='Master song',
-        required=True,
+        ondelete='cascade',
     )
     master_song_model = fields.Char(
         related='master_song_id.model_name',
