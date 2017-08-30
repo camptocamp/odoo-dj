@@ -3,7 +3,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 from odoo import models, fields, api, exceptions, _
-from odoo.osv import expression
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 from ..utils import csv_from_data, force_company
 from ..config import (
@@ -138,14 +137,10 @@ class Song(models.Model):
         # as there's no easy way (or odoo util AFAIK)
         # to merge existing domains.
         # Eg: ['&', ('id', 'in', [125]), ('id', 'in', [125])]
-        # So, here we just put existing ones in AND
-        # as is not going to hurt in most of the use cases.
-        # Still, you can then edit the final domain
-        # via the domain widget.
-        domain = expression.AND([
-            self.eval_domain(), [('id', 'in', list(ids))]
-        ])
-        self.domain = str(domain)
+        # So, here we just ignore existing domain
+        # assuming that if you want to play w/ the domain
+        # you gonna do it *after* playing w/ song dependencies.
+        self.domain = str([('id', 'in', list(ids))])
 
     @api.onchange('records_count')
     def onchange_records_count(self):
