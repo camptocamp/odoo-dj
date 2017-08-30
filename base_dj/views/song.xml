@@ -38,6 +38,7 @@
                     <field name="master_song_id" options="{'no_create': True}" context="{'relation_model': parent.model_name}" />
                     <field name="master_song_model" />
                     <field name="model_field_id" options="{'no_create': True}"/>
+                    <field name="model_field" />
                   </tree>
                 </field>
                 <label string="Domain" />

@@ -500,7 +500,9 @@ class SongDependency(models.Model):
     model_field_id = fields.Many2one(
         comodel_name='ir.model.fields',
         string='Relation field',
-        required=True,
+    )
+    model_field = fields.Char(
+        string='Advanced field (eg: product_id.seller_ids.name)',
     )
 
     @api.onchange('master_song_id')
@@ -517,5 +519,14 @@ class SongDependency(models.Model):
 
     def _get_dependant_record_ids(self):
         master_records = self.master_song_id._get_exportable_records()
-        records = master_records.mapped(self.model_field_id.name)
+        if self.model_field_id:
+            fname = self.model_field_id.name
+        elif self.model_field:
+            fname = self.model_field
+        else:
+            raise exceptions.UserError(_(
+                'Provide either a field name (dotted path supported) '
+                'or a link to relation field.'
+            ))
+        records = master_records.mapped(fname)
         return records.ids
