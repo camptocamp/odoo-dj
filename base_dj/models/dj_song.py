@@ -333,6 +333,8 @@ class Song(models.Model):
         ])
 
     def _get_all_fields(self):
+        if not self.song_model:
+            return []
         names = set(
             self.song_model.fields_get().keys()
         ).difference(set(SPECIAL_FIELDS))
