@@ -21,4 +21,11 @@ Full list of generated songs:
 
 {% for song in compilation.song_ids %}
 - anthem {{ song.anthem_path() }}{% if song.song_type == 'load_csv_defer_parent' %}
-- anthem {{ song.anthem_path() + '_compute_parents' }}{% endif %}{% endfor %}
+- anthem {{ song.anthem_path() + '_compute_parents' }}{% endif %}{% if song.has_records %}
+
+Involved modules by this song:
+{{ song._involved_modules_txt() }}
+
+{% endif %}
+
+{% endfor %}
