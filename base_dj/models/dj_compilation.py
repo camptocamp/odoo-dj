@@ -162,6 +162,43 @@ class Compilation(models.Model):
             name = [self.name, self.data_mode]
         return make_title('_'.join(name))
 
+    @api.multi
+    def export_current_config(self):
+        """Download zip file w/ current configuration."""
+        self.ensure_one()
+        comp_tmpl = self.env.ref(
+            'base_dj.dj_self_export', raise_if_not_found=False)
+        if not comp_tmpl:
+            raise exceptions.UserError(_(
+                'Default self export compilation is missing.'))
+        # use `copy_data` as `copy` keeps xmlids :(
+        defaults = {
+            'active': False,
+            'name': u'{} EXPORT {}'.format(
+                self.name, fields.Datetime.now())
+        }
+        new_comp_data = comp_tmpl.copy_data(default=defaults)[0]
+        new_songs = []
+        for song in comp_tmpl.song_ids:
+            data = song.copy_data(default={'active': False})[0]
+            if song.model_name == 'dj.genre':
+                data['domain'] = "[('id', '=', %d)]" % self.genre_id.id
+            elif song.model_name == 'dj.compilation':
+                data['domain'] = "[('id', '=', %d)]" % self.id
+            elif song.model_name == 'dj.song':
+                data['domain'] = "[('id', 'in', %s)]" % str(self.song_ids.ids)
+            elif song.model_name == 'dj.song.dependency':
+                data['domain'] = "[('id', 'in', %s)]" % str(
+                    self.song_ids.mapped('depends_on_ids').ids)
+            new_songs.append((0, 0, data))
+        new_comp_data['song_ids'] = new_songs
+        new_comp = self.create(new_comp_data)
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'new',
+            'url': new_comp.download_url,
+        }
+
     def anthem_path(self):
         path = self.disc_full_path().replace('/', '.').replace('.py', '')
         return '{}::main'.format(path)

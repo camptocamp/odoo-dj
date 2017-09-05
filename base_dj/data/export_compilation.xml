@@ -1,0 +1,56 @@
+<odoo>
+  <record model="dj.genre" id="dj_genre">
+    <field name="name">dj</field>
+  </record>
+
+  <!-- we are going to use this compilation as a template
+  to create compilation to export existing compilations.
+  -->
+  <record model="dj.compilation" id="dj_self_export">
+    <!-- make it hidden -->
+    <field name="active" eval="0" />
+    <field name="name">dj self export</field>
+    <field name="genre_id" ref="dj_genre" />
+  </record>
+
+  <record model="dj.song" id="dj_song_export_genre">
+    <!-- make it hidden -->
+    <field name="active" eval="0" />
+    <field name="compilation_id" ref="dj_self_export"/>
+    <field name="model_id" ref="base_dj.model_dj_genre"/>
+    <field name="sequence" eval="10" />
+  </record>
+
+  <record model="dj.song" id="dj_song_export_compilation">
+    <!-- make it hidden -->
+    <field name="active" eval="0" />
+    <field name="compilation_id" ref="dj_self_export"/>
+    <field name="model_id" ref="base_dj.model_dj_compilation"/>
+    <field name="song_type">load_csv</field>
+    <!-- we are going to value this domain on the fly
+    when exporting the compilation -->
+    <!-- <field name="domain">[('id', '=', my_cool_compilation)]</field> -->
+    <field name="model_fields_blacklist_ids" eval="[(6, 0, [ref('base_dj.field_dj_compilation_song_ids')])]"/>
+    <field name="sequence" eval="20" />
+  </record>
+
+  <record model="dj.song" id="dj_song_export_songs">
+    <!-- make it hidden -->
+    <field name="active" eval="0" />
+    <field name="compilation_id" ref="dj_self_export"/>
+    <field name="model_id" ref="base_dj.model_dj_song"/>
+    <field name="model_fields_blacklist_ids" eval="[
+      (6, 0, [ref('base_dj.field_dj_song_domain')]),
+      (6, 0, [ref('base_dj.field_dj_song_depends_on_ids')])
+    ]"/>
+    <field name="sequence" eval="80" />
+  </record>
+
+  <record model="dj.song" id="dj_song_export_songs_dependencies">
+    <!-- make it hidden -->
+    <field name="active" eval="0" />
+    <field name="compilation_id" ref="dj_self_export"/>
+    <field name="model_id" ref="base_dj.model_dj_song_dependency"/>
+    <field name="sequence" eval="90" />
+  </record>
+</odoo>

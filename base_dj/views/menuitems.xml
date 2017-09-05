@@ -37,4 +37,11 @@
     action="action_company_aka"
     />
 
+  <menuitem
+    parent="menu_dj_root"
+    id="menu_load_compilation"
+    name="Load compilation"
+    action="action_load_dj_compilation"
+    />
+
 </odoo>

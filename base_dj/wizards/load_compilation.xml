@@ -1,0 +1,31 @@
+<odoo>
+  <record id="dj_compilation_load_form" model="ir.ui.view">
+    <field name="name">dj.load.compilation.wiz form</field>
+    <field name="model">dj.load.compilation.wiz</field>
+    <field name="arch" type="xml">
+      <form string="Load compilation">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="zip_file"/>
+          </group>
+          <footer>
+            <button name="action_load" string="Load" type="object" class="btn-primary"/>
+            <button string="Cancel" class="btn-default" special="cancel"/>
+          </footer>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+
+  <record id="action_load_dj_compilation" model="ir.actions.act_window">
+    <field name="name">Load compilation</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.load.compilation.wiz</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+  </record>
+
+</odoo>
