@@ -8,13 +8,6 @@
     <field name="genre_id" ref="dj_accounting_genre" />
   </record>
 
-  <record model="dj.song" id="dj_song_accounting_config_settings">
-    <field name="compilation_id" ref="compilation_account"/>
-    <field name="model_id" ref="account.model_account_config_settings"/>
-    <field name="song_type">settings</field>
-    <field name="sequence">100</field>
-  </record>
-
   <record model="dj.song" id="dj_song_ir_sequence_xmlids">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="base.model_ir_sequence"/>
@@ -45,11 +38,18 @@
     <field name="sequence">40</field>
   </record>
 
+  <record model="dj.song" id="dj_song_account_tags">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_account_tag"/>
+    <field name="domain">[]</field>
+    <field name="sequence">45</field>
+  </record>
+
   <record model="dj.song" id="dj_song_account">
     <field name="compilation_id" ref="compilation_account"/>
     <field name="model_id" ref="account.model_account_account"/>
     <field name="domain">[]</field>
-    <field name="field_list">code,name,user_type_id,reconcile,currency_id</field>
+    <field name="field_list">code,name,user_type_id,reconcile,currency_id,tag_ids</field>
     <field name="sequence">50</field>
   </record>
 
@@ -93,6 +93,37 @@
     <field name="model_id" ref="analytic.model_account_analytic_account"/>
     <field name="domain">[]</field>
     <field name="sequence">80</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_account_fiscal_position">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_fiscal_position"/>
+    <field name="domain">[]</field>
+    <field name="sequence">90</field>
+    <field name="field_list">name,company_id</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_account_fiscal_position_tax">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_fiscal_position_tax"/>
+    <field name="domain">[]</field>
+    <field name="sequence">100</field>
+    <field name="field_list">position_id,tax_src_id,tax_dest_id</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_account_fiscal_position_account">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_fiscal_position_account"/>
+    <field name="domain">[]</field>
+    <field name="sequence">110</field>
+    <field name="field_list">position_id,account_src_id,account_dest_id</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_accounting_config_settings">
+    <field name="compilation_id" ref="compilation_account"/>
+    <field name="model_id" ref="account.model_account_config_settings"/>
+    <field name="song_type">settings</field>
+    <field name="sequence">120</field>
   </record>
 
 </odoo>
