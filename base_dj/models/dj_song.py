@@ -302,7 +302,7 @@ class Song(models.Model):
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
         for item in self:
             # update dependant songs
-            for dep in self._get_dependant_songs():
+            for dep in item._get_dependant_songs():
                 dep.onchange_depends_on_ids()
         return super(Song, self).write(vals)
 
