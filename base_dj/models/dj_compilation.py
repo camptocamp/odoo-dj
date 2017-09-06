@@ -21,6 +21,7 @@ class Compilation(models.Model):
     _dj_download_path = '/dj/download/compilation/'
 
     name = fields.Char(required=True)
+    active = fields.Boolean(default=True)
     sequence = fields.Integer(
         'Sequence',
         help="Sequence for the handle.",
@@ -131,6 +132,13 @@ class Compilation(models.Model):
 
     def disc_full_path(self):
         return self.disc_path.format(**self.read()[0])
+
+    @api.multi
+    def toggle_active(self):
+        super(Compilation, self).toggle_active()
+        # FIXME: this does not work ATM :/
+        # reflect on songs too
+        self.song_ids.write({'active': self.active})
 
     @api.multi
     def burn_disc(self):

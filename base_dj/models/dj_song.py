@@ -26,6 +26,7 @@ class Song(models.Model):
 
     available_song_types = SONG_TYPES
 
+    active = fields.Boolean(default=True)
     compilation_id = fields.Many2one(
         string='Compilation',
         comodel_name='dj.compilation',
