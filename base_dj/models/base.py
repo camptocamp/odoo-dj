@@ -92,7 +92,7 @@ class Base(models.AbstractModel):
             ('res_id', '=', self.id),
             ('module', 'not in', ('__export__', module)),
         ], order='create_date desc', limit=1)
-        if data:
+        if data and not self.env.context.get('dj_xmlid_force'):
             if data.module:
                 return '%s.%s' % (data.module, data.name)
             else:

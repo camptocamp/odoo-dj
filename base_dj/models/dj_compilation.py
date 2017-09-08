@@ -181,14 +181,14 @@ class Compilation(models.Model):
                 'Default self export compilation is missing.'))
         # use `copy_data` as `copy` keeps xmlids :(
         defaults = {
-            'active': False,
+            'active': True,
             'name': u'{} EXPORT {}'.format(
                 self.name, fields.Datetime.now())
         }
         new_comp_data = comp_tmpl.copy_data(default=defaults)[0]
         new_songs = []
-        for song in comp_tmpl.song_ids:
-            data = song.copy_data(default={'active': False})[0]
+        for song in comp_tmpl.with_context(active_test=False).song_ids:
+            data = song.copy_data(default={'active': True})[0]
             if song.model_name == 'dj.genre':
                 data['domain'] = "[('id', '=', %d)]" % self.genre_id.id
             elif song.model_name == 'dj.compilation':
@@ -204,7 +204,8 @@ class Compilation(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': new_comp.download_url,
+            'url': new_comp.download_url +
+                    '?dj_xmlid_module=__config__&dj_xmlid_force=1',
         }
 
     def anthem_path(self):
