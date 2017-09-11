@@ -17,9 +17,11 @@ class Song(models.Model):
     _inherit = [
         'dj.template.mixin',
         'onchange.player.mixin',
+        'dj.download.mixin',
     ]
     _order = 'sequence ASC'
     _default_dj_template_path = 'base_dj:discs/song.tmpl'
+    _dj_download_path = '/dj/download/song/'
 
     available_song_types = SONG_TYPES
 
@@ -67,7 +69,9 @@ class Song(models.Model):
             ('compute', '=', False),
         ]""",
     )
-    csv_path = fields.Char(default='data/{data_mode}/generated/{model}.csv')
+    csv_path = fields.Char(
+        default='data/{data_mode}/generated/{genre}-{model}.csv'
+    )
     domain = fields.Char(default="[]")
     python_code = fields.Text(
         default=DEFAULT_PYTHON_CODE,
@@ -223,10 +227,12 @@ class Song(models.Model):
 
     def real_csv_path(self):
         """Final csv path into zip file."""
-        return self.csv_path.format(
-            model=self.song_model._name,
-            data_mode=self.compilation_id.data_mode,
-        )
+        data = {
+            'model': self.song_model._name,
+            'data_mode': self.compilation_id.data_mode,
+            'genre': self.compilation_id.genre_id.name
+        }
+        return self.csv_path.format(**data)
 
     @api.multi
     def burn_track(self):
@@ -390,16 +396,6 @@ class Song(models.Model):
             self.real_csv_path(),
             csv_from_data(field_names, export_data)
         )
-
-    @api.multi
-    def download_preview(self):
-        """Download a preview file."""
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_url',
-            'target': 'new',
-            'url': u'/dj/download/song/{}'.format(self.id)
-        }
 
     def anthem_path(self):
         path = self.compilation_id.disc_full_path(

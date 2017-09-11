@@ -25,7 +25,7 @@
                 </tree>
               </field>
               <footer>
-                <button name="download_compilation" string="Burn and download" type="object" class="btn-primary"/>
+                <button name="download_it" string="Burn and download" type="object" class="btn-primary"/>
                 <div name="share">
                   <p>or share download link (right click on it and hit 'Copy link address'):<br />
                   <field name="download_url" readonly="1" widget="url" /></p>
