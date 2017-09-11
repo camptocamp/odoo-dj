@@ -39,10 +39,16 @@ class DJ(http.Controller):
         return request.make_response(content, headers=headers)
 
     @http.route(
-        '/dj/download/compilation/<model("dj.compilation"):compilation>',
+        '/dj/download/compilation/<string:compilations>',
         type='http', auth="user", website=False)
-    def download_compilation(self, compilation, **kwargs):
-        filename, content = compilation.burn()
+    def download_compilation(self, compilations, **kwargs):
+        """Burn one or more compilations at once.
+
+        `compilations` string can be an ID or a list of IDs separated by comma.
+        """
+        ids = [int(x.strip()) for x in compilations.split(',') if x.strip()]
+        records = request.env['dj.compilation'].browse(ids)
+        filename, content = records.burn()
         headers = self._make_download_headers(
             content, filename, 'application/zip')
         return request.make_response(content, headers=headers)

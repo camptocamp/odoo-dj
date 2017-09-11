@@ -20,6 +20,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/equalizer_xmlid.xml',
+        'wizards/burn_selected_wiz.xml',
         'views/company.xml',
         'views/compilation.xml',
         'views/song.xml',

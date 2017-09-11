@@ -12,6 +12,7 @@ class Compilation(models.Model):
     """Create compilations of songs and burn them."""
 
     _name = 'dj.compilation'
+    _order = 'core,name'
     _inherit = [
         'dj.template.mixin',
         'dj.download.mixin',
@@ -25,7 +26,7 @@ class Compilation(models.Model):
         comodel_name='dj.genre',
         required=True,
     )
-    genre = fields.Char(related='genre_id.name')
+    genre = fields.Char(related='genre_id.name', readonly=True)
     data_mode = fields.Selection(
         selection=[
             ('install', 'Install'),
@@ -38,7 +39,6 @@ class Compilation(models.Model):
         default='songs/{data_mode}/generated/{genre}.py',
         required=True,
     )
-
     core = fields.Boolean(
         string='Core compilation?',
         help='Core compilations are automatically included '
@@ -55,7 +55,7 @@ class Compilation(models.Model):
 
     @api.depends()
     def _compute_core_compilation_ids(self):
-        core = self.search([('core', '=', True)])
+        core = self._get_core_compilations()
         for item in self:
             item.core_compilation_ids = core
 
@@ -96,7 +96,7 @@ class Compilation(models.Model):
             )
 
     def _get_core_compilations(self):
-        return self.core_compilation_ids
+        return self.search([('core', '=', True)])
 
     @api.multi
     def _get_tracks(self):
@@ -119,10 +119,9 @@ class Compilation(models.Model):
     @api.multi
     def get_all_tracks(self, include_core=True):
         """Return all files to burn into the compilation."""
-        self.ensure_one()
         compilations = self
         if include_core:
-            compilations = self._get_core_compilations() + self
+            compilations |= self._get_core_compilations()
         return compilations._get_tracks()
 
     def disc_full_path(self):
@@ -141,20 +140,22 @@ class Compilation(models.Model):
     @api.multi
     def burn_dev_readme(self):
         """Burn and additional readme for developers."""
-        template = self.dj_template(path='base_dj:discs/DEV_README.tmpl')
+        template = self[0].dj_template(path='base_dj:discs/DEV_README.tmpl')
         return 'DEV_README.rst', template.render(compilations=self)
 
     @api.multi
     def burn(self):
         """Burn disc into a zip file."""
-        self.ensure_one()
         files = self.get_all_tracks()
         zf = create_zipfile(files)
         filename = self.make_album_title()
         return filename, zf.read()
 
     def make_album_title(self):
-        return make_title(self.name, self.data_mode)
+        name = ['mutiple_compilations', ]
+        if len(self) == 1:
+            name = [self.name, self.data_mode]
+        return make_title('_'.join(name))
 
     def anthem_path(self):
         path = self.disc_full_path().replace('/', '.').replace('.py', '')
