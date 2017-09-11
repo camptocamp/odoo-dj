@@ -1,10 +1,10 @@
 Developer README
 ================
 
-Songs file generated for "{{ compilation.name }}" compilation:
+Songs file generated for "{{ ', '.join(compilations.mapped('name')) }}" compilation(s):
 
-* {{ compilation.disc_full_path() }}.
-
+{% for compilation in compilations %}
+* {{ compilation.disc_full_path() }}{% endfor %}
 
 You are supposed to:
 
@@ -19,11 +19,12 @@ This is going to place files in the right places.
 
 Then you should include it in the project `odoo/migration.yml` like this:
 
-- anthem {{ compilation.anthem_path() }}
+{% for compilation in compilations %}
+- {{ compilation.anthem_path() }}{% endfor %}
 
 
 Full list of generated songs:
 
-{% for song in compilation.song_ids %}
+{% for song in compilations.mapped('song_ids') %}
 - anthem {{ song.anthem_path() }}{% if song.song_type == 'load_csv_defer_parent' %}
 - anthem {{ song.anthem_path() + '_compute_parents' }}{% endif %}{% endfor %}

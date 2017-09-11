@@ -5,7 +5,7 @@
     <field name="arch" type="xml">
       <form string="Make songs">
         <sheet>
-          <h1>Compilation setup</h1>
+          <h1>Compilation</h1>
           <notebook>
             <page name="main" string="Main">
               <group>
@@ -31,6 +31,12 @@
                   <field name="download_url" readonly="1" widget="url" /></p>
                 </div>
               </footer>
+            </page>
+            <page name="core" string="Core compilations">
+              <group>
+                <field name="core"/>
+                <field name="core_compilation_ids"/>
+              </group>
             </page>
             <page name="advanced" string="Advanced">
               <group>
