@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 import os
+import urllib
 
 from odoo import models, fields, api, exceptions, _
 from ..utils import create_zipfile, make_title
@@ -170,9 +171,29 @@ class Compilation(models.Model):
             name = [self.name, self.data_mode]
         return make_title('_'.join(name))
 
+    def _export_config_get_song_data(self, song):
+        """Return export values for given song."""
+        data = song.copy_data(default={'active': True})[0]
+        if song.model_name == 'dj.genre':
+            data['domain'] = "[('id', '=', %d)]" % self.genre_id.id
+        elif song.model_name == 'dj.compilation':
+            data['domain'] = "[('id', '=', %d)]" % self.id
+        elif song.model_name == 'dj.song':
+            data['domain'] = "[('id', 'in', %s)]" % str(self.song_ids.ids)
+        elif song.model_name == 'dj.song.dependency':
+            data['domain'] = "[('id', 'in', %s)]" % str(
+                self.song_ids.mapped('depends_on_ids').ids)
+        return data
+
     @api.multi
     def export_current_config(self):
-        """Download zip file w/ current configuration."""
+        """Download zip file w/ current configuration.
+
+        To achieve this we rely on an hidden compilation
+        that is alreadt configured for exporting dj models.
+        We grab it and use it as a template to generate a new compilation
+        that will link all the records in the compilation we want to export.
+        """
         self.ensure_one()
         comp_tmpl = self.env.ref(
             'base_dj.dj_self_export', raise_if_not_found=False)
@@ -188,24 +209,21 @@ class Compilation(models.Model):
         new_comp_data = comp_tmpl.copy_data(default=defaults)[0]
         new_songs = []
         for song in comp_tmpl.with_context(active_test=False).song_ids:
-            data = song.copy_data(default={'active': True})[0]
-            if song.model_name == 'dj.genre':
-                data['domain'] = "[('id', '=', %d)]" % self.genre_id.id
-            elif song.model_name == 'dj.compilation':
-                data['domain'] = "[('id', '=', %d)]" % self.id
-            elif song.model_name == 'dj.song':
-                data['domain'] = "[('id', 'in', %s)]" % str(self.song_ids.ids)
-            elif song.model_name == 'dj.song.dependency':
-                data['domain'] = "[('id', 'in', %s)]" % str(
-                    self.song_ids.mapped('depends_on_ids').ids)
-            new_songs.append((0, 0, data))
+            new_songs.append((0, 0, self._export_config_get_song_data(song)))
         new_comp_data['song_ids'] = new_songs
         new_comp = self.create(new_comp_data)
+        url_args = {
+            # force module name to not override existing record
+            # in case we are exporting a default configuration.
+            'dj_xmlid_module': '__config__',
+            'dj_xmlid_force': 1,
+            # do not store the xmlid for this record.
+            'dj_xmlid_skip_create': 1,
+        }
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': new_comp.download_url +
-                    '?dj_xmlid_module=__config__&dj_xmlid_force=1',
+            'url': new_comp.download_url + '?' + urllib.urlencode(url_args),
         }
 
     def anthem_path(self):

@@ -39,13 +39,22 @@ class DJ(http.Controller):
         return request.make_response(content, headers=headers)
 
     @http.route(
-        '/dj/download/compilation/<string:compilations>',
+        '/dj/download/compilation/<string:compilation_ids>',
         type='http', auth="user", website=False)
-    def download_compilation(self, compilation, **kwargs):
-        mod_name = kwargs.get('dj_xmlid_module')
-        xmlid_force = kwargs.get('dj_xmlid_force')
-        filename, content = compilation.with_context(
-            dj_xmlid_module=mod_name, dj_xmlid_force=xmlid_force).burn()
+    def download_compilation(self, compilation_ids, **kwargs):
+        """Burn one or more compilations at once.
+
+        `compilations` string can be an ID or a list of IDs separated by comma.
+        """
+        ids = [int(x.strip()) for x in compilation_ids.split(',') if x.strip()]
+        records = request.env['dj.compilation'].browse(ids)
+        burn_options = (
+            'dj_xmlid_module',
+            'dj_xmlid_force',
+            'dj_xmlid_skip_create'
+        )
+        ctx = {k: kwargs.get(k) for k in burn_options}
+        filename, content = records.with_context(**ctx).burn()
         headers = self._make_download_headers(
             content, filename, 'application/zip')
         return request.make_response(content, headers=headers)

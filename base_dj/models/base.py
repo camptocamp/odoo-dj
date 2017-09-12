@@ -16,7 +16,7 @@ class Base(models.AbstractModel):
         By default is `__setup__` but you can force it via
         `dj_xmlid_module` context var.
         """
-        return self.env.context.get('dj_xmlid_module', '__setup__')
+        return self.env.context.get('dj_xmlid_module') or '__setup__'
 
     def _dj_xmlid_global_config(self):
         """Retrieve default global config for xmlid fields."""
@@ -38,7 +38,7 @@ class Base(models.AbstractModel):
         Strings will be normalized.
         """
         name = [self._table, str(self.id)]
-        mapping = self.env.context.get('dj_xmlid_fields_map', {})
+        mapping = self.env.context.get('dj_xmlid_fields_map') or {}
         xmlid_fields = \
             mapping.get(self._name) or self._dj_xmlid_global_config()
         if xmlid_fields:
@@ -117,10 +117,11 @@ class Base(models.AbstractModel):
                                         ('name', '=', name)], limit=1):
                 postfix += 1
                 name = '%s_%d' % (base_name, postfix)
-            ir_model_data.create({
-                'model': self._name,
-                'res_id': self.id,
-                'module': module,
-                'name': name,
-            })
+            if not self.env.context.get('dj_xmlid_skip_create'):
+                ir_model_data.create({
+                    'model': self._name,
+                    'res_id': self.id,
+                    'module': module,
+                    'name': name,
+                })
             return module + '.' + name
