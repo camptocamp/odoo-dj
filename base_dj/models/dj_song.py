@@ -344,7 +344,7 @@ class Song(models.Model):
         for fname, field in self.song_model.fields_get().iteritems():
             if field.get('relation') == self.song_model._name:
                 exclude.append(fname + '/id')
-        return exclude
+        return [x for x in exclude if x in self.get_csv_field_names()]
 
     def _get_xmlid_fields(self):
         """Retrieve fields to generate xmlids."""
