@@ -12,7 +12,7 @@ class Compilation(models.Model):
     """Create compilations of songs and burn them."""
 
     _name = 'dj.compilation'
-    _order = 'core,name'
+    _order = 'sequence,core,name'
     _inherit = [
         'dj.template.mixin',
         'dj.download.mixin',
@@ -20,7 +20,12 @@ class Compilation(models.Model):
     _default_dj_template_path = 'base_dj:discs/disc.tmpl'
     _dj_download_path = '/dj/download/compilation/'
 
-    name = fields.Char()
+    name = fields.Char(required=True)
+    sequence = fields.Integer(
+        'Sequence',
+        help="Sequence for the handle.",
+        default=10
+    )
     genre_id = fields.Many2one(
         string='Genre',
         comodel_name='dj.genre',

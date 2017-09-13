@@ -6,12 +6,7 @@ Songs file generated for "{{ ', '.join(compilations.mapped('name')) }}" compilat
 {% for compilation in compilations %}
 * {{ compilation.disc_full_path() }}{% endfor %}
 
-You are supposed to:
-
-- copy/paste the whole `data/{{ compilation.data_mode}}/generated` into `odoo/data/{{ compilation.data_mode}}/generated`
-- copy/paste the whole `songs/{{ compilation.data_mode}}/generated` into `odoo/songs/{{ compilation.data_mode}}/generated`
-
-You can do this automatically by calling a specific invoke task in your project::
+You can put songs and data in the project by calling a specific invoke task in your project::
 
     invoke songs.rip path/to/exported/zipfile.zip
 

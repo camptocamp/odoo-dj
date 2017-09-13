@@ -91,6 +91,7 @@
     <field name="model">dj.compilation</field>
     <field name="arch" type="xml">
       <tree>
+        <field name="sequence" widget="handle" />
         <field name="genre"/>
         <field name="name"/>
         <field name="data_mode"/>
