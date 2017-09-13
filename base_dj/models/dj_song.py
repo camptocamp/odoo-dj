@@ -10,7 +10,8 @@ from ..config import (
     SONG_TYPES,
     DEFAULT_PYTHON_CODE,
 )
-from collections import defaultdict
+from collections import defaultdict, Counter
+import os
 
 
 class Song(models.Model):
@@ -71,7 +72,7 @@ class Song(models.Model):
         ]""",
     )
     csv_path = fields.Char(
-        default='data/{data_mode}/generated/{genre}-{model}.csv'
+        default='data/{data_mode}/generated/{genre}/{model}.csv'
     )
     domain = fields.Char(default="[]")
     python_code = fields.Text(
@@ -103,6 +104,18 @@ class Song(models.Model):
         inverse_name='song_id',
     )
     involved_modules = fields.Html(compute='_compute_involved_modules')
+    position_in_collection = fields.Integer(
+        compute='_compute_position_in_collection',
+        readonly=True
+    )
+
+    @api.depends('model_id', 'sequence', 'compilation_id.song_ids')
+    def _compute_position_in_collection(self):
+        for item in self:
+            item.position_in_collection = [
+                i + 1 for i, x in enumerate(item.compilation_id.song_ids)
+                if x.id == item.id
+            ][0]
 
     @api.constrains('python_code')
     def _check_python_code(self):
@@ -168,16 +181,25 @@ class Song(models.Model):
         }
         return res
 
+    @property
+    def _songs_models_count(self):
+        # count songs in the same compilation w/ the same model
+        return Counter(self.compilation_id.song_ids.mapped('model_name'))
+
     @api.multi
     @api.depends('model_id.model', 'song_type')
     def _compute_song_name(self):
         for item in self:
             prefix = self.available_song_types.get(
                 item.song_type, {}).get('prefix', 'load_')
-            item.name = u'{}{}'.format(
+            name = u'{}{}'.format(
                 prefix,
                 (item.model_id.model or '').replace('.', '_'),
             )
+            if item._songs_models_count[item.model_name] > 1:
+                # make name unique in the compilation
+                name += '_%d' % item.position_in_collection
+            item.name = name
 
     @api.multi
     @api.depends('model_id.model', 'domain', 'python_code')
@@ -259,7 +281,13 @@ class Song(models.Model):
             'data_mode': self.compilation_id.data_mode,
             'genre': self.compilation_id.genre_id.name
         }
-        return self.csv_path.format(**data)
+        path = self.csv_path.format(**data)
+        if self._songs_models_count[self.model_name] > 1:
+            # make filename unique. Include position to match song name
+            path, ext = os.path.splitext(path)
+            path += '_%d' % self.position_in_collection
+            path += ext
+        return path
 
     @api.multi
     def burn_track(self):
