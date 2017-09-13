@@ -8,11 +8,16 @@ Songs file generated for "{{ compilation.name }}" compilation:
 
 You are supposed to:
 
-- copy/paste the whole `data/{{ compilation.data_mode}}/generated` into `odoo/data/{{ compilation.data_mode}}/`
-- copy/paste the whole `songs/{{ compilation.data_mode}}/generated` into `odoo/songs/{{ compilation.data_mode}}/`
+- copy/paste the whole `data/{{ compilation.data_mode}}/generated` into `odoo/data/{{ compilation.data_mode}}/generated`
+- copy/paste the whole `songs/{{ compilation.data_mode}}/generated` into `odoo/songs/{{ compilation.data_mode}}/generated`
 
+You can do this automatically by calling a specific invoke task in your project::
 
-You should include it in the project `odoo/migration.yml` like this:
+    invoke songs.rip path/to/exported/zipfile.zip
+
+This is going to place files in the right places.
+
+Then you should include it in the project `odoo/migration.yml` like this:
 
 - anthem {{ compilation.anthem_path() }}
 
