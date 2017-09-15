@@ -31,11 +31,9 @@ def create_zipfile(files):
     return in_mem_zip
 
 
-def make_title(name, mode):
+def make_title(name):
     dt = datetime.datetime.now().strftime('%Y%m%d_%H%M')
-    return '{}_{}-{}.zip'.format(
-        slugify(name).replace('-', '_'),
-        mode, dt)
+    return '{}-{}.zip'.format(slugify(name).replace('-', '_'), dt)
 
 
 def csv_from_data(fields, rows):

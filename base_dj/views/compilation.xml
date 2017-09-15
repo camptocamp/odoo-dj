@@ -5,7 +5,7 @@
     <field name="arch" type="xml">
       <form string="Make songs">
         <sheet>
-          <h1>Compilation setup</h1>
+          <h1>Compilation</h1>
           <notebook>
             <page name="main" string="Main">
               <group>
@@ -31,6 +31,12 @@
                   <field name="download_url" readonly="1" widget="url" /></p>
                 </div>
               </footer>
+            </page>
+            <page name="core" string="Core compilations">
+              <group>
+                <field name="core"/>
+                <field name="core_compilation_ids"/>
+              </group>
             </page>
             <page name="advanced" string="Advanced">
               <group>
@@ -85,6 +91,7 @@
     <field name="model">dj.compilation</field>
     <field name="arch" type="xml">
       <tree>
+        <field name="sequence" widget="handle" />
         <field name="genre"/>
         <field name="name"/>
         <field name="data_mode"/>
@@ -114,6 +121,17 @@
     <field name="res_model">dj.compilation</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form</field>
+  </record>
+
+  <record id="action_dj_compilation_burn_selected" model="ir.actions.act_window">
+    <field name="name">Burn Selected Compilations</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">dj.compilation.burn_selected.wiz</field>
+    <field name="src_model">dj.compilation</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">form</field>
+    <field name="key2">client_action_multi</field>
+    <field name="target">new</field>
   </record>
 
 </odoo>
