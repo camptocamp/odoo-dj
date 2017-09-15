@@ -10,6 +10,7 @@ from ..config import (
     SONG_TYPES,
     DEFAULT_PYTHON_CODE,
 )
+from collections import defaultdict
 
 
 class Song(models.Model):
@@ -101,6 +102,7 @@ class Song(models.Model):
         comodel_name='dj.song.dependency',
         inverse_name='song_id',
     )
+    involved_modules = fields.Html(compute='_compute_involved_modules')
 
     @api.constrains('python_code')
     def _check_python_code(self):
@@ -182,6 +184,31 @@ class Song(models.Model):
     def _compute_records_count(self):
         for item in self:
             item.records_count = len(item._get_exportable_records())
+
+    def _involved_modules(self):
+        mods = defaultdict(list)
+        for field in self._get_data_fields():
+            mods[field.modules].append(field.name)
+        return mods
+
+    def _involved_modules_txt(self):
+        val = self.involved_modules
+        to_strip = ('<b>', '</b>', '<span>', '</span>', )
+        for k in to_strip:
+            val = val.replace(k, '')
+        to_repl = ('<br />', '\n'), ('<br>', '\n')
+        for k, v in to_repl:
+            val = val.replace(k, v)
+        return val
+
+    @api.multi
+    @api.depends('model_id', 'model_fields_ids', 'model_fields_blacklist_ids')
+    def _compute_involved_modules(self):
+        for item in self:
+            txt = []
+            for mod, _fields in item._involved_modules().iteritems():
+                txt.append('<b>%s:</b> %s' % (mod, ', '.join(_fields)))
+            item.involved_modules = '<br />'.join(sorted(txt))
 
     @api.model
     def eval_domain(self):
@@ -301,6 +328,8 @@ class Song(models.Model):
         ])
 
     def _get_all_fields(self):
+        if not self.song_model:
+            return []
         names = set(
             self.song_model.fields_get().keys()
         ).difference(set(SPECIAL_FIELDS))
@@ -311,12 +340,17 @@ class Song(models.Model):
             ('name', 'in', list(names)),
         ])
 
-    def get_csv_field_names(self):
-        """Retrieve CSV field names."""
-        field_names = ['id']
+    def _get_data_fields(self):
         _fields = self.model_fields_ids
         if not _fields:
             _fields = self._get_all_fields()
+        return _fields
+
+    def get_csv_field_names(self):
+        """Retrieve CSV field names."""
+        field_names = ['id']
+        _fields = self._get_data_fields()
+
         blacklisted = self.model_fields_blacklist_ids.mapped('name')
         for field in _fields:
             if field.name in blacklisted:

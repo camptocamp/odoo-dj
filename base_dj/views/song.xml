@@ -64,6 +64,11 @@
                 <field name="model_context"/>
               </group>
             </page>
+            <page name="modules" string="Modules" attrs="{'invisible': [('has_records', '=', False)]}">
+              <group name="involved" string="Involved modules by selected fields">
+                <field name="involved_modules"/>
+              </group>
+            </page>
             <page name="help" string="Help">
               <div class="alert alert-info" role="alert">
                   <p>A song defines a set of records to be exported.</p>
