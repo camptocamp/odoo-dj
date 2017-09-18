@@ -121,6 +121,12 @@ class Compilation(models.Model):
         files.append((init_file, '#'))
         # generate dev readme for all compilations
         files.append(self.burn_dev_readme())
+        if not self.env.context.get('dj_burn_skip_self'):
+            # add current config to export
+            forced_args = self._export_config_forced_xmlid_params()
+            forced_args['dj_burn_skip_self'] = True
+            config_comp = self._export_current_config()
+            files.append(config_comp.with_context(**forced_args).burn())
         return files
 
     @api.multi
@@ -171,6 +177,10 @@ class Compilation(models.Model):
             name = [self.name, self.data_mode]
         return make_title('_'.join(name))
 
+    def anthem_path(self):
+        path = self.disc_full_path().replace('/', '.').replace('.py', '')
+        return '{}::main'.format(path)
+
     def _export_config_get_song_data(self, song):
         """Return export values for given song."""
         data = song.copy_data(default={'active': True})[0]
@@ -185,8 +195,28 @@ class Compilation(models.Model):
                 self.song_ids.mapped('depends_on_ids').ids)
         return data
 
+    def _export_config_forced_xmlid_params(self):
+        return {
+            # force module name to not override existing record
+            # in case we are exporting a default configuration.
+            'dj_xmlid_module': '__config__',
+            'dj_xmlid_force': 1,
+            # do not store the xmlid for this record.
+            'dj_xmlid_skip_create': 1,
+        }
+
     @api.multi
     def export_current_config(self):
+        url_args = self._export_config_forced_xmlid_params()
+        new_comp = self._export_current_config()
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'new',
+            'url': new_comp.download_url + '?' + urllib.urlencode(url_args),
+        }
+
+    @api.multi
+    def _export_current_config(self):
         """Download zip file w/ current configuration.
 
         To achieve this we rely on an hidden compilation
@@ -211,21 +241,4 @@ class Compilation(models.Model):
         for song in comp_tmpl.with_context(active_test=False).song_ids:
             new_songs.append((0, 0, self._export_config_get_song_data(song)))
         new_comp_data['song_ids'] = new_songs
-        new_comp = self.create(new_comp_data)
-        url_args = {
-            # force module name to not override existing record
-            # in case we are exporting a default configuration.
-            'dj_xmlid_module': '__config__',
-            'dj_xmlid_force': 1,
-            # do not store the xmlid for this record.
-            'dj_xmlid_skip_create': 1,
-        }
-        return {
-            'type': 'ir.actions.act_url',
-            'target': 'new',
-            'url': new_comp.download_url + '?' + urllib.urlencode(url_args),
-        }
-
-    def anthem_path(self):
-        path = self.disc_full_path().replace('/', '.').replace('.py', '')
-        return '{}::main'.format(path)
+        return self.create(new_comp_data)
