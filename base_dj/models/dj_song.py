@@ -109,6 +109,8 @@ class Song(models.Model):
         compute='_compute_position_in_collection',
         readonly=True
     )
+    export_translations = fields.Boolean(default=True)
+    export_lang = fields.Char()
 
     @api.depends('model_id', 'sequence', 'compilation_id.song_ids')
     def _compute_position_in_collection(self):
@@ -200,6 +202,8 @@ class Song(models.Model):
             if item._songs_models_count[item.model_name] > 1:
                 # make name unique in the compilation
                 name += '_%d' % item.position_in_collection
+            if item.export_lang:
+                name += '_' + item.export_lang
             item.name = name
 
     @api.multi
@@ -362,12 +366,16 @@ class Song(models.Model):
         names = set(
             self.song_model.fields_get().keys()
         ).difference(set(SPECIAL_FIELDS))
-        return self.env['ir.model.fields'].search([
+        domain = [
             ('model', '=', self.model_name),
             ('store', '=', True),
             ('compute', '=', False),
             ('name', 'in', list(names)),
-        ])
+        ]
+        if self.export_lang:
+            # load only translatable fields
+            domain.append(('translate', '=', True))
+        return self.env['ir.model.fields'].search(domain)
 
     def _get_data_fields(self):
         _fields = self.model_fields_ids
@@ -448,16 +456,23 @@ class Song(models.Model):
     def _is_multicompany_env(self):
         return self.compilation_id._is_multicompany_env()
 
+    def _make_csv_context(self):
+        ctx = dict(
+            dj_export=True,
+            dj_multicompany=self._is_multicompany_env(),
+            dj_xmlid_fields_map=self._get_xmlid_fields_map(),
+            xmlid_value_reference=True
+        )
+        if self.export_lang:
+            ctx['lang'] = self.export_lang
+        return ctx
+
     def make_csv(self, items=None):
         """Create the csv and return path and content."""
         items = items or self._get_exportable_records()
         field_names = self.get_csv_field_names()
-        xmlid_fields_map = self._get_xmlid_fields_map()
         export_data = items.with_context(
-            dj_export=True,
-            dj_multicompany=self._is_multicompany_env(),
-            dj_xmlid_fields_map=xmlid_fields_map,
-            xmlid_value_reference=True,
+            **self._make_csv_context()
         ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),
