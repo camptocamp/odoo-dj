@@ -329,7 +329,7 @@ class Song(models.Model):
         ])
 
     def _get_all_fields(self):
-        if not self.song_model:
+        if self.song_model is None:
             return []
         names = set(
             self.song_model.fields_get().keys()
