@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 import os
+import urllib
 
 from odoo import models, fields, api, exceptions, _
 from ..utils import create_zipfile, make_title
@@ -21,6 +22,7 @@ class Compilation(models.Model):
     _dj_download_path = '/dj/download/compilation/'
 
     name = fields.Char(required=True)
+    active = fields.Boolean(default=True)
     sequence = fields.Integer(
         'Sequence',
         help="Sequence for the handle.",
@@ -119,6 +121,12 @@ class Compilation(models.Model):
         files.append((init_file, '#'))
         # generate dev readme for all compilations
         files.append(self.burn_dev_readme())
+        if not self.env.context.get('dj_burn_skip_self'):
+            # add current config to export
+            forced_args = self._export_config_forced_xmlid_params()
+            forced_args['dj_burn_skip_self'] = True
+            config_comp = self._export_current_config()
+            files.append(config_comp.with_context(**forced_args).burn())
         return files
 
     @api.multi
@@ -131,6 +139,13 @@ class Compilation(models.Model):
 
     def disc_full_path(self):
         return self.disc_path.format(**self.read()[0])
+
+    @api.multi
+    def toggle_active(self):
+        super(Compilation, self).toggle_active()
+        # FIXME: this does not work ATM :/
+        # reflect on songs too
+        self.song_ids.write({'active': self.active})
 
     @api.multi
     def burn_disc(self):
@@ -165,3 +180,65 @@ class Compilation(models.Model):
     def anthem_path(self):
         path = self.disc_full_path().replace('/', '.').replace('.py', '')
         return '{}::main'.format(path)
+
+    def _export_config_get_song_data(self, song):
+        """Return export values for given song."""
+        data = song.copy_data(default={'active': True})[0]
+        if song.model_name == 'dj.genre':
+            data['domain'] = "[('id', '=', %d)]" % self.genre_id.id
+        elif song.model_name == 'dj.compilation':
+            data['domain'] = "[('id', '=', %d)]" % self.id
+        elif song.model_name == 'dj.song':
+            data['domain'] = "[('id', 'in', %s)]" % str(self.song_ids.ids)
+        elif song.model_name == 'dj.song.dependency':
+            data['domain'] = "[('id', 'in', %s)]" % str(
+                self.song_ids.mapped('depends_on_ids').ids)
+        return data
+
+    def _export_config_forced_xmlid_params(self):
+        return {
+            # force module name to not override existing record
+            # in case we are exporting a default configuration.
+            'dj_xmlid_module': '__config__',
+            'dj_xmlid_force': 1,
+            # do not store the xmlid for this record.
+            'dj_xmlid_skip_create': 1,
+        }
+
+    @api.multi
+    def export_current_config(self):
+        url_args = self._export_config_forced_xmlid_params()
+        new_comp = self._export_current_config()
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'new',
+            'url': new_comp.download_url + '?' + urllib.urlencode(url_args),
+        }
+
+    @api.multi
+    def _export_current_config(self):
+        """Download zip file w/ current configuration.
+
+        To achieve this we rely on an hidden compilation
+        that is alreadt configured for exporting dj models.
+        We grab it and use it as a template to generate a new compilation
+        that will link all the records in the compilation we want to export.
+        """
+        self.ensure_one()
+        comp_tmpl = self.env.ref(
+            'base_dj.dj_self_export', raise_if_not_found=False)
+        if not comp_tmpl:
+            raise exceptions.UserError(_(
+                'Default self export compilation is missing.'))
+        # use `copy_data` as `copy` keeps xmlids :(
+        defaults = {
+            'active': True,
+            'name': u'{} EXPORT {}'.format(
+                self.name, fields.Datetime.now())
+        }
+        new_comp_data = comp_tmpl.copy_data(default=defaults)[0]
+        new_songs = []
+        for song in comp_tmpl.with_context(active_test=False).song_ids:
+            new_songs.append((0, 0, self._export_config_get_song_data(song)))
+        new_comp_data['song_ids'] = new_songs
+        return self.create(new_comp_data)

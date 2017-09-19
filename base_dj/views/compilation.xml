@@ -5,6 +5,11 @@
     <field name="arch" type="xml">
       <form string="Make songs">
         <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+              <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+            </button>
+          </div>
           <h1>Compilation</h1>
           <notebook>
             <page name="main" string="Main">
@@ -25,10 +30,17 @@
                 </tree>
               </field>
               <footer>
-                <button name="download_it" string="Burn and download" type="object" class="btn-primary"/>
-                <div name="share">
-                  <p>or share download link (right click on it and hit 'Copy link address'):<br />
-                  <field name="download_url" readonly="1" widget="url" /></p>
+                <div class="row">
+                  <div id="download_compilation" class="col-xs-6">
+                    <button name="download_it" string="Burn and download" type="object" class="btn-primary"/>
+                    <div class="share">
+                      <p>or share download link (right click on it and hit 'Copy link address'):<br />
+                      <field name="download_url" readonly="1" widget="url" /></p>
+                    </div>
+                  </div>
+                  <div id="download_config" class="col-xs-6">
+                    <button name="export_current_config" string="Export current configuration" type="object" class="btn-default"/>
+                  </div>
                 </div>
               </footer>
             </page>

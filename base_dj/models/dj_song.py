@@ -26,6 +26,7 @@ class Song(models.Model):
 
     available_song_types = SONG_TYPES
 
+    active = fields.Boolean(default=True)
     compilation_id = fields.Many2one(
         string='Compilation',
         comodel_name='dj.compilation',
@@ -301,7 +302,7 @@ class Song(models.Model):
             vals['model_fields_ids'] = [(6, 0, fields.ids)]
         for item in self:
             # update dependant songs
-            for dep in self._get_dependant_songs():
+            for dep in item._get_dependant_songs():
                 dep.onchange_depends_on_ids()
         return super(Song, self).write(vals)
 
@@ -328,7 +329,7 @@ class Song(models.Model):
         ])
 
     def _get_all_fields(self):
-        if not self.song_model:
+        if self.song_model is None:
             return []
         names = set(
             self.song_model.fields_get().keys()
@@ -364,6 +365,10 @@ class Song(models.Model):
         if ('company_id' in self.song_model and
                 'company_id/id' not in field_names):
             field_names.append('company_id/id')
+        if 'name' in field_names:
+            # make sure is always after `id` to ease csv review
+            field_names.remove('name')
+            field_names.insert(1, 'name')
         return field_names
 
     def get_csv_field_names_exclude(self):

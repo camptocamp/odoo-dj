@@ -12,6 +12,7 @@ class Genre(models.Model):
     _name = 'dj.genre'
 
     name = fields.Char(required=True, help='Name will be normalized.')
+    active = fields.Boolean(default=True)
 
     _sql_constraints = [
         ('name_uniq', 'unique (name)', _('The name must be unique')),
