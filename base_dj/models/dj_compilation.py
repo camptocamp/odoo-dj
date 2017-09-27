@@ -161,7 +161,7 @@ class Compilation(models.Model):
         for song in songs:
             track = song.burn_track()
             if track:
-                files.append(track)
+                files.extend(track)
         # add __init__..py to song module folder only once
         init_file = os.path.join(
             os.path.dirname(comp.disc_full_path()), '__init__.py')

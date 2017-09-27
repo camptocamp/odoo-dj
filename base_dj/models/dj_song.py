@@ -316,7 +316,9 @@ class Song(models.Model):
         if self.scratchable():
             path, data = self.scratch_it()
         if path and data:
-            return path, data
+            res = [(path, data), ]
+            res.extend(self._handle_special_fields())
+            return res
         return None
 
     def scratchable(self):
@@ -488,7 +490,31 @@ class Song(models.Model):
         )
         if self.export_lang:
             ctx['lang'] = self.export_lang
+            ctx['dj_export_lang'] = self.export_lang
         return ctx
+
+    def _handle_special_fields(self, items=None):
+        extra_tracks = []
+        items = items or self._get_exportable_records()
+        if self.song_model is None:
+            return
+        special = self.song_model._dj_special_fields()
+        for fname, info in special:
+            for rec in items:
+                if self.export_lang:
+                    rec = rec.with_context(lang=self.export_lang)
+                content = rec[fname]
+                if not content:
+                    continue
+                path = rec.with_context(**self._make_csv_context())[fname]
+                # special case: xml validation is done on fields like `arch_db`
+                # so we need to wrap/unwrap w/ <odoo/> tag
+                path = path.replace(
+                    '<odoo><path>', '').replace('</path></odoo>')
+                extra_tracks.append(
+                    (path[len(self._dj_path_prefix):], content)
+                )
+        return extra_tracks
 
     def make_csv(self, items=None):
         """Create the csv and return path and content."""
