@@ -5,7 +5,7 @@
 import os
 import urllib
 
-from odoo import models, fields, api, exceptions, _
+from odoo import models, fields, api, exceptions, tools, _
 from ..utils import create_zipfile, make_title
 
 
@@ -108,6 +108,7 @@ class Compilation(models.Model):
     def _get_installed_langs(self):
         return self.env['res.lang'].get_installed()
 
+    @tools.ormcache('frozenset(self.ids)')
     def _get_all_songs(self):
         songs = self.env['dj.song'].browse()
         for song in self.mapped('song_ids'):
