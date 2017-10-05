@@ -5,7 +5,7 @@
 import os
 import urllib
 
-from odoo import models, fields, api, exceptions, _
+from odoo import models, fields, api, exceptions, tools, _
 from ..utils import create_zipfile, make_title
 
 
@@ -79,7 +79,7 @@ class Compilation(models.Model):
         values = super(Compilation, self).dj_template_vars()
         values.update({
             # get all songs but scratchable ones
-            'songs': self.song_ids.filtered(lambda x: not x.scratchable())
+            'songs': self._get_all_songs()
         })
         return values
 
@@ -105,16 +105,47 @@ class Compilation(models.Model):
     def _get_core_compilations(self):
         return self.search([('core', '=', True)])
 
+    def _get_installed_langs(self):
+        return self.env['res.lang'].get_installed()
+
+    @tools.ormcache('frozenset(self.ids)')
+    def _get_all_songs(self):
+        songs = self.env['dj.song'].browse()
+        for song in self.mapped('song_ids'):
+            if song.scratchable():
+                continue
+            songs |= song
+            if song.export_translations:
+                # inject shadow song per each lang
+                for lang_code, __ in self._get_installed_langs():
+                    if lang_code == 'en_US':
+                        # we assume English is always the main lang
+                        # and we import/export value in English
+                        continue
+                    filepath, ext = os.path.splitext(song.csv_path)
+                    defaults = {
+                        'export_translations': False,
+                        'export_lang': lang_code,
+                        'model_context': "{'lang': '%s'}" % lang_code,
+                        # set path as foo/bar/my.model.fr_FR.csv
+                        'csv_path': filepath + '.' + lang_code + ext,
+                    }
+                    translated_data = song.copy_data(default=defaults)[0]
+                    # add `shadow song` for each lang
+                    songs |= song.new(translated_data)
+        return songs
+
     @api.multi
     def _get_tracks(self):
         """Collect files to burn from all compilations."""
         files = []
+        songs = self._get_all_songs()
         for comp in self:
             files.append(comp.burn_disc())
-            for song in comp.song_ids:
-                track = song.burn_track()
-                if track:
-                    files.append(track)
+        for song in songs:
+            track = song.burn_track()
+            if track:
+                files.append(track)
         # add __init__..py to song module folder only once
         init_file = os.path.join(
             os.path.dirname(comp.disc_full_path()), '__init__.py')

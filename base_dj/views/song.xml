@@ -24,6 +24,7 @@
                 <group colspan="2">
                   <field name="only_config" />
                   <field name="has_records" readonly="1" />
+                  <field name="export_translations" />
                 </group>
               </group>
               <group name="fields_config" attrs="{'invisible': [('has_records', '=', False)]}">
