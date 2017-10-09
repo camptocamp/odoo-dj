@@ -279,6 +279,15 @@ class Song(models.Model):
             return None
         return self.env.get(self.model_id.model)
 
+    def song_model_context(self, as_string=False):
+        """Updated context to run songs with."""
+        ctx = self.song_model._dj_global_config().get('model_context', {})
+        song_ctx = safe_eval(self.model_context) if self.model_context else {}
+        ctx.update(song_ctx)
+        if as_string:
+            return str(song_ctx)
+        return song_ctx
+
     def real_csv_path(self):
         """Final csv path into zip file."""
         data = {
@@ -461,7 +470,7 @@ class Song(models.Model):
             dj_export=True,
             dj_multicompany=self._is_multicompany_env(),
             dj_xmlid_fields_map=self._get_xmlid_fields_map(),
-            xmlid_value_reference=True
+            xmlid_value_reference=True,
         )
         if self.export_lang:
             ctx['lang'] = self.export_lang
