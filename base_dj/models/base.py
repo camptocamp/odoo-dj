@@ -2,7 +2,7 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import models
+from odoo import models, tools
 from odoo.addons.website.models.website import slugify
 
 
@@ -18,12 +18,18 @@ class Base(models.AbstractModel):
         """
         return self.env.context.get('dj_xmlid_module') or '__setup__'
 
-    def _dj_xmlid_global_config(self):
+    @tools.ormcache('self')
+    def _dj_global_config(self):
         """Retrieve default global config for xmlid fields."""
-        config = self.env['dj.equalizer.xmlid'].search([
+        config = self.env['dj.equalizer'].search([
             ('model', '=', self._name),
         ], limit=1)
-        _fields = config and config.get_xmlid_fields() or []
+        return config.get_conf() if config else {}
+
+    def _dj_xmlid_global_config(self):
+        """Retrieve default global config for xmlid fields."""
+        config = self._dj_global_config()
+        _fields = config.get('xmlid_fields', [])
         if not _fields and 'name' in self and 'name' not in _fields:
             # we assume we can use name as default
             _fields.append('name')

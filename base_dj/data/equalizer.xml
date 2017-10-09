@@ -1,0 +1,18 @@
+<odoo>
+
+  <record model="dj.equalizer" id="dj_equalizer_ir_sequence">
+    <field name="model">ir.sequence</field>
+    <field name="xmlid_fields">prefix,name</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_ir_property">
+    <field name="model">ir.property</field>
+    <field name="model_context">{'xmlid_value_reference': True}</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_ir_values">
+    <field name="model">ir.values</field>
+    <field name="model_context">{'xmlid_value_reference': True}</field>
+  </record>
+
+</odoo>
