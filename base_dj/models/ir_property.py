@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import models, api
+from ..utils import property_to_xmlid, xmlid_to_property
 
 
 class Property(models.Model):
@@ -12,10 +13,10 @@ class Property(models.Model):
     @api.multi
     def _update_values(self, values):
         """Inverse xmlid value to reference value."""
-        if self.env.context.get('xmlid_value_reference', False):
-            record = self.env.ref(values.get('value_reference'))
-            value = u'%s,%i' % (record._name, record.id)
-            values['value_reference'] = value
+        if (self.env.context.get('xmlid_value_reference', False) and
+                values.get('value_reference')):
+            values['value_reference'] = \
+                xmlid_to_property(values['value_reference'])
         return super(Property, self)._update_values(values)
 
     @api.multi
@@ -28,7 +29,6 @@ class Property(models.Model):
         self.invalidate_cache(['value_reference'])
         for rec in res:
             if rec.get('value_reference'):
-                model, res_id = rec['value_reference'].split(',')
-                value = self.env[model].browse(int(res_id))._dj_export_xmlid()
-                rec['value_reference'] = value
+                rec['value_reference'] = property_to_xmlid(
+                    self.env, rec['value_reference'])
         return res
