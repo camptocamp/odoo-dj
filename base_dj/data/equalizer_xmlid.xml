@@ -1,8 +1,0 @@
-<odoo>
-
-  <record model="dj.equalizer.xmlid" id="dj_equalizer_xmlid_ir_sequence">
-    <field name="model">ir.sequence</field>
-    <field name="xmlid_fields">prefix,name</field>
-  </record>
-
-</odoo>
