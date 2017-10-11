@@ -484,6 +484,9 @@ class Song(models.Model):
         ).replace('/', '.').replace('.py', '')
         return '{}::{}'.format(path, self.name)
 
+    settings_char_fields = ('selection', 'char', 'date', 'datetime')
+    settings_text_fields = ('text', )
+
     def dj_get_settings_vals(self):
         """Prepare of values for res.config settings song.
 
@@ -516,11 +519,11 @@ class Song(models.Model):
                 label = finfo['string']
                 if finfo['type'] == 'selection':
                     label += u': {}'.format(dict(finfo['selection'])[val])
+
+                if finfo['type'] in self.settings_char_fields:
                     val = u"'{}'".format(val)
-                elif finfo['type'] == 'text':
+                elif finfo['type'] in self.settings_text_fields:
                     val = u'"""{}"""'.format(val)
-                elif finfo['type'] in ('date', 'datetime'):
-                    val = u"'{}'".format(val)
                 cp_values[fname] = {
                     'val': val,
                     'label': label,
