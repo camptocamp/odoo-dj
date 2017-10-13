@@ -82,3 +82,15 @@ def force_company(env, company_id):
         yield
     finally:
         env.user.update({'company_id': user_company})
+
+
+def property_to_xmlid(env, val):
+    """Convert property field value to xmlid."""
+    model, res_id = val.split(',')
+    return env[model].browse(int(res_id))._dj_export_xmlid()
+
+
+def xmlid_to_property(env, val):
+    """Inverse `property_to_xmlid` to get property value from xmlid."""
+    record = env.ref(val)
+    return u'%s,%i' % (record._name, record.id)

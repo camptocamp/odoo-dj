@@ -3,7 +3,7 @@
 @anthem.log
 def {{ song_name }}(ctx):
     """ Setup {{ song.model_id.model }} for {{ company_name }} """
-    model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.model_context }})
+    model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.song_model_context(as_string=True) }})
     model.create({
         {% for key, value in values.iteritems() %}# {{ value['label'] }}  # noqa
         '{{ key }}': {{ value['val'] }},

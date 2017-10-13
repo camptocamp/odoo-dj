@@ -115,24 +115,41 @@ class Compilation(models.Model):
                 continue
             songs |= song
             if song.export_translations:
-                # inject shadow song per each lang
-                for lang_code, __ in self._get_installed_langs():
-                    if lang_code == 'en_US':
-                        # we assume English is always the main lang
-                        # and we import/export value in English
-                        continue
-                    filepath, ext = os.path.splitext(song.csv_path)
-                    defaults = {
-                        'export_translations': False,
-                        'export_lang': lang_code,
-                        'model_context': "{'lang': '%s'}" % lang_code,
-                        # set path as foo/bar/my.model.fr_FR.csv
-                        'csv_path': filepath + '.' + lang_code + ext,
-                    }
-                    translated_data = song.copy_data(default=defaults)[0]
-                    # add `shadow song` for each lang
-                    songs |= song.new(translated_data)
+                songs |= self._add_shadow_song_translations(song)
+            if song.song_type == 'load_csv_defer_parent':
+                songs |= self._add_shadow_song_compute_parent(song)
         return songs
+
+    def _add_shadow_song_translations(self, song):
+        songs = self.env['dj.song'].browse()
+        # inject shadow song per each lang
+        for lang_code, __ in self._get_installed_langs():
+            if lang_code == 'en_US':
+                # we assume English is always the main lang
+                # and we import/export value in English
+                continue
+            filepath, ext = os.path.splitext(song.csv_path)
+            defaults = {
+                'export_translations': False,
+                'export_lang': lang_code,
+                'model_context': "{'lang': '%s'}" % lang_code,
+                # set path as foo/bar/my.model.fr_FR.csv
+                'csv_path': filepath + '.' + lang_code + ext,
+            }
+            translated_data = song.copy_data(default=defaults)[0]
+            # add `shadow song` for each lang
+            songs |= song.new(translated_data)
+        return songs
+
+    def _add_shadow_song_compute_parent(self, song):
+        # inject shadow song to compute parents
+        song_data = song.copy_data()[0]
+        # just clone the song and inject one to render
+        # compute parents after that
+        # TODO: a bit hacky... When we move song types to separated records
+        # we could have shadow song types and use them on the fly.
+        song_data['template_path'] = 'base_dj:discs/song_compute_parent.tmpl'
+        return song.new(song_data)
 
     @api.multi
     def _get_tracks(self):

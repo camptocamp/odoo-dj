@@ -60,6 +60,7 @@ class Song(models.Model):
             ('store', '=', True),
             ('model_id', '=', model_id),
             ('compute', '=', False),
+            ('ttype', '!=', 'one2many'),
         ]""",
     )
     model_fields_blacklist_ids = fields.Many2many(
@@ -279,6 +280,15 @@ class Song(models.Model):
             return None
         return self.env.get(self.model_id.model)
 
+    def song_model_context(self, as_string=False):
+        """Updated context to run songs with."""
+        ctx = self.song_model._dj_global_config().get('model_context', {})
+        song_ctx = safe_eval(self.model_context) if self.model_context else {}
+        ctx.update(song_ctx)
+        if as_string:
+            return str(song_ctx)
+        return song_ctx
+
     def real_csv_path(self):
         """Final csv path into zip file."""
         data = {
@@ -371,6 +381,12 @@ class Song(models.Model):
             ('store', '=', True),
             ('compute', '=', False),
             ('name', 'in', list(names)),
+            # o2m relations are resolved by importing related records
+            # and their specific inverse name.
+            # We assume that you have to export/import sub records in any case,
+            # as we must make sure that those records are already there
+            # when we import them.
+            ('ttype', '!=', 'one2many'),
         ]
         if self.export_lang:
             # load only translatable fields
@@ -393,8 +409,8 @@ class Song(models.Model):
             if field.name in blacklisted:
                 continue
             name = field.name
-            # we always want xmlids
-            if field.ttype in ('many2one', 'one2many', 'many2many'):
+            # we always want xmlids (one2many are already excluded)
+            if field.ttype in ('many2one', 'many2many'):
                 name += '/id'
             field_names.append(name)
         # we always want company_id if the field is there
@@ -416,7 +432,12 @@ class Song(models.Model):
         We assume that relations to the same model must be imported in 2 steps.
         """
         exclude = []
-        for fname, field in self.song_model.fields_get().iteritems():
+        # consider only fields that we really use
+        _all_fields = [
+            x.replace('/id', '') for x in self.get_csv_field_names()]
+        info = self.song_model.fields_get(_all_fields)
+        for fname in _all_fields:
+            field = info[fname]
             if field.get('relation') == self.song_model._name:
                 exclude.append(fname + '/id')
         return [x for x in exclude if x in self.get_csv_field_names()]
@@ -461,7 +482,7 @@ class Song(models.Model):
             dj_export=True,
             dj_multicompany=self._is_multicompany_env(),
             dj_xmlid_fields_map=self._get_xmlid_fields_map(),
-            xmlid_value_reference=True
+            xmlid_value_reference=True,
         )
         if self.export_lang:
             ctx['lang'] = self.export_lang
