@@ -432,7 +432,12 @@ class Song(models.Model):
         We assume that relations to the same model must be imported in 2 steps.
         """
         exclude = []
-        for fname, field in self.song_model.fields_get().iteritems():
+        # consider only fields that we really use
+        _all_fields = [
+            x.replace('/id', '') for x in self.get_csv_field_names()]
+        info = self.song_model.fields_get(_all_fields)
+        for fname in _all_fields:
+            field = info[fname]
             if field.get('relation') == self.song_model._name:
                 exclude.append(fname + '/id')
         return [x for x in exclude if x in self.get_csv_field_names()]
