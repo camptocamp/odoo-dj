@@ -7,6 +7,10 @@
     <field name="arch" type="xml">
       <form string="Configure song">
         <field name="compilation_id" invisible="1" />
+        <header>
+          <button name="download_it" string="Preview File" type="object"
+            class="btn-primary"  attrs="{'invisible': [('has_records', '=', False)]}"/>
+        </header>
         <sheet>
           <div class="oe_button_box" name="button_box">
             <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
@@ -58,9 +62,6 @@
                 </p>
                 <field name="python_code" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here."/>
               </div>
-              <footer>
-                <button name="download_it" string="Preview File" type="object" class="btn-primary" />
-              </footer>
             </page>
             <page name="advanced" string="Advanced">
               <group>
