@@ -60,6 +60,7 @@ class Song(models.Model):
             ('store', '=', True),
             ('model_id', '=', model_id),
             ('compute', '=', False),
+            ('ttype', '!=', 'one2many'),
         ]""",
     )
     model_fields_blacklist_ids = fields.Many2many(
@@ -380,6 +381,12 @@ class Song(models.Model):
             ('store', '=', True),
             ('compute', '=', False),
             ('name', 'in', list(names)),
+            # o2m relations are resolved by importing related records
+            # and their specific inverse name.
+            # We assume that you have to export/import sub records in any case,
+            # as we must make sure that those records are already there
+            # when we import them.
+            ('ttype', '!=', 'one2many'),
         ]
         if self.export_lang:
             # load only translatable fields
@@ -402,8 +409,8 @@ class Song(models.Model):
             if field.name in blacklisted:
                 continue
             name = field.name
-            # we always want xmlids
-            if field.ttype in ('many2one', 'one2many', 'many2many'):
+            # we always want xmlids (one2many are already excluded)
+            if field.ttype in ('many2one', 'many2many'):
                 name += '/id'
             field_names.append(name)
         # we always want company_id if the field is there
