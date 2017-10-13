@@ -505,7 +505,7 @@ class Song(models.Model):
         ).replace('/', '.').replace('.py', '')
         return '{}::{}'.format(path, self.name)
 
-    settings_char_fields = ('selection', 'char', 'date', 'datetime')
+    settings_char_fields = ('char', 'date', 'datetime')
     settings_text_fields = ('text', )
 
     def dj_get_settings_vals(self):
@@ -540,10 +540,13 @@ class Song(models.Model):
                 label = finfo['string']
                 if finfo['type'] == 'selection':
                     label += u': {}'.format(dict(finfo['selection'])[val])
-
-                if finfo['type'] in self.settings_char_fields:
+                    # selection field can have many values not only chars
+                    # let's wrap it only if it's a string
+                    if val and isinstance(val, basestring):
+                        val = u"'{}'".format(val)
+                if val and finfo['type'] in self.settings_char_fields:
                     val = u"'{}'".format(val)
-                elif finfo['type'] in self.settings_text_fields:
+                elif val and finfo['type'] in self.settings_text_fields:
                     val = u'"""{}"""'.format(val)
                 cp_values[fname] = {
                     'val': val,
