@@ -6,9 +6,3 @@ def {{ song.name }}(ctx):
         model,
         '{{ song.real_csv_path() }}',
         defer_parent_computation=True)
-
-
-@anthem.log
-def {{ song.name }}_compute_parents(ctx):
-    """Compute parent_left, parent_right"""
-    deferred_compute_parents(ctx, '{{ song.model_id.model }}')
