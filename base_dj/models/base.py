@@ -7,6 +7,10 @@ from odoo.addons.website.models.website import slugify
 import os
 import base64
 
+from ..utils import is_xml
+
+guess_mimetype = tools.mimetypes.guess_mimetype
+
 
 class Base(models.AbstractModel):
 
@@ -138,7 +142,8 @@ class Base(models.AbstractModel):
     def read(self, fields=None, load='_classic_read'):
         """Handle special fields value for dj export."""
         res = super(Base, self).read(fields=fields, load=load)
-        if not self.env.context.get('dj_export'):
+        if (not self.env.context.get('dj_export') or
+                self.env.context.get('dj_skip_file_handling')):
             return res
         self._dj_handle_special_fields_read(res, _fields=fields)
         return res
@@ -183,7 +188,7 @@ class Base(models.AbstractModel):
         if export_lang:
             path += '_{lang}'
         path += '.{ext}'
-        ext = self._dj_guess_extension(fname, info)
+        ext, _ = self._dj_guess_filetype(fname, rec, info=info)
         res = path.format(
             prefix=self._dj_path_prefix,
             xmlid=xmlid, fname=fname,
@@ -192,13 +197,30 @@ class Base(models.AbstractModel):
             return '<odoo><path>' + res + '</path></odoo>'
         return res
 
-    def _dj_guess_extension(self, fname, info):
+    def _dj_guess_filetype(self, fname, record, info=None):
+        record = record.with_context(dj_skip_file_handling=True)
+        content = record[fname]
         if fname == 'arch_db':
-            return 'xml'
+            return 'xml', content
+        info = info or self.fields_get([fname])[fname]
         if info['type'] == 'html':
-            return 'html'
-        # TODO: guess filename from mimetype
-        return 'TODO'
+            return 'html', content
+        # guess filename from mimetype
+        if is_xml(content):
+            return 'xml', content
+        mime = guess_mimetype(content.decode('base64'))
+        if mime:
+            # mime is like `image/png`
+            return mime.split('/')[-1], content.decode('base64')
+        return 'unknown', content
+
+    def _dj_file_content_to_fs(self, fname, record, info=None):
+        """Convert values to file system value.
+
+        Called by `_handle_special_fields` when song's data is prepared.
+        """
+        _, content = self._dj_guess_filetype(fname, record)
+        return content
 
     @api.multi
     def write(self, vals):

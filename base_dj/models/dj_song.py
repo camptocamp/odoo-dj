@@ -510,9 +510,11 @@ class Song(models.Model):
                 # special case: xml validation is done on fields like `arch_db`
                 # so we need to wrap/unwrap w/ <odoo/> tag
                 path = path.replace(
-                    '<odoo><path>', '').replace('</path></odoo>')
+                    '<odoo><path>', '').replace('</path></odoo>', '')
+                fs_content = self.song_model._dj_file_content_to_fs(
+                    fname, rec, info=info)
                 extra_tracks.append(
-                    (path[len(self._dj_path_prefix):], content)
+                    (path[len(self._dj_path_prefix):], fs_content)
                 )
         return extra_tracks
 
