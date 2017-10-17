@@ -269,12 +269,14 @@ class Compilation(models.Model):
         We grab it and use it as a template to generate a new compilation
         that will link all the records in the compilation we want to export.
         """
-        self.ensure_one()
         comp_tmpl = self.env.ref(
             'base_dj.dj_self_export', raise_if_not_found=False)
         if not comp_tmpl:
             raise exceptions.UserError(_(
                 'Default self export compilation is missing.'))
+        # exclude core compilations
+        self = self.filtered(lambda x: not x.core)
+        self.ensure_one()
         # use `copy_data` as `copy` keeps xmlids :(
         defaults = {
             'active': True,
