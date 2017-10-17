@@ -49,12 +49,18 @@ class Base(models.AbstractModel):
         to be used for xmlid generation.
         Strings will be normalized.
         """
-        name = [self._table, str(self.id)]
+        name = [self._table, str(self.id)]  # std odoo default
         mapping = self.env.context.get('dj_xmlid_fields_map') or {}
-        xmlid_fields = \
-            mapping.get(self._name) or self._dj_xmlid_global_config()
+        global_config = self._dj_global_config()
+        xmlid_fields = (mapping.get(self._name, []) or
+                        global_config.get('xmlid_fields', []))
+        if not xmlid_fields and 'name' in self:
+            # No specific configuration: we assume we can use name as default
+            xmlid_fields.append('name')
         if xmlid_fields:
             name = [self._table, ]
+            if global_config.get('xmlid_table_name'):
+                name = [global_config['xmlid_table_name'], ]
             for key in xmlid_fields:
                 if not self[key]:
                     continue
