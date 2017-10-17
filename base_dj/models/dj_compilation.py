@@ -88,12 +88,10 @@ class Compilation(models.Model):
 
     @api.model
     def check_company_codename(self):
-        """Check company short codenames have been setup in multi company.
+        """Check company short codenames have been setup.
 
-        We need those to create unique codenames
+        We need those to create unique xmlids.
         """
-        if not self._is_multicompany_env():
-            return
         companies = self.env['res.company'].search([('aka', '=', False)])
         if companies:
             raise exceptions.UserError(
