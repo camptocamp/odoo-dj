@@ -59,12 +59,41 @@ class Compilation(models.Model):
         compute='_compute_core_compilation_ids',
         readonly=True,
     )
+    sanity_check = fields.Html(compute='_compute_sanity_check')
 
     @api.depends()
     def _compute_core_compilation_ids(self):
         core = self._get_core_compilations()
         for item in self:
             item.core_compilation_ids = core
+
+    @api.depends('song_ids')
+    def _compute_sanity_check(self):
+        for item in self:
+            item.sanity_check = item._render_sanity_check()
+
+    def _render_sanity_check(self):
+        tmpl = self.env.ref('base_dj.sanity_check_tmpl')
+        # show warning if we have duplicated models
+        core_models = []
+        core_comps = self.browse()
+        if not self.core:
+            core_comps = self.core_compilation_ids
+            core_models = core_comps.mapped('song_ids').mapped('model_name')
+        comp_models = self.mapped('song_ids').mapped('model_name')
+        duplicated = set(core_models) & set(comp_models)
+        sanity_msg = _('Ok')
+        sanity_state = 'ok'
+        if duplicated:
+            sanity_msg = _('Warning')
+            sanity_state = 'warning'
+        return tmpl.render({
+            'comp': self,
+            'core_comps': core_comps,
+            'sanity_state': sanity_state,
+            'sanity_msg': sanity_msg,
+            'duplicated': duplicated,
+        })
 
     @api.multi
     def download_it(self):
