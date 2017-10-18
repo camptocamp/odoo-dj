@@ -1,2 +1,7 @@
-{% for addon in addons %}- {{ addon.name }}
+## core addons
+{% for addon in core_addons %}- {{ addon.name }}
 {% endfor %}
+{% for repo in grouped_by_repo.keys()|sort %}
+## {{ repo }}
+{% for addon in grouped_by_repo[repo]|sort %}- {{ addon.name }}
+{% endfor %}{% endfor %}

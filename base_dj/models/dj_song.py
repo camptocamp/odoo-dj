@@ -4,6 +4,7 @@
 
 from odoo import models, fields, api, exceptions, _
 from odoo.tools.safe_eval import safe_eval, test_python_expr
+from odoo.modules import get_module_path
 from ..utils import csv_from_data, force_company
 from ..config import (
     SPECIAL_FIELDS,
@@ -565,9 +566,22 @@ class Song(models.Model):
 
     def scratch_installed_addons(self):
         path = 'installed_addons.txt'
+        addons = self._get_exportable_records(order='name asc')
+        grouped = defaultdict(list)
+        core_addons = []
+        for mod in addons:
+            path = get_module_path(mod.name)
+            repo_name = os.path.split(os.path.dirname(path))[-1]
+            if repo_name == 'addons':
+                # yeah, not 100% sure but for us work like that ;)
+                core_addons.append(mod)
+                continue
+            grouped[repo_name].append(mod)
         return path, self.dj_render_template({
             'song': self,
-            'addons': self._get_exportable_records(order='name asc'),
+            'addons': addons,
+            'core_addons': core_addons,
+            'grouped_by_repo': grouped,
         })
 
     @api.model
