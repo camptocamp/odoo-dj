@@ -61,7 +61,6 @@ class Compilation(models.Model):
     )
     sanity_check = fields.Html(compute='_compute_sanity_check')
 
-    @api.depends()
     def _compute_core_compilation_ids(self):
         core = self._get_core_compilations()
         for item in self:

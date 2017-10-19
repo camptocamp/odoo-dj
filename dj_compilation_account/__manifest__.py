@@ -10,7 +10,7 @@
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',
     'category': 'songs',
-    'depends': ['base_dj', 'account'],
+    'depends': ['dj_core', 'account'],
     'website': 'www.camptocamp.com',
     'data': ['data/dj.xml'],
     'test': [],
