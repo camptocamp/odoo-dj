@@ -25,6 +25,21 @@
         <t t-esc="dup" /><t t-if="not dup_last">,</t>
       </t>
     </div>
+    <div class="xmlid_not_safe" t-if="xmlid_not_safe">
+      <strong>Possible unsafe xmlid songs:</strong><br />
+      <p class="text-mute" style="font-size:90%">
+        Song(s) models listed here do not have any global or specific xmlid configuration.<br />
+        They don't have a `name` field neither so their xmlid is going to be computed with DB ID
+        as standard odoo does.<br />
+        If possible is better to avoid this. If such model(s) have a unique field that you are aware of,
+        please, set it the `advanced` tab.
+      </p>
+      <ol>
+        <li t-foreach="xmlid_not_safe" t-as="song">
+          <strong t-field="song.name" /> (<t t-esc="song.model_name" />)
+        </li>
+      </ol>
+    </div>
 
   </template>
 

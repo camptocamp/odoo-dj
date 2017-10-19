@@ -2,7 +2,7 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-from odoo import models, fields, api, exceptions, _
+from odoo import models, fields, api, exceptions, tools, _
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 from odoo.modules import get_module_path
 from ..utils import csv_from_data, force_company
@@ -446,7 +446,15 @@ class Song(models.Model):
                 exclude.append(fname + '/id')
         return [x for x in exclude if x in self.get_csv_field_names()]
 
-    def _get_xmlid_fields(self):
+    @tools.ormcache('self')
+    def _dj_global_config(self):
+        """Retrieve default global config for song model."""
+        config = self.env['dj.equalizer'].search([
+            ('model', '=', self.model_name),
+        ], limit=1)
+        return config.get_conf() if config else {}
+
+    def _get_xmlid_fields(self, include_global=False):
         """Retrieve fields to generate xmlids."""
         xmlid_fields = []
         if self.xmlid_fields:

@@ -72,7 +72,11 @@ class Compilation(models.Model):
             item.sanity_check = item._render_sanity_check()
 
     def _render_sanity_check(self):
-        tmpl = self.env.ref('base_dj.sanity_check_tmpl')
+        sanity_msg = _('Ok')
+        sanity_state = 'ok'
+        sanity_conditions = []
+        sanity_tmpl = self.env.ref('base_dj.sanity_check_tmpl')
+
         # show warning if we have duplicated models
         core_models = []
         core_comps = self.browse()
@@ -81,17 +85,28 @@ class Compilation(models.Model):
             core_models = core_comps.mapped('song_ids').mapped('model_name')
         comp_models = self.mapped('song_ids').mapped('model_name')
         duplicated = set(core_models) & set(comp_models)
-        sanity_msg = _('Ok')
-        sanity_state = 'ok'
-        if duplicated:
+        sanity_conditions.append(duplicated)
+
+        # check xmlid settings
+        xmlid_not_safe = []
+        for song in self.mapped('song_ids').filtered('has_records'):
+            # no global or specific xmlid policy
+            config = song._dj_global_config()
+            if (not config.get('xmlid_fields') and
+                    not song._get_xmlid_fields() and
+                    'name' not in song.song_model):
+                xmlid_not_safe.append(song)
+        sanity_conditions.append(bool(xmlid_not_safe))
+        if any(sanity_conditions):
             sanity_msg = _('Warning')
             sanity_state = 'warning'
-        return tmpl.render({
+        return sanity_tmpl.render({
             'comp': self,
             'core_comps': core_comps,
             'sanity_state': sanity_state,
             'sanity_msg': sanity_msg,
             'duplicated': duplicated,
+            'xmlid_not_safe': xmlid_not_safe,
         })
 
     @api.multi
