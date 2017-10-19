@@ -2,8 +2,14 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import models, tools
+from odoo import api, models, tools
 from odoo.addons.website.models.website import slugify
+import os
+import base64
+
+from ..utils import is_xml
+
+guess_mimetype = tools.mimetypes.guess_mimetype
 
 
 class Base(models.AbstractModel):
@@ -43,12 +49,18 @@ class Base(models.AbstractModel):
         to be used for xmlid generation.
         Strings will be normalized.
         """
-        name = [self._table, str(self.id)]
+        name = [self._table, str(self.id)]  # std odoo default
         mapping = self.env.context.get('dj_xmlid_fields_map') or {}
-        xmlid_fields = \
-            mapping.get(self._name) or self._dj_xmlid_global_config()
+        global_config = self._dj_global_config()
+        xmlid_fields = (mapping.get(self._name, []) or
+                        global_config.get('xmlid_fields', []))
+        if not xmlid_fields and 'name' in self:
+            # No specific configuration: we assume we can use name as default
+            xmlid_fields.append('name')
         if xmlid_fields:
             name = [self._table, ]
+            if global_config.get('xmlid_table_name'):
+                name = [global_config['xmlid_table_name'], ]
             for key in xmlid_fields:
                 if not self[key]:
                     continue
@@ -131,3 +143,123 @@ class Base(models.AbstractModel):
                     'name': name,
                 })
             return module + '.' + name
+
+    @api.multi
+    def read(self, fields=None, load='_classic_read'):
+        """Handle special fields value for dj export."""
+        res = super(Base, self).read(fields=fields, load=load)
+        if (not self.env.context.get('dj_export') or
+                self.env.context.get('dj_skip_file_handling')):
+            return res
+        self._dj_handle_special_fields_read(res, _fields=fields)
+        return res
+
+    def _dj_handle_special_fields_read(self, records, _fields=None):
+        if not records:
+            return
+        if _fields is None:
+            _fields = records[0].keys()
+        for fname, info in self._dj_special_fields(_fields):
+            self._dj_handle_file_field_read(fname, info, records)
+
+    # you can customized this per-model
+    _dj_file_fields_types = ('html', 'binary', )
+    _dj_file_fields_names = ('arch_db', )
+    _dj_path_prefix = 'dj_path:'
+
+    def _dj_special_fields(self, _fields=None):
+        res = []
+        fields_info = self.fields_get(_fields)
+        for fname, info in fields_info.iteritems():
+            if self._dj_is_file_field(fname, info):
+                res.append((fname, info))
+        return res
+
+    def _dj_is_file_field(self, fname, info):
+        return (info['type'] in self._dj_file_fields_types or
+                fname in self._dj_file_fields_names)
+
+    def _dj_handle_file_field_read(self, fname, info, records):
+        for rec in records:
+            ob = self.browse(rec['id'])
+            self.invalidate_cache([fname])
+            if rec[fname]:
+                rec[fname] = self._dj_file_to_path(ob, fname, info)
+
+    def _dj_file_to_path(self, rec, fname, info):
+        xmlid = rec._dj_export_xmlid()
+        # TODO: handle path from song settings
+        path = '{prefix}data/binaries/{xmlid}__{fname}'
+        export_lang = self.env.context.get('dj_export_lang', '')
+        if export_lang:
+            path += '_{lang}'
+        path += '.{ext}'
+        ext, _ = self._dj_guess_filetype(fname, rec, info=info)
+        res = path.format(
+            prefix=self._dj_path_prefix,
+            xmlid=xmlid, fname=fname,
+            lang=export_lang, ext=ext)
+        if fname == 'arch_db':
+            return '<odoo><path>' + res + '</path></odoo>'
+        return res
+
+    def _dj_guess_filetype(self, fname, record, info=None):
+        record = record.with_context(dj_skip_file_handling=True)
+        content = record[fname]
+        if fname == 'arch_db':
+            return 'xml', content
+        info = info or self.fields_get([fname])[fname]
+        if info['type'] == 'html':
+            return 'html', content
+        # guess filename from mimetype
+        if is_xml(content):
+            return 'xml', content
+        mime = guess_mimetype(content.decode('base64'))
+        if mime:
+            # mime is like `image/png`
+            return mime.split('/')[-1], content.decode('base64')
+        return 'unknown', content
+
+    def _dj_file_content_to_fs(self, fname, record, info=None):
+        """Convert values to file system value.
+
+        Called by `_handle_special_fields` when song's data is prepared.
+        """
+        _, content = self._dj_guess_filetype(fname, record)
+        return content
+
+    @api.multi
+    def write(self, vals):
+        self._dj_handle_special_fields_write(vals)
+        return super(Base, self).write(vals)
+
+    def _dj_handle_special_fields_write(self, vals):
+        if not len(self):
+            return
+        for fname, info in self._dj_special_fields(vals.keys()):
+            if vals[fname]:
+                self._dj_handle_file_field_write(fname, info, vals)
+
+    def _dj_handle_file_field_write(self, fname, info, vals):
+        self.invalidate_cache([fname])
+        vals[fname] = self._dj_path_to_file(fname, info, vals[fname])
+
+    def _dj_path_to_file(self, fname, info, path):
+        # special case: xml validation is done for fields like `arch_db`
+        # so we need to wrap/unwrap w/ <odoo/> tag
+        path = path.replace('<odoo><path>', '').replace('</path></odoo>', '')
+        if not path.startswith(self._dj_path_prefix):
+            return path
+        path = path[len(self._dj_path_prefix):]
+        base_path = '/opt/odoo'  # TODO: compute this
+        abs_path = os.path.join(base_path, path)
+        with open(abs_path, 'r') as ff:
+            content = ff.read()
+            if info['type'] == 'binary':
+                content = base64.b64encode(content)
+            return content
+
+    @api.model
+    def create(self, vals):
+        self._dj_handle_special_fields_write(vals)
+        return super(Base, self).create(vals)

@@ -7,6 +7,7 @@ import io
 import zipfile
 import time
 import datetime
+from lxml import etree
 from cStringIO import StringIO
 from contextlib import contextmanager
 
@@ -94,3 +95,12 @@ def xmlid_to_property(env, val):
     """Inverse `property_to_xmlid` to get property value from xmlid."""
     record = env.ref(val)
     return u'%s,%i' % (record._name, record.id)
+
+
+def is_xml(content):
+    """Check if given content is xml content."""
+    try:
+        etree.fromstring(content)
+        return True
+    except etree.XMLSyntaxError:
+        return False

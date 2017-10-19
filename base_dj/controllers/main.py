@@ -32,7 +32,7 @@ class DJ(http.Controller):
         track = song.burn_track()
         if not track:
             return 'Sorry, nothing to view here.'
-        path, content = track
+        path, content = track[0]
         filename = os.path.basename(path)
         ctype = mimetypes.guess_type(filename)[0] or 'text/csv'
         headers = self._make_download_headers(content, filename, ctype)

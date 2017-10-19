@@ -13,6 +13,11 @@ class DJEqualizer(models.Model):
 
     model = fields.Char(default='')
     xmlid_fields = fields.Char(default='')
+    xmlid_table_name = fields.Char(
+        default='',
+        help='Sometimes the xmlid can be veeeeery long, like for companies. '
+             'You can use this field to short a bit the result. '
+             'For instance: `res_company` -> `company`.')
     model_context = fields.Char(default='{}')
 
     @api.multi
@@ -29,5 +34,6 @@ class DJEqualizer(models.Model):
     def get_conf(self):
         return {
             'xmlid_fields': self.get_xmlid_fields(),
+            'xmlid_table_name': self.xmlid_table_name,
             'model_context': self.get_model_context(),
         }

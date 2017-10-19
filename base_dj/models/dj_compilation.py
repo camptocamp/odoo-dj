@@ -59,12 +59,55 @@ class Compilation(models.Model):
         compute='_compute_core_compilation_ids',
         readonly=True,
     )
+    sanity_check = fields.Html(compute='_compute_sanity_check')
 
-    @api.depends()
     def _compute_core_compilation_ids(self):
         core = self._get_core_compilations()
         for item in self:
             item.core_compilation_ids = core
+
+    @api.depends('song_ids')
+    def _compute_sanity_check(self):
+        for item in self:
+            item.sanity_check = item._render_sanity_check()
+
+    def _render_sanity_check(self):
+        sanity_msg = _('Ok')
+        sanity_state = 'ok'
+        sanity_conditions = []
+        sanity_tmpl = self.env.ref('base_dj.sanity_check_tmpl')
+
+        # show warning if we have duplicated models
+        core_models = []
+        core_comps = self.browse()
+        if not self.core:
+            core_comps = self.core_compilation_ids
+            core_models = core_comps.mapped('song_ids').mapped('model_name')
+        comp_models = self.mapped('song_ids').mapped('model_name')
+        duplicated = set(core_models) & set(comp_models)
+        sanity_conditions.append(duplicated)
+
+        # check xmlid settings
+        xmlid_not_safe = []
+        for song in self.mapped('song_ids').filtered('has_records'):
+            # no global or specific xmlid policy
+            config = song._dj_global_config()
+            if (not config.get('xmlid_fields') and
+                    not song._get_xmlid_fields() and
+                    'name' not in song.song_model):
+                xmlid_not_safe.append(song)
+        sanity_conditions.append(bool(xmlid_not_safe))
+        if any(sanity_conditions):
+            sanity_msg = _('Warning')
+            sanity_state = 'warning'
+        return sanity_tmpl.render({
+            'comp': self,
+            'core_comps': core_comps,
+            'sanity_state': sanity_state,
+            'sanity_msg': sanity_msg,
+            'duplicated': duplicated,
+            'xmlid_not_safe': xmlid_not_safe,
+        })
 
     @api.multi
     def download_it(self):
@@ -88,12 +131,10 @@ class Compilation(models.Model):
 
     @api.model
     def check_company_codename(self):
-        """Check company short codenames have been setup in multi company.
+        """Check company short codenames have been setup.
 
-        We need those to create unique codenames
+        We need those to create unique xmlids.
         """
-        if not self._is_multicompany_env():
-            return
         companies = self.env['res.company'].search([('aka', '=', False)])
         if companies:
             raise exceptions.UserError(
@@ -161,7 +202,7 @@ class Compilation(models.Model):
         for song in songs:
             track = song.burn_track()
             if track:
-                files.append(track)
+                files.extend(track)
         # add __init__..py to song module folder only once
         init_file = os.path.join(
             os.path.dirname(comp.disc_full_path()), '__init__.py')
@@ -271,12 +312,14 @@ class Compilation(models.Model):
         We grab it and use it as a template to generate a new compilation
         that will link all the records in the compilation we want to export.
         """
-        self.ensure_one()
         comp_tmpl = self.env.ref(
             'base_dj.dj_self_export', raise_if_not_found=False)
         if not comp_tmpl:
             raise exceptions.UserError(_(
                 'Default self export compilation is missing.'))
+        # exclude core compilations
+        self = self.filtered(lambda x: not x.core)
+        self.ensure_one()
         # use `copy_data` as `copy` keeps xmlids :(
         defaults = {
             'active': True,

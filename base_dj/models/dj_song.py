@@ -2,7 +2,7 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-from odoo import models, fields, api, exceptions, _
+from odoo import models, fields, api, exceptions, tools, _
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 from odoo.modules import get_module_path
 from ..utils import csv_from_data, force_company
@@ -316,7 +316,9 @@ class Song(models.Model):
         if self.scratchable():
             path, data = self.scratch_it()
         if path and data:
-            return path, data
+            res = [(path, data), ]
+            res.extend(self._handle_special_fields())
+            return res
         return None
 
     def scratchable(self):
@@ -444,7 +446,15 @@ class Song(models.Model):
                 exclude.append(fname + '/id')
         return [x for x in exclude if x in self.get_csv_field_names()]
 
-    def _get_xmlid_fields(self):
+    @tools.ormcache('self')
+    def _dj_global_config(self):
+        """Retrieve default global config for song model."""
+        config = self.env['dj.equalizer'].search([
+            ('model', '=', self.model_name),
+        ], limit=1)
+        return config.get_conf() if config else {}
+
+    def _get_xmlid_fields(self, include_global=False):
         """Retrieve fields to generate xmlids."""
         xmlid_fields = []
         if self.xmlid_fields:
@@ -488,7 +498,33 @@ class Song(models.Model):
         )
         if self.export_lang:
             ctx['lang'] = self.export_lang
+            ctx['dj_export_lang'] = self.export_lang
         return ctx
+
+    def _handle_special_fields(self, items=None):
+        extra_tracks = []
+        items = items or self._get_exportable_records()
+        if self.song_model is None:
+            return
+        special = self.song_model._dj_special_fields()
+        for fname, info in special:
+            for rec in items:
+                if self.export_lang:
+                    rec = rec.with_context(lang=self.export_lang)
+                content = rec[fname]
+                if not content:
+                    continue
+                path = rec.with_context(**self._make_csv_context())[fname]
+                # special case: xml validation is done on fields like `arch_db`
+                # so we need to wrap/unwrap w/ <odoo/> tag
+                path = path.replace(
+                    '<odoo><path>', '').replace('</path></odoo>', '')
+                fs_content = self.song_model._dj_file_content_to_fs(
+                    fname, rec, info=info)
+                extra_tracks.append(
+                    (path[len(self._dj_path_prefix):], fs_content)
+                )
+        return extra_tracks
 
     def make_csv(self, items=None):
         """Create the csv and return path and content."""

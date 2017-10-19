@@ -44,4 +44,21 @@
     action="action_load_dj_compilation"
     />
 
+  <record id="action_view_dj_modules_version" model="ir.actions.act_window">
+    <field name="name">View DJ versions</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">ir.module.module</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+    <field name="domain">['|', ('name', '=', 'base_dj'), ('dependencies_id.name', '=', 'base_dj')]</field>
+  </record>
+
+  <menuitem
+    parent="menu_dj_root"
+    id="menu_view_dj_modules_version"
+    name="View DJ modules version"
+    action="action_view_dj_modules_version"
+    sequence="999"
+    />
+
 </odoo>

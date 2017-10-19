@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <template id="sanity_check_tmpl" name="base_dj sanity check">
+
+    <h2>
+      Sanity check: <span t-attf-style="color:#{'orange' if sanity_state == 'warning' else 'green'}" t-esc="sanity_msg" />
+    </h2>
+    <div class="core" t-if="core_comps">
+      <strong>Core dependencies:</strong>
+      <ol>
+        <li t-foreach="core_comps" t-as="core">
+          <strong class="comp_name" t-field="core.name" />:
+          <!--list models -->
+          <t t-foreach="core_comps.mapped('song_ids').mapped('model_name')" t-as="model">
+            <span class="comp_model" t-esc="model" /><t t-if="not model_last">, </t>
+          </t>
+        </li>
+      </ol>
+      <p>See "Core compilations" tab for more info.</p>
+    </div>
+    <div class="duplicated" t-if="duplicated">
+      <strong>Duplicated models:</strong><br />
+      <t t-foreach="duplicated" t-as="dup">
+        <t t-esc="dup" /><t t-if="not dup_last">,</t>
+      </t>
+    </div>
+    <div class="xmlid_not_safe" t-if="xmlid_not_safe">
+      <strong>Possible unsafe xmlid songs:</strong><br />
+      <p class="text-mute" style="font-size:90%">
+        Song(s) models listed here do not have any global or specific xmlid configuration.<br />
+        They don't have a `name` field neither so their xmlid is going to be computed with DB ID
+        as standard odoo does.<br />
+        If possible is better to avoid this. If such model(s) have a unique field that you are aware of,
+        please, set it the `advanced` tab.
+      </p>
+      <ol>
+        <li t-foreach="xmlid_not_safe" t-as="song">
+          <strong t-field="song.name" /> (<t t-esc="song.model_name" />)
+        </li>
+      </ol>
+    </div>
+
+  </template>
+
+</odoo>

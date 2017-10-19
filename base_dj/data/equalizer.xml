@@ -1,5 +1,17 @@
 <odoo>
 
+  <record model="dj.equalizer" id="dj_equalizer_company">
+    <field name="model">res.company</field>
+    <field name="xmlid_fields">aka</field>
+    <field name="xmlid_table_name">company</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_user">
+    <field name="model">res.users</field>
+    <field name="xmlid_fields">login</field>
+    <field name="xmlid_table_name">user</field>
+  </record>
+
   <record model="dj.equalizer" id="dj_equalizer_ir_sequence">
     <field name="model">ir.sequence</field>
     <field name="xmlid_fields">prefix,name</field>

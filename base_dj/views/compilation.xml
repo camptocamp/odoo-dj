@@ -29,6 +29,7 @@
                   <field name="depends_on_ids"/>
                 </tree>
               </field>
+              <field name="sanity_check" nolabel="1" />
               <footer>
                 <div class="row">
                   <div id="download_compilation" class="col-xs-6">
