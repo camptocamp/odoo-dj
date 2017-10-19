@@ -72,6 +72,7 @@ class Song(models.Model):
             ('store', '=', True),
             ('model_id', '=', model_id),
             ('compute', '=', False),
+            ('ttype', '!=', 'one2many'),
         ]""",
     )
     csv_path = fields.Char(
