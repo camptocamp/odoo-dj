@@ -236,6 +236,8 @@ class Base(models.AbstractModel):
     def _dj_handle_special_fields_write(self, vals):
         if not len(self):
             return
+        if not vals:
+            return
         for fname, info in self._dj_special_fields(vals.keys()):
             if vals[fname]:
                 self._dj_handle_file_field_write(fname, info, vals)
