@@ -2,6 +2,7 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
+import autopep8
 import os
 import urllib
 
@@ -241,8 +242,7 @@ class Compilation(models.Model):
         self.ensure_one()
         content = self.dj_render_template()
         # make sure PEP8 is safe
-        # no triple empty line, only an empty line at the end
-        content = content.replace('\n\n\n\n', '\n\n\n').strip() + '\n'
+        content = autopep8.fix_code(content)
         return self.disc_full_path(), content
 
     @api.multi
@@ -308,7 +308,7 @@ class Compilation(models.Model):
         """Download zip file w/ current configuration.
 
         To achieve this we rely on an hidden compilation
-        that is alreadt configured for exporting dj models.
+        that is alreadty configured for exporting dj models.
         We grab it and use it as a template to generate a new compilation
         that will link all the records in the compilation we want to export.
         """
