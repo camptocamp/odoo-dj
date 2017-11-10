@@ -29,21 +29,29 @@ class DJEqualizer(models.Model):
 
     @api.multi
     def get_model_context(self):
+        if not self.ids:
+            return {}
         self.ensure_one()
         return safe_eval(self.model_context) if self.model_context else {}
 
     @api.multi
     def get_xmlid_fields(self):
+        if not self.ids:
+            return []
         self.ensure_one()
         return text_to_list(self.xmlid_fields)
 
     @api.multi
     def get_field_blacklist(self):
+        if not self.ids:
+            return []
         self.ensure_one()
         return text_to_list(self.field_blacklist)
 
     @api.multi
     def get_record_blacklist(self):
+        if not self.ids:
+            return []
         self.ensure_one()
         return text_to_list(
             self.record_blacklist,

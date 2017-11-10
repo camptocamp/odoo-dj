@@ -358,8 +358,13 @@ class Song(models.Model):
         for shortcut, fname in shortcuts:
             if vals.get(shortcut):
                 model_id = vals.get('model_id') or self.model_id.id
+                ids = vals.get(fname, [])
+                if ids and len(ids[0]) > 1 and ids[0][0] == 6:
+                    # ids == [(6, 0, [940])] -> preserve values
+                    ids = ids[0][-1]
                 fields = self._get_fields(model_id, vals.pop(shortcut))
-                vals[fname] = [(6, 0, fields.ids)]
+                ids.extend(fields.ids)
+                vals[fname] = [(6, 0, ids)]
 
     @api.multi
     def write(self, vals):
