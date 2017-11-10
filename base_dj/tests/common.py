@@ -14,14 +14,16 @@ class BaseCase(SavepointCase):
     def setUpClass(cls):
         super(BaseCase, cls).setUpClass()
         cls.compilation_model = cls.env['dj.compilation']
+        cls._load_xml('base_dj', 'tests/fixtures/default.xml')
 
     def _load_filecontent(self, module, filepath):
         with open(get_resource_path(module, filepath), 'r') as fd:
             return fd.read()
 
-    def _load_xml(self, module, filepath):
+    @classmethod
+    def _load_xml(cls, module, filepath):
         tools.convert_file(
-            self.cr, module,
+            cls.cr, module,
             get_resource_path(module, filepath),
             {}, mode='init', noupdate=False, kind='test')
 

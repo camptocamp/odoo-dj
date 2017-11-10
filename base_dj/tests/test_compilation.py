@@ -30,7 +30,7 @@ class CompilationCase(BaseCase):
         expected_output = self._load_filecontent(
             'base_dj', 'tests/fixtures/%s.py' % fixture)
         expected_path = u'songs/install/generated/dj_test.py'
-        comp = self.env.ref('base_dj.dj_test_comp1')
+        comp = self.env.ref('base_dj.test_comp1')
         # avoid burning self config
         comp = comp.with_context(dj_burn_skip_self=True)
         path, output = comp.burn_disc()
