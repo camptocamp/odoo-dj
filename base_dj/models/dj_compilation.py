@@ -91,6 +91,9 @@ class Compilation(models.Model):
         # check xmlid settings
         xmlid_not_safe = []
         for song in self.mapped('song_ids').filtered('has_records'):
+            if isinstance(song.song_model, models.TransientModel):
+                # no xmlid to generate actually
+                continue
             # no global or specific xmlid policy
             config = song._dj_global_config()
             if (not config.get('xmlid_fields') and
