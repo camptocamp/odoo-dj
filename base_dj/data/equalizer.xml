@@ -10,6 +10,15 @@
     <field name="model">res.users</field>
     <field name="xmlid_fields">login</field>
     <field name="xmlid_table_name">user</field>
+    <field name="field_blacklist">password_crypt</field>
+    <field name="record_blacklist">base.user_root</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_partner">
+    <field name="model">res.partner</field>
+    <field name="xmlid_fields">name</field>
+    <field name="xmlid_table_name">partner</field>
+    <field name="record_blacklist">base.partner_root</field>
   </record>
 
   <record model="dj.equalizer" id="dj_equalizer_ir_sequence">
