@@ -5,6 +5,7 @@
 from odoo.tests.common import SavepointCase
 from odoo import tools
 from odoo.modules.module import get_resource_path
+from .lint import run_pylint
 
 
 class BaseCase(SavepointCase):
@@ -23,3 +24,6 @@ class BaseCase(SavepointCase):
             self.cr, module,
             get_resource_path(module, filepath),
             {}, mode='init', noupdate=False, kind='test')
+
+    def _pylint_report(self, filepath):
+        return run_pylint(filepath)

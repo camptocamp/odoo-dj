@@ -11,16 +11,32 @@ class CompilationCase(BaseCase):
     def setUpClass(cls):
         super(CompilationCase, cls).setUpClass()
 
+    def _assert_compilation_output(
+            self, fixture, output, expected_output, path, expected_path):
+
+        self.assertEqual(path, expected_path)
+        self.assertEqual(expected_output, output)
+
+        tmp_file_path = '/tmp/test_%s.py' % fixture
+        with open(tmp_file_path, 'w') as fd:
+            fd.write(output)
+
+        lint_errors = self._pylint_report(tmp_file_path)
+        self.assertEqual(lint_errors, None)
+
     def test_create_and_burn(self):
-        self._load_xml('base_dj', 'tests/fixtures/fixture_comp1.xml')
-        expected = self._load_filecontent(
-            'base_dj', 'tests/fixtures/fixture_comp1.py')
+        fixture = 'fixture_comp1'
+        self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
+        expected_output = self._load_filecontent(
+            'base_dj', 'tests/fixtures/%s.py' % fixture)
+        expected_path = u'songs/install/generated/dj_test.py'
         comp = self.env.ref('base_dj.dj_test_comp1')
         # avoid burning self config
         comp = comp.with_context(dj_burn_skip_self=True)
-        path, content = comp.burn_disc()
-        # write to /tmp to ease verification
-        with open('/tmp/test_create_and_burn.py', 'w') as fd:
-            fd.write(content)
-        self.assertEqual(path, u'songs/install/generated/dj_test.py')
-        self.assertEqual(expected, content)
+        path, output = comp.burn_disc()
+        self._assert_compilation_output(
+            fixture,
+            output,
+            expected_output,
+            path,
+            expected_path)

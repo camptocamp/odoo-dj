@@ -3,6 +3,8 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 # -- This file has been generated --
 
+# pylint: disable=C,E
+
 import anthem
 from ...common import load_csv
 
