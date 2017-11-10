@@ -54,3 +54,6 @@ connector/doc/_build/
 # Backup files
 *~
 *.swp
+
+# setuptools stuff
+.eggs
