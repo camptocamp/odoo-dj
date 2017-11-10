@@ -1,6 +1,6 @@
 @anthem.log
 def {{ song.name }}(ctx):
-    model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.song_model_context(as_string=True) }})  # noqa
+    model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.song_model_context(as_string=True) }}) 
     deferred_import(
         ctx,
         model,
