@@ -24,22 +24,13 @@ class Base(models.AbstractModel):
         """
         return self.env.context.get('dj_xmlid_module') or '__setup__'
 
-    @tools.ormcache('self')
-    def _dj_global_config(self):
+    @tools.ormcache('self', 'key')
+    def _dj_global_config(self, key=None):
         """Retrieve default global config for xmlid fields."""
         config = self.env['dj.equalizer'].search([
             ('model', '=', self._name),
         ], limit=1)
-        return config.get_conf() if config else {}
-
-    def _dj_xmlid_global_config(self):
-        """Retrieve default global config for xmlid fields."""
-        config = self._dj_global_config()
-        _fields = config.get('xmlid_fields', [])
-        if not _fields and 'name' in self and 'name' not in _fields:
-            # we assume we can use name as default
-            _fields.append('name')
-        return _fields
+        return config.get_conf(key)
 
     def _dj_xmlid_export_name(self):
         """Customize xmlid name for dj compilation.

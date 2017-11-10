@@ -242,7 +242,11 @@ class Song(models.Model):
 
     @api.model
     def eval_domain(self):
-        return safe_eval(self.domain) if self.domain else []
+        domain = safe_eval(self.domain) if self.domain else []
+        ids_blacklist = self._dj_global_config('record_blacklist') or []
+        if ids_blacklist:
+            domain.append(('id', 'not in', ids_blacklist))
+        return domain
 
     @api.model
     def eval_python_code(self):
@@ -284,7 +288,7 @@ class Song(models.Model):
 
     def song_model_context(self, as_string=False):
         """Updated context to run songs with."""
-        ctx = self.song_model._dj_global_config().get('model_context', {})
+        ctx = self.song_model._dj_global_config('model_context')
         song_ctx = safe_eval(self.model_context) if self.model_context else {}
         ctx.update(song_ctx)
         if as_string:
@@ -340,12 +344,26 @@ class Song(models.Model):
             ('master_song_id', '=', self.id)
         ]).mapped('song_id')
 
+    def _handle_fields_shortcuts(self, vals):
+        """We support some shortcuts to not deal w/ fields relations.
+
+        Available:
+            * `fields_list` -> converted to `model_fields_ids`
+            * `field_blacklist` -> converted to `model_fields_blacklist_ids`
+        """
+        shortcuts = (
+            ('field_list', 'model_fields_ids'),
+            ('field_blacklist', 'model_fields_blacklist_ids'),
+        )
+        for shortcut, fname in shortcuts:
+            if vals.get(shortcut):
+                model_id = vals.get('model_id') or self.model_id.id
+                fields = self._get_fields(model_id, vals.pop(shortcut))
+                vals[fname] = [(6, 0, fields.ids)]
+
     @api.multi
     def write(self, vals):
-        if vals.get('field_list'):
-            model_id = vals.get('model_id') or self.model_id.id
-            fields = self._get_fields(model_id, vals.pop('field_list'))
-            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        self._handle_fields_shortcuts(vals)
         for item in self:
             # update dependant songs
             for dep in item._get_dependant_songs():
@@ -354,9 +372,7 @@ class Song(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals.get('field_list') and vals.get('model_id'):
-            fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
-            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        self._handle_fields_shortcuts(vals)
         item = super(Song, self).create(vals)
         if self.env.context.get('install_mode'):
             # if we are installing/updating the module
@@ -366,9 +382,9 @@ class Song(models.Model):
         return item
 
     def _get_fields(self, model_id, field_list):
-        """ helper to set fields from a list """
+        """Helper to retrieve fields records from a name list."""
         model_name = self.env['ir.model'].browse(model_id).name
-        field_names = [f.strip() for f in field_list.split(',')]
+        field_names = [f.strip() for f in field_list.split(',') if f.strip()]
         return self.env['ir.model.fields'].search([
             ('model_id', '=', model_name),
             ('name', 'in', field_names)
@@ -409,6 +425,7 @@ class Song(models.Model):
         _fields = self._get_data_fields()
 
         blacklisted = self.model_fields_blacklist_ids.mapped('name')
+        blacklisted.extend(self._dj_global_config('field_blacklist'))
         for field in _fields:
             if field.name in blacklisted:
                 continue
@@ -446,13 +463,17 @@ class Song(models.Model):
                 exclude.append(fname + '/id')
         return [x for x in exclude if x in self.get_csv_field_names()]
 
-    @tools.ormcache('self')
-    def _dj_global_config(self):
+    @tools.ormcache_context('self', 'key', keys=('dj_xmlid_force'))
+    def _dj_global_config(self, key=None):
         """Retrieve default global config for song model."""
+        model = self.model_name
+        if self.env.context.get('dj_xmlid_force'):
+            # we are exporting the dj.song itself
+            model = self._name
         config = self.env['dj.equalizer'].search([
-            ('model', '=', self.model_name),
+            ('model', '=', model),
         ], limit=1)
-        return config.get_conf() if config else {}
+        return config.get_conf(key)
 
     def _get_xmlid_fields(self, include_global=False):
         """Retrieve fields to generate xmlids."""
