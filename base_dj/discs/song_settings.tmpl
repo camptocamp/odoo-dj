@@ -1,19 +1,20 @@
 {% set settings_vals = song.dj_get_settings_vals() %}
-{% for song_name, company_name, values in settings_vals %}
+{% for song_name, company_aka, values in settings_vals %}
 @anthem.log
 def {{ song_name }}(ctx):
-    """ Setup {{ song.model_id.model }} for {{ company_name }} """
+    """Setup {{ song.model_id.model }} for {{ company_aka }}."""
     model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.song_model_context(as_string=True) }})
     model.create({
-        {% for key, value in values.iteritems() %}# {{ value['label'] }} 
+        {%- for key, value in values.iteritems() %}
+        # {{ value['label'] }}
         '{{ key }}': {{ value['val'] }},
-        {% endfor %}
+        {%- endfor %}
     }).execute()
-{% endfor %}
+{%- endfor %}
 
 {% if settings_vals|length > 1 %}
 @anthem.log
 def {{ song.name }}(ctx):
-    {% for song_name, company_name, values in settings_vals %}{{ song_name }}(ctx)
+    {% for song_name, company_aka, values in settings_vals %}{{ song_name }}(ctx)
     {% endfor %}
 {% endif %}

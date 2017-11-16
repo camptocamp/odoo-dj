@@ -575,9 +575,8 @@ class Song(models.Model):
     def dj_get_settings_vals(self):
         """Prepare of values for res.config settings song.
 
-        Returns [(song_name, settings_values), ...]
+        Returns [(song_name, company_aka, settings_values), ...]
         """
-
         global_settings = 'company_id' not in self.song_model
         kwargs = {'limit': 1} if global_settings else {}
 
@@ -594,24 +593,7 @@ class Song(models.Model):
                 if fname in SPECIAL_FIELDS:
                     continue
                 finfo = fields_info[fname]
-                if val and finfo['type'] == 'many2one':
-                    record = self.env[finfo['relation']].browse(val)
-                    ext_id = record._dj_export_xmlid()
-                    val = self.anthem_xmlid_value(ext_id)
-                # knowing which field does what is always difficult
-                # if you don't check settings schema definition.
-                # Let's add some helpful info.
-                label = finfo['string']
-                if finfo['type'] == 'selection':
-                    label += u': {}'.format(dict(finfo['selection'])[val])
-                    # selection field can have many values not only chars
-                    # let's wrap it only if it's a string
-                    if val and isinstance(val, basestring):
-                        val = u"'{}'".format(val)
-                if val and finfo['type'] in self.settings_char_fields:
-                    val = u"'{}'".format(val)
-                elif val and finfo['type'] in self.settings_text_fields:
-                    val = u'"""{}"""'.format(val)
+                label, val = self._dj_settings_val(finfo, fname, val)
                 cp_values[fname] = {
                     'val': val,
                     'label': label,
@@ -620,8 +602,30 @@ class Song(models.Model):
             song_name = self.name
             if not global_settings and self._is_multicompany_env():
                 song_name += '_{}'.format(company_codename)
-            res.append((song_name, company.name, cp_values))
+            res.append((song_name, company.aka, cp_values))
         return res
+
+    def _dj_settings_val(self, finfo, fname, val):
+        # knowing which field does what is always difficult
+        # if you don't check settings schema definition.
+        # Let's add some helpful info.
+        label = finfo['string']
+        if val:
+            if finfo['type'] == 'selection':
+                label += u': {}'.format(dict(finfo['selection'])[val])
+                # selection field can have many values not only chars
+                # let's wrap it only if it's a string
+                if isinstance(val, basestring):
+                    val = u"'{}'".format(val)
+            elif finfo['type'] == 'many2one':
+                record = self.env[finfo['relation']].browse(val)
+                ext_id = record._dj_export_xmlid()
+                val = self.anthem_xmlid_value(ext_id)
+            elif finfo['type'] in self.settings_char_fields:
+                val = u"'{}'".format(val)
+            elif finfo['type'] in self.settings_text_fields:
+                val = u'"""{}"""'.format(val)
+        return label, val
 
     def anthem_xmlid_value(self, xmlid):
         # anthem specific

@@ -5,6 +5,8 @@
 from odoo.tests.common import SavepointCase
 from odoo import tools
 from odoo.modules.module import get_resource_path
+import difflib
+
 from .lint import run_pylint
 
 
@@ -29,3 +31,20 @@ class BaseCase(SavepointCase):
 
     def _pylint_report(self, filepath):
         return run_pylint(filepath)
+
+    def assertMultiLineEqual(self, first, second, msg=None):
+        """Assert that two multi-line strings are equal.
+
+        If they aren't, show a nice diff.
+        """
+        self.assertTrue(isinstance(first, basestring),
+                        'First argument is not a string')
+        self.assertTrue(isinstance(second, basestring),
+                        'Second argument is not a string')
+
+        if first != second:
+            message = ''.join(difflib.ndiff(first.splitlines(True),
+                                            second.splitlines(True)))
+            if msg:
+                message += " : " + msg
+            self.fail("Multi-line strings are unequal:\n" + message)
