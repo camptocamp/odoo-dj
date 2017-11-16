@@ -12,6 +12,7 @@
     <field name="xmlid_table_name">user</field>
     <field name="field_blacklist">password_crypt</field>
     <field name="record_blacklist">base.user_root</field>
+    <field name="model_context">{'no_reset_password': True}</field>
   </record>
 
   <record model="dj.equalizer" id="dj_equalizer_partner">

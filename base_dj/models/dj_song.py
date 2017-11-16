@@ -295,8 +295,8 @@ class Song(models.Model):
         song_ctx = safe_eval(self.model_context) if self.model_context else {}
         ctx.update(song_ctx)
         if as_string:
-            return str(song_ctx)
-        return song_ctx
+            return str(ctx)
+        return ctx
 
     def real_csv_path(self):
         """Final csv path into zip file."""

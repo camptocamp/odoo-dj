@@ -13,8 +13,14 @@
 
   <record model="dj.song" id="test_song2">
     <field name="compilation_id" ref="test_comp1"/>
-    <field name="model_id" ref="base.model_res_partner" />
+    <field name="model_id" ref="base.model_res_users" />
     <field name="sequence" eval="20" />
+  </record>
+
+  <record model="dj.song" id="test_song3">
+    <field name="compilation_id" ref="test_comp1"/>
+    <field name="model_id" ref="base.model_res_partner" />
+    <field name="sequence" eval="30" />
   </record>
 
 </odoo>

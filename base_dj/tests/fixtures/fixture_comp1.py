@@ -22,6 +22,14 @@ def load_res_company(ctx):
 
 
 @anthem.log
+def load_res_users(ctx):
+    """ Import res.users from csv """
+    model = ctx.env['res.users'].with_context(
+        {'no_reset_password': True, 'tracking_disable': 1})
+    load_csv(ctx, 'data/install/generated/dj_test/res.users.csv', model)
+
+
+@anthem.log
 def load_res_partner(ctx):
     """ Import res.partner from csv """
     model = ctx.env['res.partner'].with_context({'tracking_disable': 1})
@@ -36,4 +44,5 @@ def load_res_partner(ctx):
 @anthem.log
 def main(ctx):
     load_res_company(ctx)
+    load_res_users(ctx)
     load_res_partner(ctx)
