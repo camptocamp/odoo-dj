@@ -3,13 +3,11 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, models, tools
-from odoo.addons.website.models.website import slugify
 import os
 import base64
 
 from ..utils import is_xml
-
-guess_mimetype = tools.mimetypes.guess_mimetype
+from ..slugifier import slugify
 
 
 class Base(models.AbstractModel):
@@ -24,22 +22,13 @@ class Base(models.AbstractModel):
         """
         return self.env.context.get('dj_xmlid_module') or '__setup__'
 
-    @tools.ormcache('self')
-    def _dj_global_config(self):
+    @tools.ormcache('self', 'key')
+    def _dj_global_config(self, key=None):
         """Retrieve default global config for xmlid fields."""
         config = self.env['dj.equalizer'].search([
             ('model', '=', self._name),
         ], limit=1)
-        return config.get_conf() if config else {}
-
-    def _dj_xmlid_global_config(self):
-        """Retrieve default global config for xmlid fields."""
-        config = self._dj_global_config()
-        _fields = config.get('xmlid_fields', [])
-        if not _fields and 'name' in self and 'name' not in _fields:
-            # we assume we can use name as default
-            _fields.append('name')
-        return _fields
+        return config.get_conf(key)
 
     def _dj_xmlid_export_name(self):
         """Customize xmlid name for dj compilation.
@@ -214,7 +203,7 @@ class Base(models.AbstractModel):
         # guess filename from mimetype
         if is_xml(content):
             return 'xml', content
-        mime = guess_mimetype(content.decode('base64'))
+        mime = tools.mimetypes.guess_mimetype(content.decode('base64'))
         if mime:
             # mime is like `image/png`
             return mime.split('/')[-1], content.decode('base64')

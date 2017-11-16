@@ -11,7 +11,7 @@ from lxml import etree
 from cStringIO import StringIO
 from contextlib import contextmanager
 
-from odoo.addons.website.models.website import slugify
+from .slugifier import slugify
 
 
 def create_zipfile(files):

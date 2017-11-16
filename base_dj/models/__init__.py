@@ -10,3 +10,4 @@ from . import company
 from . import ir_model
 from . import ir_property
 from . import ir_values
+from . import tests_models

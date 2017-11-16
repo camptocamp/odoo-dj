@@ -1,0 +1,15 @@
+<odoo>
+
+  <record model="dj.compilation" id="test_comp4">
+    <field name="name">comp4</field>
+    <field name="genre_id" ref="test_genre" />
+  </record>
+
+  <record model="dj.song" id="test_song_defer_parent">
+    <field name="compilation_id" ref="test_comp4"/>
+    <field name="model_id" ref="base.model_res_partner" />
+    <field name="song_type">load_csv_defer_parent</field>
+    <field name="sequence" eval="10" />
+  </record>
+
+</odoo>

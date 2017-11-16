@@ -12,7 +12,6 @@
     'license': 'AGPL-3',
     'category': 'songs',
     'depends': ['base_dj', ],
-    'external_dependencies': {'python': ['autopep8']},
     'data': ['data/dj.xml'],
     'installable': True,
     'auto_install': False,

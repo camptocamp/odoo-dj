@@ -1,0 +1,11 @@
+<odoo>
+
+  <record model="res.company" id="base.main_company">
+    <field name="aka">djc</field>
+  </record>
+
+  <record model="dj.genre" id="test_genre">
+    <field name="name">dj_test</field>
+  </record>
+
+</odoo>

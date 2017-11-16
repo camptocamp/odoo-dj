@@ -91,6 +91,9 @@ class Compilation(models.Model):
         # check xmlid settings
         xmlid_not_safe = []
         for song in self.mapped('song_ids').filtered('has_records'):
+            if isinstance(song.song_model, models.TransientModel):
+                # no xmlid to generate actually
+                continue
             # no global or specific xmlid policy
             config = song._dj_global_config()
             if (not config.get('xmlid_fields') and
@@ -190,7 +193,9 @@ class Compilation(models.Model):
         # compute parents after that
         # TODO: a bit hacky... When we move song types to separated records
         # we could have shadow song types and use them on the fly.
-        song_data['template_path'] = 'base_dj:discs/song_compute_parent.tmpl'
+        song_data['song_type'] = 'compute_parent'
+        types = self.env['dj.song'].available_song_types
+        song_data.update(types['compute_parent'].get('defaults', {}))
         return song.new(song_data)
 
     @api.multi
@@ -308,7 +313,7 @@ class Compilation(models.Model):
         """Download zip file w/ current configuration.
 
         To achieve this we rely on an hidden compilation
-        that is already configured for exporting dj models.
+        that is alreadty configured for exporting dj models.
         We grab it and use it as a template to generate a new compilation
         that will link all the records in the compilation we want to export.
         """

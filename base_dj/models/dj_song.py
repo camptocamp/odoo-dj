@@ -198,9 +198,12 @@ class Song(models.Model):
         for item in self:
             prefix = self.available_song_types.get(
                 item.song_type, {}).get('prefix', 'load_')
-            name = u'{}{}'.format(
+            suffix = self.available_song_types.get(
+                item.song_type, {}).get('suffix', '')
+            name = u'{}{}{}'.format(
                 prefix,
                 (item.model_id.model or '').replace('.', '_'),
+                suffix,
             )
             if item._songs_models_count[item.model_name] > 1:
                 # make name unique in the compilation
@@ -242,7 +245,11 @@ class Song(models.Model):
 
     @api.model
     def eval_domain(self):
-        return safe_eval(self.domain) if self.domain else []
+        domain = safe_eval(self.domain) if self.domain else []
+        ids_blacklist = self._dj_global_config('record_blacklist') or []
+        if ids_blacklist:
+            domain.append(('id', 'not in', ids_blacklist))
+        return domain
 
     @api.model
     def eval_python_code(self):
@@ -284,12 +291,12 @@ class Song(models.Model):
 
     def song_model_context(self, as_string=False):
         """Updated context to run songs with."""
-        ctx = self.song_model._dj_global_config().get('model_context', {})
+        ctx = self.song_model._dj_global_config('model_context')
         song_ctx = safe_eval(self.model_context) if self.model_context else {}
         ctx.update(song_ctx)
         if as_string:
-            return str(song_ctx)
-        return song_ctx
+            return str(ctx)
+        return ctx
 
     def real_csv_path(self):
         """Final csv path into zip file."""
@@ -340,12 +347,31 @@ class Song(models.Model):
             ('master_song_id', '=', self.id)
         ]).mapped('song_id')
 
+    def _handle_fields_shortcuts(self, vals):
+        """We support some shortcuts to not deal w/ fields relations.
+
+        Available:
+            * `fields_list` -> converted to `model_fields_ids`
+            * `field_blacklist` -> converted to `model_fields_blacklist_ids`
+        """
+        shortcuts = (
+            ('field_list', 'model_fields_ids'),
+            ('field_blacklist', 'model_fields_blacklist_ids'),
+        )
+        for shortcut, fname in shortcuts:
+            if vals.get(shortcut):
+                model_id = vals.get('model_id') or self.model_id.id
+                ids = vals.get(fname, [])
+                if ids and len(ids[0]) > 1 and ids[0][0] == 6:
+                    # ids == [(6, 0, [940])] -> preserve values
+                    ids = ids[0][-1]
+                fields = self._get_fields(model_id, vals.pop(shortcut))
+                ids.extend(fields.ids)
+                vals[fname] = [(6, 0, ids)]
+
     @api.multi
     def write(self, vals):
-        if vals.get('field_list'):
-            model_id = vals.get('model_id') or self.model_id.id
-            fields = self._get_fields(model_id, vals.pop('field_list'))
-            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        self._handle_fields_shortcuts(vals)
         for item in self:
             # update dependant songs
             for dep in item._get_dependant_songs():
@@ -354,9 +380,7 @@ class Song(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals.get('field_list') and vals.get('model_id'):
-            fields = self._get_fields(vals['model_id'], vals.pop('field_list'))
-            vals['model_fields_ids'] = [(6, 0, fields.ids)]
+        self._handle_fields_shortcuts(vals)
         item = super(Song, self).create(vals)
         if self.env.context.get('install_mode'):
             # if we are installing/updating the module
@@ -366,9 +390,9 @@ class Song(models.Model):
         return item
 
     def _get_fields(self, model_id, field_list):
-        """ helper to set fields from a list """
+        """Helper to retrieve fields records from a name list."""
         model_name = self.env['ir.model'].browse(model_id).name
-        field_names = [f.strip() for f in field_list.split(',')]
+        field_names = [f.strip() for f in field_list.split(',') if f.strip()]
         return self.env['ir.model.fields'].search([
             ('model_id', '=', model_name),
             ('name', 'in', field_names)
@@ -409,6 +433,7 @@ class Song(models.Model):
         _fields = self._get_data_fields()
 
         blacklisted = self.model_fields_blacklist_ids.mapped('name')
+        blacklisted.extend(self._dj_global_config('field_blacklist'))
         for field in _fields:
             if field.name in blacklisted:
                 continue
@@ -446,13 +471,17 @@ class Song(models.Model):
                 exclude.append(fname + '/id')
         return [x for x in exclude if x in self.get_csv_field_names()]
 
-    @tools.ormcache('self')
-    def _dj_global_config(self):
+    @tools.ormcache_context('self', 'key', keys=('dj_xmlid_force'))
+    def _dj_global_config(self, key=None):
         """Retrieve default global config for song model."""
+        model = self.model_name
+        if self.env.context.get('dj_xmlid_force'):
+            # we are exporting the dj.song itself
+            model = self._name
         config = self.env['dj.equalizer'].search([
-            ('model', '=', self.model_name),
+            ('model', '=', model),
         ], limit=1)
-        return config.get_conf() if config else {}
+        return config.get_conf(key)
 
     def _get_xmlid_fields(self, include_global=False):
         """Retrieve fields to generate xmlids."""
@@ -549,9 +578,8 @@ class Song(models.Model):
     def dj_get_settings_vals(self):
         """Prepare of values for res.config settings song.
 
-        Returns [(song_name, settings_values), ...]
+        Returns [(song_name, company_aka, settings_values), ...]
         """
-
         global_settings = 'company_id' not in self.song_model
         kwargs = {'limit': 1} if global_settings else {}
 
@@ -568,24 +596,7 @@ class Song(models.Model):
                 if fname in SPECIAL_FIELDS:
                     continue
                 finfo = fields_info[fname]
-                if val and finfo['type'] == 'many2one':
-                    record = self.env[finfo['relation']].browse(val)
-                    ext_id = record._dj_export_xmlid()
-                    val = self.anthem_xmlid_value(ext_id)
-                # knowing which field does what is always difficult
-                # if you don't check settings schema definition.
-                # Let's add some helpful info.
-                label = finfo['string']
-                if finfo['type'] == 'selection':
-                    label += u': {}'.format(dict(finfo['selection'])[val])
-                    # selection field can have many values not only chars
-                    # let's wrap it only if it's a string
-                    if val and isinstance(val, basestring):
-                        val = u"'{}'".format(val)
-                if val and finfo['type'] in self.settings_char_fields:
-                    val = u"'{}'".format(val)
-                elif val and finfo['type'] in self.settings_text_fields:
-                    val = u'"""{}"""'.format(val)
+                label, val = self._dj_settings_val(finfo, fname, val)
                 cp_values[fname] = {
                     'val': val,
                     'label': label,
@@ -594,8 +605,30 @@ class Song(models.Model):
             song_name = self.name
             if not global_settings and self._is_multicompany_env():
                 song_name += '_{}'.format(company_codename)
-            res.append((song_name, company.name, cp_values))
+            res.append((song_name, company.aka, cp_values))
         return res
+
+    def _dj_settings_val(self, finfo, fname, val):
+        # knowing which field does what is always difficult
+        # if you don't check settings schema definition.
+        # Let's add some helpful info.
+        label = finfo['string']
+        if val:
+            if finfo['type'] == 'selection':
+                label += u': {}'.format(dict(finfo['selection'])[val])
+                # selection field can have many values not only chars
+                # let's wrap it only if it's a string
+                if isinstance(val, basestring):
+                    val = u"'{}'".format(val)
+            elif finfo['type'] == 'many2one':
+                record = self.env[finfo['relation']].browse(val)
+                ext_id = record._dj_export_xmlid()
+                val = self.anthem_xmlid_value(ext_id)
+            elif finfo['type'] in self.settings_char_fields:
+                val = u"'{}'".format(val)
+            elif finfo['type'] in self.settings_text_fields:
+                val = u'"""{}"""'.format(val)
+        return label, val
 
     def anthem_xmlid_value(self, xmlid):
         # anthem specific
