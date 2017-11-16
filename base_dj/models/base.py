@@ -3,13 +3,11 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, models, tools
-from odoo.addons.website.models.website import slugify
 import os
 import base64
 
 from ..utils import is_xml
-
-guess_mimetype = tools.mimetypes.guess_mimetype
+from ..slugifier import slugify
 
 
 class Base(models.AbstractModel):
@@ -205,7 +203,7 @@ class Base(models.AbstractModel):
         # guess filename from mimetype
         if is_xml(content):
             return 'xml', content
-        mime = guess_mimetype(content.decode('base64'))
+        mime = tools.mimetypes.guess_mimetype(content.decode('base64'))
         if mime:
             # mime is like `image/png`
             return mime.split('/')[-1], content.decode('base64')
