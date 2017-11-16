@@ -6,12 +6,15 @@
 # pylint: disable=C,E
 
 import anthem
+{%- if 'load_csv' in songs.mapped('song_type') %}
 from ...common import load_csv
-{% if 'load_csv_defer_parent' in songs.mapped('song_type') %}
+{%- endif %}
+{%- if 'load_csv_defer_parent' in songs.mapped('song_type') %}
 from ...common import (
     deferred_import,
     deferred_compute_parents
-){% endif %}
+)
+{%- endif %}
 
 {% for song in songs %}
 {{ song.dj_render_template() }}

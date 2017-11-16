@@ -1,4 +1,4 @@
 @anthem.log
-def {{ song.name }}_compute_parent(ctx):
+def {{ song.name }}(ctx):
     """Compute parent_left, parent_right"""
     deferred_compute_parents(ctx, '{{ song.model_id.model }}')

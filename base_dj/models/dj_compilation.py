@@ -193,7 +193,9 @@ class Compilation(models.Model):
         # compute parents after that
         # TODO: a bit hacky... When we move song types to separated records
         # we could have shadow song types and use them on the fly.
-        song_data['template_path'] = 'base_dj:discs/song_compute_parent.tmpl'
+        song_data['song_type'] = 'compute_parent'
+        types = self.env['dj.song'].available_song_types
+        song_data.update(types['compute_parent'].get('defaults', {}))
         return song.new(song_data)
 
     @api.multi

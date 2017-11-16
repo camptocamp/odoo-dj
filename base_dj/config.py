@@ -70,6 +70,10 @@ SONG_TYPES = {
             'template_path': 'base_dj:discs/song.tmpl',
         },
     },
+    # TODO
+    # switch automatically to `load_csv_heavy
+    # when this amount of records is reached
+    # HEAVY_IMPORT_THRESHOLD = 1000
     'load_csv_defer_parent': {
         'name': _('Load CSV defer parent computation'),
         'prefix': 'load_',
@@ -79,14 +83,23 @@ SONG_TYPES = {
             'template_path': 'base_dj:discs/song_defer_parent.tmpl',
         }
     },
-    # TODO
-    # 'load_csv_heavy': {
-    #     'only_config': False,
-    #     'template_path': 'base_dj:discs/song_defer_parent.tmpl',
-    # },
-    # switch automatically to `load_csv_heavy
-    # when this amount of records is reached
-    # HEAVY_IMPORT_THRESHOLD = 1000
+    'compute_parent': {
+        # TODO: this song type is to be used under the hood
+        # by `_add_shadow_song_compute_parent`.
+        # We cannot hide it because otherwise the `song_type` selection field
+        # will complain about not having this option enabled.
+        # ATM we live with this. As soon as we move to `song.type` model
+        # and `song_type` to a m2o `song_type_id`
+        # we can make this type inactive and search for it by reference.
+        'name': _('Parent computation (DO NOT USE THIS)'),
+        'prefix': 'load_',
+        'suffix': '_compute_parent',
+        'sequence': 20,
+        'defaults': {
+            'only_config': False,
+            'template_path': 'base_dj:discs/song_compute_parent.tmpl',
+        }
+    },
     'generate_xmlids': {
         'name': _('Generate xmlids (for existing records)'),
         'prefix': 'add_xmlid_to_existing_',

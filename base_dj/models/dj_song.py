@@ -198,9 +198,12 @@ class Song(models.Model):
         for item in self:
             prefix = self.available_song_types.get(
                 item.song_type, {}).get('prefix', 'load_')
-            name = u'{}{}'.format(
+            suffix = self.available_song_types.get(
+                item.song_type, {}).get('suffix', '')
+            name = u'{}{}{}'.format(
                 prefix,
                 (item.model_id.model or '').replace('.', '_'),
+                suffix,
             )
             if item._songs_models_count[item.model_name] > 1:
                 # make name unique in the compilation
