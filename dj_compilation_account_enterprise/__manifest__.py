@@ -5,7 +5,7 @@
 {
     'name': 'DJ set - Accounting compilation - Enterprise',
     'summary': "Extension for Enterprise models only",
-    'version': '11.0.1.0.0',
+    'version': '10.0.1.0.0',
     'author': 'Camptocamp,Odoo Community Association (OCA)',
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',

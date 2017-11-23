@@ -24,7 +24,6 @@
     'data': [
         'security/ir.model.access.csv',
         'data/equalizer.xml',
-        'data/equalizer_v11.xml',
         'data/export_compilation.xml',
         'wizards/burn_selected_wiz.xml',
         'wizards/load_compilation.xml',

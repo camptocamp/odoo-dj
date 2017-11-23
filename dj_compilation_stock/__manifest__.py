@@ -5,7 +5,7 @@
 {
     'name': 'DJ set - Stock compilation',
     'summary': "Create stock songs from scratch",
-    'version': '11.0.1.0.0',
+    'version': '10.0.1.0.0',
     'author': 'Camptocamp,Odoo Community Association (OCA)',
     'maintainer': 'Camptocamp',
     'license': 'AGPL-3',
