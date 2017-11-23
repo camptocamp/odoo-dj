@@ -3,16 +3,16 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import models, api
-from ..utils import (
+from ...utils import (
     property_to_xmlid,
     xmlid_to_property,
+    ODOOVER,
 )
 from odoo.tools import pickle
 
 
-class IRValues(models.Model):
-
-    _inherit = 'ir.values'
+class DefaultMixin(models.AbstractModel):
+    _name = 'default.mixin'
 
     def _get_relation_field(self, vals):
         """Return field info if values match a related field."""
@@ -39,17 +39,17 @@ class IRValues(models.Model):
     @api.model
     def create(self, vals):
         self._dj_xmlid_to_values(vals)
-        return super(IRValues, self).create(vals)
+        return super(DefaultMixin, self).create(vals)
 
     @api.multi
     def write(self, vals):
         self._dj_xmlid_to_values(vals)
-        return super(IRValues, self).write(vals)
+        return super(DefaultMixin, self).write(vals)
 
     @api.multi
     def read(self, fields=None, load='_classic_read'):
         """Convert values to xmlid."""
-        res = super(IRValues, self).read(fields=fields, load=load)
+        res = super(DefaultMixin, self).read(fields=fields, load=load)
         if not self.env.context.get('xmlid_value_reference'):
             return res
         # wipe cache otherwise we gonna get the std value in any case
@@ -69,3 +69,21 @@ class IRValues(models.Model):
                     model = self.env[field['relation']]
                     rec['value'] = model.browse(rec_id)._dj_export_xmlid()
         return res
+
+
+if ODOOVER >= 11.0:
+    class IRDefault(models.Model):
+
+        _name = 'ir.default'
+        _inherit = [
+            'ir.default',
+            'default.mixin',
+        ]
+else:
+    class IRValues(models.Model):
+
+        _name = 'ir.values'
+        _inherit = [
+            'ir.values',
+            'default.mixin',
+        ]

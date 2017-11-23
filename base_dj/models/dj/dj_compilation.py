@@ -4,10 +4,14 @@
 
 import autopep8
 import os
-import urllib.request, urllib.parse, urllib.error
+try:
+    from urllib import urlencode
+except ImportError:
+    # py3
+    from urllib.parse import urlencode
 
 from odoo import models, fields, api, exceptions, _
-from ..utils import create_zipfile, make_title
+from ...utils import create_zipfile, make_title, to_str
 
 
 class Compilation(models.Model):
@@ -232,7 +236,8 @@ class Compilation(models.Model):
         return compilations._get_tracks()
 
     def disc_full_path(self):
-        return self.disc_path.format(**self.read()[0])
+        path = self.disc_path.format(**self.read()[0])
+        return to_str(path)
 
     @api.multi
     def toggle_active(self):
@@ -248,7 +253,7 @@ class Compilation(models.Model):
         content = self.dj_render_template()
         # make sure PEP8 is safe
         content = autopep8.fix_code(content)
-        return self.disc_full_path(), content
+        return self.disc_full_path(), to_str(content)
 
     @api.multi
     def burn_dev_readme(self):
@@ -305,7 +310,10 @@ class Compilation(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': new_comp.download_url + '?' + urllib.parse.urlencode(url_args),
+            'url': '{}?{}'.format(
+                new_comp.download_url,
+                urlencode(url_args),
+            )
         }
 
     @api.multi

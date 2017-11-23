@@ -4,6 +4,16 @@
 
 from odoo import models, fields, api
 from odoo.tools.safe_eval import safe_eval
+from collections import OrderedDict
+
+
+class OrderedContext(OrderedDict):
+
+    def __str__(self):
+        return str(dict(self))
+
+    def __repr__(self):
+        return str(dict(self))
 
 
 def text_to_list(string, separator=',', modifier=lambda x: x):
@@ -32,7 +42,9 @@ class DJEqualizer(models.Model):
         if not self.ids:
             return {}
         self.ensure_one()
-        return safe_eval(self.model_context) if self.model_context else {}
+        return OrderedContext(
+            safe_eval(self.model_context) if self.model_context else {}
+        )
 
     @api.multi
     def get_xmlid_fields(self):

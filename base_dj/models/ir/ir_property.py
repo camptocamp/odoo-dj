@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import models, api
-from ..utils import property_to_xmlid, xmlid_to_property
+from ...utils import property_to_xmlid, xmlid_to_property
 
 
 class Property(models.Model):

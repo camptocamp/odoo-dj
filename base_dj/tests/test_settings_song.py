@@ -16,9 +16,11 @@ class SettingsSongCase(BaseCase):
         cls.test_model = 'dj.test.config.settings'
 
     def tearDown(self):
-        self.env['ir.values'].search([
-            ('model', '=', self.test_model)]).unlink()
-        self.env[self.test_model].search([]).unlink()
+        try:
+            self.env['ir.values'].search([]).unlink()
+        except KeyError:
+            # v11
+            self.env['ir.default'].search([]).unlink()
 
     def test_settings_values1(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
@@ -39,9 +41,10 @@ class SettingsSongCase(BaseCase):
             'field_char': {'label': 'A char field', 'val': False},
             'field_date': {'label': 'A date field',
                            'val': "'{}'".format(fields.Date.today())},
-            'field_datetime': {'label': 'A datetime field',
-                               'val': "'{} 00:00:00'".format(
-                                    fields.Date.today())},
+            'field_datetime': {
+                'label': 'A datetime field',
+                'val': "'{} 00:00:00'".format(fields.Date.today())
+            },
             'field_float': {'label': 'A float field', 'val': 1.0},
             'field_integer': {'label': 'A integer field', 'val': 1},
             'field_selection_char': {'label': 'A selection field (txt)',
@@ -114,7 +117,7 @@ class SettingsSongCase(BaseCase):
         output = song.dj_render_template()
         expected = self._load_filecontent(
             'base_dj', 'tests/fixtures/fixture_settings_song1.pytxt')
-        # tmp_file_path = '/tmp/test_settings_output.py'
-        # with open(tmp_file_path, 'w') as fd:
-        #     fd.write(output)
+        tmp_file_path = '/tmp/test_settings_output.py'
+        with open(tmp_file_path, 'w') as fd:
+            fd.write(output)
         self.assertMultiLineEqual(output.strip(), expected.strip())

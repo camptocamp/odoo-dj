@@ -13,6 +13,16 @@ from contextlib import contextmanager
 
 from .slugifier import slugify
 
+import odoo
+ODOOVER = float(odoo.release.serie)
+
+try:
+    basestring
+    PY2 = True
+except NameError:
+    PY2 = False
+    basestring = str
+
 
 def create_zipfile(files):
     in_mem_zip = io.BytesIO()
@@ -104,3 +114,26 @@ def is_xml(content):
         return True
     except etree.XMLSyntaxError:
         return False
+
+
+def context_to_string(ctx):
+    """Convert context dictionary to a string.
+
+    Keywords are sorted by alpha to always have the same order
+    and ease output comparison.
+    """
+    out = []
+    for k, v in ctx.items():
+        out.append('{}={}'.format(k, v))
+    return ', '.join(sorted(out))
+
+
+def to_str(s, safe=False):
+    """Compat layer py2/3. If `safe` Non-strings are returned as they are."""
+    if safe and not isinstance(s, basestring):
+        # get it back safely
+        return s
+    if PY2:
+        return s.encode('utf-8')
+    # py3, str = unicode
+    return s

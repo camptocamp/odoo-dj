@@ -12,7 +12,7 @@ from ...common import load_csv
 @anthem.log
 def load_res_company(ctx):
     """ Import res.company from csv """
-    model = ctx.env['res.company'].with_context({'tracking_disable': 1})
+    model = ctx.env['res.company'].with_context(tracking_disable=True)
     header_exclude = ['parent_id/id']
     load_csv(ctx, 'data/install/generated/dj_test/res.company.csv',
              model, header_exclude=header_exclude)
@@ -25,14 +25,14 @@ def load_res_company(ctx):
 def load_res_users(ctx):
     """ Import res.users from csv """
     model = ctx.env['res.users'].with_context(
-        {'no_reset_password': True, 'tracking_disable': 1})
+        no_reset_password=True, tracking_disable=True)
     load_csv(ctx, 'data/install/generated/dj_test/res.users.csv', model)
 
 
 @anthem.log
 def load_res_partner(ctx):
     """ Import res.partner from csv """
-    model = ctx.env['res.partner'].with_context({'tracking_disable': 1})
+    model = ctx.env['res.partner'].with_context(tracking_disable=True)
     header_exclude = ['commercial_partner_id/id', 'parent_id/id']
     load_csv(ctx, 'data/install/generated/dj_test/res.partner.csv',
              model, header_exclude=header_exclude)

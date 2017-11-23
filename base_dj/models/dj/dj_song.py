@@ -5,8 +5,8 @@
 from odoo import models, fields, api, exceptions, tools, _
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 from odoo.modules import get_module_path
-from ..utils import csv_from_data, force_company
-from ..config import (
+from ...utils import csv_from_data, force_company, context_to_string, to_str
+from ...config import (
     SPECIAL_FIELDS,
     SONG_TYPES,
     DEFAULT_PYTHON_CODE,
@@ -83,7 +83,7 @@ class Song(models.Model):
         default=DEFAULT_PYTHON_CODE,
         help="Get a list of ids with a python expression, if both domain and"
              " python_code are used data will be an union of both.")
-    model_context = fields.Char(default="{'tracking_disable':1}")
+    model_context = fields.Char(default="{'tracking_disable': True}")
     xmlid_fields = fields.Char(
         help="List of field to use to generate unique "
              "xmlid separated by ','.",
@@ -145,9 +145,8 @@ class Song(models.Model):
                 self.song_type, {}).get('defaults', {})
             # self.write does play good w/ NewId records
             for k, v in defaults.items():
-                if isinstance(v, str):
-                    if v.startswith('xmlid:'):
-                        v = self.env.ref(v[6:]).id
+                if isinstance(v, str) and v.startswith('xmlid:'):
+                    v = self.env.ref(v[6:]).id
                 self[k] = v
 
     @api.onchange('depends_on_ids')
@@ -295,7 +294,7 @@ class Song(models.Model):
         song_ctx = safe_eval(self.model_context) if self.model_context else {}
         ctx.update(song_ctx)
         if as_string:
-            return str(ctx)
+            return context_to_string(ctx)
         return ctx
 
     def real_csv_path(self):
@@ -450,7 +449,7 @@ class Song(models.Model):
             # make sure is always after `id` to ease csv review
             field_names.remove('name')
             field_names.insert(1, 'name')
-        return field_names
+        return [to_str(x) for x in field_names]
 
     def get_csv_field_names_exclude(self):
         """Return fields that must be imported in 2 steps.
@@ -596,6 +595,7 @@ class Song(models.Model):
                 if fname in SPECIAL_FIELDS:
                     continue
                 finfo = fields_info[fname]
+                val = to_str(val, safe=True)
                 label, val = self._dj_settings_val(finfo, fname, val)
                 cp_values[fname] = {
                     'val': val,

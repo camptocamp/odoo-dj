@@ -1,27 +1,27 @@
 @anthem.log
 def dj_test_config_settings(ctx):
     """Setup dj.test.config.settings for djc."""
-    model = ctx.env['dj.test.config.settings'].with_context({'tracking_disable': 1})
+    model = ctx.env['dj.test.config.settings'].with_context(tracking_disable=True)
     model.create({
-        # A datetime field
-        'field_datetime': '2017-11-14 10:00:00',
-        # A bool field
-        'field_bool': True,
         # The company
         'company_id': ctx.env.ref('base.main_company').id,
-        # A selection field (txt): Ok
-        'field_selection_char': 'ok',
-        # A float field
-        'field_float': 20.0,
+        # A bool field
+        'field_bool': True,
         # A char field
         'field_char': 'Great!',
+        # A date field
+        'field_date': '2017-11-15',
+        # A datetime field
+        'field_datetime': '2017-11-14 10:00:00',
+        # A float field
+        'field_float': 20.0,
+        # A integer field
+        'field_integer': 10,
+        # A selection field (txt): Ok
+        'field_selection_char': 'ok',
         # A selection field (int): Yes
         'field_selection_int': 1,
         # A text field
         'field_text': """Hello there!
 Let's try this.""",
-        # A date field
-        'field_date': '2017-11-15',
-        # A integer field
-        'field_integer': 10,
     }).execute()

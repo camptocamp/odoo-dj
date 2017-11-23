@@ -34,11 +34,19 @@ if testing:
             selection=[('not ok', "Not ok"), ("ok", "Ok")])
 
         def _set_default_value(self, key, value):
-            return self.env['ir.values'].sudo().set_default(
-                self._name, key, value)
+            try:
+                handler = self.env['ir.values'].sudo().set_default
+            except KeyError:
+                # v11
+                handler = self.env['ir.default'].sudo().set
+            return handler(self._name, key, value)
 
         @api.multi
-        def set_all_defaults(self):
+        def set_values(self):
+            _super = super(TestConfiguration, self)
+            if hasattr(_super, 'set_values'):
+                # v11
+                _super.set_values()
             fnames = [
                 x for x in self.fields_get().keys() if x.startswith('field_')]
             for fname in fnames:

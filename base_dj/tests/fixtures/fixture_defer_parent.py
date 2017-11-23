@@ -14,7 +14,7 @@ from ...common import (
 
 @anthem.log
 def load_res_partner(ctx):
-    model = ctx.env['res.partner'].with_context({'tracking_disable': 1})
+    model = ctx.env['res.partner'].with_context(tracking_disable=True)
     deferred_import(
         ctx,
         model,

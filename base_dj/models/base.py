@@ -6,7 +6,7 @@ from odoo import api, models, tools
 import os
 import base64
 
-from ..utils import is_xml
+from ..utils import is_xml, to_str
 from ..slugifier import slugify
 
 
@@ -53,7 +53,7 @@ class Base(models.AbstractModel):
             for key in xmlid_fields:
                 if not self[key]:
                     continue
-                value = self[key]
+                value = to_str(self[key], safe=True)
                 if isinstance(value, str):
                     value = slugify(value).replace('-', '_')
                 elif isinstance(value, models.BaseModel):
@@ -131,7 +131,7 @@ class Base(models.AbstractModel):
                     'module': module,
                     'name': name,
                 })
-            return module + '.' + name
+            return to_str(module + '.' + name)
 
     @api.multi
     def read(self, fields=None, load='_classic_read'):
@@ -238,6 +238,9 @@ class Base(models.AbstractModel):
     def _dj_path_to_file(self, fname, info, path):
         # special case: xml validation is done for fields like `arch_db`
         # so we need to wrap/unwrap w/ <odoo/> tag
+        if not type(path) is str:
+            # py3 compat
+            path = path.decode()
         path = path.replace('<odoo><path>', '').replace('</path></odoo>', '')
         if not path.startswith(self._dj_path_prefix):
             return path

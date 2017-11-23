@@ -7,6 +7,7 @@ import os
 
 from odoo import models, fields, api, _
 from odoo.modules.module import get_module_resource
+from ...utils import to_str
 
 
 class TemplateMixin(models.AbstractModel):
@@ -47,4 +48,4 @@ class TemplateMixin(models.AbstractModel):
         """Render template."""
         template = self.dj_template()
         template_vars = template_vars or self.dj_template_vars()
-        return template.render(**template_vars)
+        return to_str(template.render(**template_vars))

@@ -6,8 +6,10 @@ from odoo.tests.common import SavepointCase
 from odoo import tools
 from odoo.modules.module import get_resource_path
 import difflib
+import io
 
 from .lint import run_pylint
+from ..utils import to_str
 
 
 class BaseCase(SavepointCase):
@@ -19,8 +21,9 @@ class BaseCase(SavepointCase):
         cls._load_xml('base_dj', 'tests/fixtures/default.xml')
 
     def _load_filecontent(self, module, filepath):
-        with open(get_resource_path(module, filepath), 'r') as fd:
-            return fd.read()
+        path = get_resource_path(module, filepath)
+        with io.open(path, 'r', encoding='utf-8') as fd:
+            return to_str(fd.read())
 
     @classmethod
     def _load_xml(cls, module, filepath):
