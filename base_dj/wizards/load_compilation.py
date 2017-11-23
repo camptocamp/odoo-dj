@@ -7,7 +7,7 @@ import zipfile
 import os
 import csv
 import codecs
-from cStringIO import StringIO
+from io import StringIO
 
 
 def csv_unireader(f, encoding="utf-8", **fmtparams):
@@ -20,7 +20,7 @@ def csv_unireader(f, encoding="utf-8", **fmtparams):
 
 def read_csv(data, dialect='excel', encoding='utf-8', **fmtparams):
     rows = csv_unireader(data, encoding=encoding, **fmtparams)
-    header = rows.next()
+    header = next(rows)
     return header, list(rows)
 
 

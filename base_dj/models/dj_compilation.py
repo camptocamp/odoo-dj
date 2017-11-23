@@ -4,7 +4,7 @@
 
 import autopep8
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from odoo import models, fields, api, exceptions, _
 from ..utils import create_zipfile, make_title
@@ -305,7 +305,7 @@ class Compilation(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': new_comp.download_url + '?' + urllib.urlencode(url_args),
+            'url': new_comp.download_url + '?' + urllib.parse.urlencode(url_args),
         }
 
     @api.multi
@@ -328,7 +328,7 @@ class Compilation(models.Model):
         # use `copy_data` as `copy` keeps xmlids :(
         defaults = {
             'active': True,
-            'name': u'{} EXPORT {}'.format(
+            'name': '{} EXPORT {}'.format(
                 self.name, fields.Datetime.now())
         }
         new_comp_data = comp_tmpl.copy_data(default=defaults)[0]

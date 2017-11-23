@@ -8,7 +8,7 @@ import zipfile
 import time
 import datetime
 from lxml import etree
-from cStringIO import StringIO
+from io import StringIO
 from contextlib import contextmanager
 
 from .slugifier import slugify
@@ -20,13 +20,13 @@ def create_zipfile(files):
         for filepath, data in files:
             # File "/usr/lib/python2.7/zipfile.py", line 1247, in writestr
             # TypeError: 'unicode' does not have the buffer interface
-            if isinstance(data, unicode):
+            if isinstance(data, str):
                 data = data.encode('utf-8')
             # use info to keep date and set permissions
             info = zipfile.ZipInfo(
                 filepath, date_time=time.localtime(time.time()))
             # set proper permissions
-            info.external_attr = 0644 << 16L
+            info.external_attr = 0o644 << 16
             zf.writestr(info, data)
     in_mem_zip.seek(0)
     return in_mem_zip
@@ -47,7 +47,7 @@ def csv_from_data(fields, rows):
     for data in rows:
         row = []
         for i, col in enumerate(data):
-            if isinstance(col, unicode):
+            if isinstance(col, str):
                 try:
                     col = col.encode('utf-8')
                 except UnicodeError:
@@ -94,7 +94,7 @@ def property_to_xmlid(env, val):
 def xmlid_to_property(env, val):
     """Inverse `property_to_xmlid` to get property value from xmlid."""
     record = env.ref(val)
-    return u'%s,%i' % (record._name, record.id)
+    return '%s,%i' % (record._name, record.id)
 
 
 def is_xml(content):

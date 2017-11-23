@@ -26,12 +26,12 @@ class SettingsExporter(models.AbstractModel):
         values = self.read()[0]
 
         for k in SPECIAL_FIELDS:
-            if k in values.keys():
+            if k in list(values.keys()):
                 del values[k]
 
         xmlids = []
 
-        for k, v in values.iteritems():
+        for k, v in values.items():
             if v and self._fields[k].type == 'many2one':
                 model = self._fields[k].comodel_name
                 domain = [('model', '=', model),

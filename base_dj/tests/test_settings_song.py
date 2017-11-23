@@ -28,9 +28,9 @@ class SettingsSongCase(BaseCase):
         self.assertEqual(len(all_vals), 1)
         vals = all_vals[0]
         # song name
-        self.assertEqual(vals[0], u'dj_test_config_settings')
+        self.assertEqual(vals[0], 'dj_test_config_settings')
         # company_aka
-        self.assertEqual(vals[1], u'djc')
+        self.assertEqual(vals[1], 'djc')
         expected_vals = {
             # values
             'company_id': {'label': 'The company',
@@ -38,9 +38,9 @@ class SettingsSongCase(BaseCase):
             'field_bool': {'label': 'A bool field', 'val': False},
             'field_char': {'label': 'A char field', 'val': False},
             'field_date': {'label': 'A date field',
-                           'val': u"'{}'".format(fields.Date.today())},
+                           'val': "'{}'".format(fields.Date.today())},
             'field_datetime': {'label': 'A datetime field',
-                               'val': u"'{} 00:00:00'".format(
+                               'val': "'{} 00:00:00'".format(
                                     fields.Date.today())},
             'field_float': {'label': 'A float field', 'val': 1.0},
             'field_integer': {'label': 'A integer field', 'val': 1},
@@ -50,7 +50,7 @@ class SettingsSongCase(BaseCase):
                                     'val': False},
             'field_text': {'label': 'A text field', 'val': False}
         }
-        for key in expected_vals.keys():
+        for key in list(expected_vals.keys()):
             self.assertDictEqual(expected_vals[key], vals[-1][key])
 
     def test_settings_values2(self):
@@ -71,31 +71,31 @@ class SettingsSongCase(BaseCase):
         self.assertEqual(len(all_vals), 1)
         vals = all_vals[0]
         # song name
-        self.assertEqual(vals[0], u'dj_test_config_settings')
+        self.assertEqual(vals[0], 'dj_test_config_settings')
         # company_aka
-        self.assertEqual(vals[1], u'djc')
+        self.assertEqual(vals[1], 'djc')
         expected_vals = {
             # values
             'company_id': {'label': 'The company',
                            'val': "ctx.env.ref('base.main_company').id"},
             'field_bool': {'label': 'A bool field', 'val': True},
             # text quoted
-            'field_char': {'label': 'A char field', 'val': u"'Great!'"},
+            'field_char': {'label': 'A char field', 'val': "'Great!'"},
             'field_date': {'label': 'A date field',
-                           'val': u"'2017-11-15'"},
+                           'val': "'2017-11-15'"},
             'field_datetime': {'label': 'A datetime field',
-                               'val': u"'2017-11-14 10:00:00'"},
+                               'val': "'2017-11-14 10:00:00'"},
             'field_float': {'label': 'A float field', 'val': 20.0},
             'field_integer': {'label': 'A integer field', 'val': 10},
-            'field_selection_char': {'label': u'A selection field (txt): Ok',
-                                     'val': u"'ok'"},
+            'field_selection_char': {'label': 'A selection field (txt): Ok',
+                                     'val': "'ok'"},
             'field_selection_int': {'label': 'A selection field (int): Yes',
                                     'val': 1},
             # text triple quoted
             'field_text': {'label': 'A text field',
-                           'val': u'"""Hello there!\nLet\'s try this."""'}
+                           'val': '"""Hello there!\nLet\'s try this."""'}
         }
-        for key in expected_vals.keys():
+        for key in list(expected_vals.keys()):
             self.assertDictEqual(expected_vals[key], vals[-1][key])
 
     def test_settings_output(self):

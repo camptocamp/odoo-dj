@@ -9,10 +9,10 @@ class CompilationCase(BaseCompilationCase):
 
     def test_burn_and_test1(self):
         fixture = 'fixture_comp1'
-        expected_path = u'songs/install/generated/dj_test.py'
+        expected_path = 'songs/install/generated/dj_test.py'
         self._burn_and_test(fixture, expected_path, 'base_dj.test_comp1')
 
     def test_burn_defer_parent(self):
         fixture = 'fixture_defer_parent'
-        expected_path = u'songs/install/generated/dj_test.py'
+        expected_path = 'songs/install/generated/dj_test.py'
         self._burn_and_test(fixture, expected_path, 'base_dj.test_comp4')

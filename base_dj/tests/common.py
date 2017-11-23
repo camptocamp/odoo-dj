@@ -37,9 +37,9 @@ class BaseCase(SavepointCase):
 
         If they aren't, show a nice diff.
         """
-        self.assertTrue(isinstance(first, basestring),
+        self.assertTrue(isinstance(first, str),
                         'First argument is not a string')
-        self.assertTrue(isinstance(second, basestring),
+        self.assertTrue(isinstance(second, str),
                         'Second argument is not a string')
 
         if first != second:
@@ -73,7 +73,7 @@ class BaseCompilationCase(BaseCase):
         expected_output = self._load_filecontent(
             'base_dj', 'tests/fixtures/%s.py' % fixture)
         # load compilation if needed
-        if isinstance(compilation, basestring):
+        if isinstance(compilation, str):
             compilation = self.env.ref(compilation)
         # avoid burning self configs
         comp = compilation.with_context(dj_burn_skip_self=True)

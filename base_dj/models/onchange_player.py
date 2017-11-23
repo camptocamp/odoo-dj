@@ -26,7 +26,7 @@ class OnchangePlayer(models.AbstractModel):
         """
         vals = onchange_values.get('value', {})
         new_values = {}
-        for fieldname, value in vals.iteritems():
+        for fieldname, value in vals.items():
             if fieldname not in values or override_existing:
                 new_values[fieldname] = value
         return new_values
@@ -56,14 +56,14 @@ class OnchangePlayer(models.AbstractModel):
         onchange_specs = model._onchange_spec()
         if not onchange_fields:
             onchange_fields = []
-            for fname, has_onchange in onchange_specs.iteritems():
+            for fname, has_onchange in onchange_specs.items():
                 if has_onchange:
                     onchange_fields.append(fname)
 
         # we need all fields in the dict even the empty ones
         # otherwise 'onchange()' will not apply changes to them
         all_values = values.copy()
-        for field in model.fields_get().keys():
+        for field in list(model.fields_get().keys()):
             if field not in all_values:
                 all_values[field] = False
 
@@ -81,7 +81,7 @@ class OnchangePlayer(models.AbstractModel):
             )
             all_values.update(new_values)
 
-        res = {f: v for f, v in all_values.iteritems()
+        res = {f: v for f, v in all_values.items()
                if f in values or f in new_values}
         return res
 

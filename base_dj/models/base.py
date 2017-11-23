@@ -54,7 +54,7 @@ class Base(models.AbstractModel):
                 if not self[key]:
                     continue
                 value = self[key]
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     value = slugify(value).replace('-', '_')
                 elif isinstance(value, models.BaseModel):
                     value = slugify(value.display_name).replace('-', '_')
@@ -147,7 +147,7 @@ class Base(models.AbstractModel):
         if not records:
             return
         if _fields is None:
-            _fields = records[0].keys()
+            _fields = list(records[0].keys())
         for fname, info in self._dj_special_fields(_fields):
             self._dj_handle_file_field_read(fname, info, records)
 
@@ -159,7 +159,7 @@ class Base(models.AbstractModel):
     def _dj_special_fields(self, _fields=None):
         res = []
         fields_info = self.fields_get(_fields)
-        for fname, info in fields_info.iteritems():
+        for fname, info in fields_info.items():
             if self._dj_is_file_field(fname, info):
                 res.append((fname, info))
         return res
@@ -227,7 +227,7 @@ class Base(models.AbstractModel):
             return
         if not vals:
             return
-        for fname, info in self._dj_special_fields(vals.keys()):
+        for fname, info in self._dj_special_fields(list(vals.keys())):
             if vals[fname]:
                 self._dj_handle_file_field_write(fname, info, vals)
 
