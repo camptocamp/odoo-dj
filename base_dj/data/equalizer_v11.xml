@@ -1,0 +1,8 @@
+<odoo>
+
+  <record model="dj.equalizer" id="dj_equalizer_ir_default">
+    <field name="model">ir.default</field>
+    <field name="model_context">{'xmlid_value_reference': True}</field>
+  </record>
+
+</odoo>
