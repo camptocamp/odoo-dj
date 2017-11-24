@@ -73,6 +73,8 @@ class Compilation(models.Model):
 
     @api.depends('song_ids')
     def _compute_sanity_check(self):
+        if self.env.context.get('dj_burning_ids'):
+            return
         for item in self:
             item.sanity_check = item._render_sanity_check()
 
@@ -264,7 +266,9 @@ class Compilation(models.Model):
     @api.multi
     def burn(self):
         """Burn disc into a zip file."""
-        files = self.get_all_tracks()
+        # pass around the IDS the we are asked to burn.
+        # Used in export self config for instance.
+        files = self.with_context(dj_burning_ids=self.ids).get_all_tracks()
         zf = create_zipfile(files)
         filename = self.make_album_title()
         return filename, zf.read()
@@ -330,9 +334,16 @@ class Compilation(models.Model):
         if not comp_tmpl:
             raise exceptions.UserError(_(
                 'Default self export compilation is missing.'))
-        # exclude core compilations
-        self = self.filtered(lambda x: not x.core)
-        self.ensure_one()
+
+        def filter_core(x):
+            return (x.core and x.id
+                    not in self.env.context.get('dj_burning_ids', []))
+
+        self = self.filtered(filter_core)
+        assert len(self) == 1, \
+            _('Something went wrong: we found too many compilations '
+              'to export for this config.')
+
         # use `copy_data` as `copy` keeps xmlids :(
         defaults = {
             'active': True,
@@ -344,4 +355,6 @@ class Compilation(models.Model):
         for song in comp_tmpl.with_context(active_test=False).song_ids:
             new_songs.append((0, 0, self._export_config_get_song_data(song)))
         new_comp_data['song_ids'] = new_songs
+        new_comp_data['active'] = False
+        new_comp_data['core'] = False
         return self.create(new_comp_data)
