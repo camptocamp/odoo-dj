@@ -122,9 +122,14 @@ def context_to_string(ctx):
     return ', '.join(sorted(out))
 
 
+def is_string(s):
+    """Check this is a string in PY2 + PY3 compat way."""
+    return isinstance(s, basestring)
+
+
 def to_str(s, safe=False):
     """Compat layer py2/3. If `safe` Non-strings are returned as they are."""
-    if safe and not isinstance(s, basestring):
+    if safe and not is_string(s):
         # get it back safely
         return s
     if PY2:
