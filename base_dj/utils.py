@@ -8,7 +8,6 @@ import zipfile
 import time
 import datetime
 from lxml import etree
-from io import StringIO
 from contextlib import contextmanager
 
 from .slugifier import slugify
@@ -49,19 +48,14 @@ def make_title(name):
 
 def csv_from_data(fields, rows):
     """Copied from std odoo export in controller."""
-    fp = StringIO()
+    fp = io.BytesIO()
     writer = csv.writer(fp, quoting=csv.QUOTE_ALL)
 
-    writer.writerow([name.encode('utf-8') for name in fields])
+    writer.writerow(fields)
 
     for data in rows:
         row = []
         for i, col in enumerate(data):
-            if isinstance(col, str):
-                try:
-                    col = col.encode('utf-8')
-                except UnicodeError:
-                    pass
             if col is False:
                 col = None
 
@@ -77,7 +71,7 @@ def csv_from_data(fields, rows):
             # ----- END CHANGE -----
 
             row.append(col)
-        writer.writerow(row)
+        writer.writerow([to_str(x, safe=True) for x in row])
 
     fp.seek(0)
     data = fp.read()
