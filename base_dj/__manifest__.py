@@ -19,6 +19,7 @@
         'python': [
             'autopep8',
             'pylint',  # this one is just for tests indeed
+            'unicodecsv',
         ]
     },
     'data': [

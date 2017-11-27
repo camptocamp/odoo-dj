@@ -2,7 +2,7 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-import csv
+import unicodecsv as csv
 import io
 import zipfile
 import time
@@ -47,31 +47,18 @@ def make_title(name):
 
 
 def csv_from_data(fields, rows):
-    """Copied from std odoo export in controller."""
+    """Prepare data for CSV."""
     fp = io.BytesIO()
-    writer = csv.writer(fp, quoting=csv.QUOTE_ALL)
-
+    writer = csv.writer(fp, quoting=csv.QUOTE_ALL, encoding='utf-8')
     writer.writerow(fields)
-
     for data in rows:
         row = []
         for i, col in enumerate(data):
             if col is False:
                 col = None
-
-            # ---- START CHANGE ----
-            # Here we remove this feature as csv with negative values
-            # are unimportable with an additional quote
-            # ----------------------
-
-            # # Spreadsheet apps
-            # # tend to detect formulas on leading =, + and -
-            # if type(col) is str and col.startswith(('=', '-', '+')):
-            #     col = "'" + col
-            # ----- END CHANGE -----
-
             row.append(col)
-        writer.writerow([to_str(x, safe=True) for x in row])
+        # writer.writerow([to_str(x, safe=True) for x in row])
+        writer.writerow(row)
 
     fp.seek(0)
     data = fp.read()

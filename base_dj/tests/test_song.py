@@ -61,3 +61,11 @@ class SongCase(BaseCase):
         records = song._get_exportable_records()
         # thanks to a specific equalizer for users `admin` should be excluded
         self.assertEqual(len(records), len(all_records) - 1)
+
+    def test_make_csv(self):
+        """Record blacklisted via equalizer."""
+        song = self.env.ref('base_dj.test_song1_partner_category')
+        path, content = song.make_csv()
+        # TODO: check results, we are just testing that it does not break ATM
+        self.assertTrue(path)
+        self.assertTrue(content)
