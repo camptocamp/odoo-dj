@@ -6,7 +6,7 @@ from odoo import api, models, tools
 import os
 import base64
 
-from ..utils import is_xml, to_str
+from ..utils import is_xml, to_str, is_string
 from ..slugifier import slugify
 
 
@@ -238,9 +238,9 @@ class Base(models.AbstractModel):
     def _dj_path_to_file(self, fname, info, path):
         # special case: xml validation is done for fields like `arch_db`
         # so we need to wrap/unwrap w/ <odoo/> tag
-        if not type(path) is str:
-            # py3 compat
-            path = path.decode()
+        if not is_string(path):
+            return path
+        path = to_str(path)
         path = path.replace('<odoo><path>', '').replace('</path></odoo>', '')
         if not path.startswith(self._dj_path_prefix):
             return path
