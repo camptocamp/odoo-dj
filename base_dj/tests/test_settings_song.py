@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from odoo import fields
+from odoo.tools import mute_logger
 from . common import BaseCase
 
 
@@ -15,6 +16,7 @@ class SettingsSongCase(BaseCase):
         cls._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
         cls.test_model = 'dj.test.config.settings'
 
+    @mute_logger('odoo.models.unlink')
     def tearDown(self):
         try:
             self.env['ir.values'].search([]).unlink()
