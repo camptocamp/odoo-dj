@@ -6,6 +6,7 @@ from odoo import http
 from odoo.http import request
 import os
 import mimetypes
+from ..utils import string_to_list
 
 
 class DJ(http.Controller):
@@ -46,7 +47,7 @@ class DJ(http.Controller):
 
         `compilations` string can be an ID or a list of IDs separated by comma.
         """
-        ids = [int(x.strip()) for x in compilation_ids.split(',') if x.strip()]
+        ids = string_to_list(compilation_ids, modifier=int)
         records = request.env['dj.compilation'].browse(ids)
         burn_options = (
             'dj_xmlid_module',

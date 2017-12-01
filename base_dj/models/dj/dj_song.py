@@ -5,7 +5,13 @@
 from odoo import models, fields, api, exceptions, tools, _
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 from odoo.modules import get_module_path
-from ...utils import csv_from_data, force_company, context_to_string, to_str
+from ...utils import (
+    csv_from_data,
+    force_company,
+    context_to_string,
+    to_str,
+    string_to_list,
+)
 from ...config import (
     SPECIAL_FIELDS,
     SONG_TYPES,
@@ -391,10 +397,9 @@ class Song(models.Model):
     def _get_fields(self, model_id, field_list):
         """Helper to retrieve fields records from a name list."""
         model_name = self.env['ir.model'].browse(model_id).name
-        field_names = [f.strip() for f in field_list.split(',') if f.strip()]
         return self.env['ir.model.fields'].search([
             ('model_id', '=', model_name),
-            ('name', 'in', field_names)
+            ('name', 'in', string_to_list(field_list))
         ])
 
     def _get_all_fields(self):
@@ -486,10 +491,12 @@ class Song(models.Model):
         """Retrieve fields to generate xmlids."""
         xmlid_fields = []
         if self.xmlid_fields:
-            xmlid_fields = [
-                x.strip() for x in self.xmlid_fields.split(',')
-                if x.strip() and x.strip() in self.song_model
-            ]
+            xmlid_fields = string_to_list(
+                self.xmlid_fields,
+                checker=lambda x: (
+                    True if x.strip() and
+                    x.strip() in self.song_model else False
+                ))
         return xmlid_fields
 
     def _get_xmlid_fields_map(self):

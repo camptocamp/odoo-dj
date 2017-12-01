@@ -5,6 +5,7 @@
 from odoo import models, fields, api
 from odoo.tools.safe_eval import safe_eval
 from collections import OrderedDict
+from ...utils import string_to_list
 
 
 class OrderedContext(OrderedDict):
@@ -14,11 +15,6 @@ class OrderedContext(OrderedDict):
 
     def __repr__(self):
         return str(dict(self))
-
-
-def text_to_list(string, separator=',', modifier=lambda x: x):
-    return [modifier(x.strip()) for x in string.split(separator)
-            if x.strip()] if string else []
 
 
 class DJEqualizer(models.Model):
@@ -51,21 +47,21 @@ class DJEqualizer(models.Model):
         if not self.ids:
             return []
         self.ensure_one()
-        return text_to_list(self.xmlid_fields)
+        return string_to_list(self.xmlid_fields)
 
     @api.multi
     def get_field_blacklist(self):
         if not self.ids:
             return []
         self.ensure_one()
-        return text_to_list(self.field_blacklist)
+        return string_to_list(self.field_blacklist)
 
     @api.multi
     def get_record_blacklist(self):
         if not self.ids:
             return []
         self.ensure_one()
-        return text_to_list(
+        return string_to_list(
             self.record_blacklist,
             modifier=lambda x: self.env.ref(x).id)
 

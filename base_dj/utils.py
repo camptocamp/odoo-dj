@@ -131,3 +131,16 @@ def to_str(s, safe=False):
         return s.encode('utf-8')
     # py3, str = unicode
     return s
+
+
+def string_to_list(astring, separator=',',
+                   modifier=lambda x: x, checker=lambda x: x.strip()):
+    """Get a string and return a list of splitted values.
+
+    :param astring: the string to split
+    :param separator: the char to split upon
+    :param modifier: alter each item in the list
+    :param checker: check if the value has to be included in the list
+    """
+    return [modifier(x.strip()) for x in astring.split(separator)
+            if checker(x)] if astring else []
