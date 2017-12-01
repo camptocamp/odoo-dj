@@ -10,8 +10,22 @@ class XMLIDCase(BaseCase):
     @classmethod
     def setUpClass(cls):
         super(XMLIDCase, cls).setUpClass()
-        fixture = 'fixture_xmlids1'
-        cls._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
+        # When testing w/ stock module installed
+        # warehouse and location are created
+        # and this triggers a parent computation that is broken
+        # because here we don't have (and don't want) all the required setup.
+        cls.company_model = cls.env['res.company'].with_context(
+            defer_parent_store_computation=True)
+        foo = cls.company_model.create({
+            'name': 'Foo Inc.',
+            'aka': 'foo',
+        })
+        cls.add_xmlid(foo, 'base_dj.test_company_foo')
+        baz = cls.company_model.create({
+            'name': 'Baz Ltd.',
+            'aka': 'baz',
+        })
+        cls.add_xmlid(baz, 'base_dj.test_company_baz')
 
     def test_companies(self):
         # records created from setup maintain their own xmlid
@@ -28,7 +42,7 @@ class XMLIDCase(BaseCase):
             'base_dj.test_company_baz',
         )
         # new records' xmlids are auto-generated matching our rules
-        new_company = self.env['res.company'].create({
+        new_company = self.company_model.create({
             'name': 'ACME', 'aka': 'acme'})
         self.assertEqual(
             new_company._dj_export_xmlid(),

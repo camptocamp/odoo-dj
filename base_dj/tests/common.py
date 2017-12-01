@@ -52,6 +52,28 @@ class BaseCase(SavepointCase):
                 message += " : " + msg
             self.fail("Multi-line strings are unequal:\n" + message)
 
+    @classmethod
+    def add_xmlid(cls, record, xmlid, noupdate=False):
+        """ Add a XMLID on an existing record """
+        try:
+            ref_id, __, __ = cls.env['ir.model.data'].xmlid_lookup(xmlid)
+        except ValueError:
+            pass  # does not exist, we'll create a new one
+        else:
+            return cls.env['ir.model.data'].browse(ref_id)
+        if '.' in xmlid:
+            module, name = xmlid.split('.')
+        else:
+            module = ''
+            name = xmlid
+        return cls.env['ir.model.data'].create({
+            'name': name,
+            'module': module,
+            'model': record._name,
+            'res_id': record.id,
+            'noupdate': noupdate,
+        })
+
 
 class BaseCompilationCase(BaseCase):
 
