@@ -2,7 +2,12 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-import autopep8
+try:
+    import autopep8
+except ImportError:
+    import logging
+    _logger = logging.getLogger(__name__)
+    _logger.warning('`autopep8` dependency lib is missing.')
 import os
 try:
     from urllib import urlencode

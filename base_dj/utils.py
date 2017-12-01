@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+# pylint: disable=W0104
 
-import unicodecsv as csv
+from .slugifier import slugify
+
+import odoo
 import io
 import zipfile
 import time
@@ -10,9 +13,14 @@ import datetime
 from lxml import etree
 from contextlib import contextmanager
 
-from .slugifier import slugify
+try:
+    import unicodecsv as csv
+except ImportError:
+    import logging
+    _logger = logging.getLogger(__name__)
+    _logger.warning('`unicodecsv` dependency lib is missing.')
 
-import odoo
+
 ODOOVER = float(odoo.release.serie)
 
 try:
