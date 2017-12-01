@@ -15,6 +15,7 @@ class SettingsSongCase(BaseCase):
         fixture = 'fixture_settings_song1'
         cls._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
         cls.test_model = 'dj.test.config.settings'
+        cls.companies = cls.env['res.company'].search([])
 
     @mute_logger('odoo.models.unlink')
     def tearDown(self):
@@ -24,15 +25,43 @@ class SettingsSongCase(BaseCase):
             # v11
             self.env['ir.default'].search([]).unlink()
 
-    def test_settings_values1(self):
+    def _custom_ctx(self, fields=None):
+        fields = fields or (
+            'field_bool', 'field_char', 'field_text',
+            'field_integer', 'field_float', 'field_date',
+            'field_datetime', 'field_selection_int', 'field_selection_char',
+            'company_id',
+        )
+        return dict(
+            # limit the export to main company as we are in control of it.
+            # In this way we avoid clashes w/ other companies that might
+            # been set up from other test suites, when running tests
+            # on several modules at once.
+            dj_settings_company_xmlids='base.main_company',
+            # limit fields to the ones in our settings model.
+            # In v11 all the *.config.settings have been merged
+            # into `res.config.settings`
+            # so we don't want to check all the fields out there.
+            dj_settings_fields=','.join(fields),
+        )
+
+    def test_settings_values_all_companies(self):
+        song = self.env.ref('base_dj.test_song_test_config_settings1')
+        self.env[self.test_model].create({})
+        all_vals = song.dj_get_settings_vals()
+        # we should get as many items as many companies
+        self.assertEqual(len(all_vals), len(self.companies))
+
+    def test_settings_values_defaults(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
         self.env[self.test_model].create({}).execute()
-        all_vals = song.dj_get_settings_vals()
-        # one company only, one item
+        all_vals = song.with_context(
+            **self._custom_ctx()).dj_get_settings_vals()
+        # we should get as many items as many companies
         self.assertEqual(len(all_vals), 1)
         vals = all_vals[0]
         # song name
-        self.assertEqual(vals[0], 'dj_test_config_settings')
+        self.assertEqual(vals[0], 'dj_test_config_settings_djc')
         # company_aka
         self.assertEqual(vals[1], 'djc')
         expected_vals = {
@@ -58,7 +87,7 @@ class SettingsSongCase(BaseCase):
         for key in list(expected_vals.keys()):
             self.assertDictEqual(expected_vals[key], vals[-1][key])
 
-    def test_settings_values2(self):
+    def test_settings_values_custom(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
         self.env[self.test_model].create({
             'field_bool': True,
@@ -71,12 +100,13 @@ class SettingsSongCase(BaseCase):
             'field_selection_int': 1,
             'field_selection_char': 'ok',
         }).execute()
-        all_vals = song.dj_get_settings_vals()
-        # one company only, one item
+        all_vals = song.with_context(
+            **self._custom_ctx()).dj_get_settings_vals()
+        # we should get as many items as many companies
         self.assertEqual(len(all_vals), 1)
         vals = all_vals[0]
         # song name
-        self.assertEqual(vals[0], 'dj_test_config_settings')
+        self.assertEqual(vals[0], 'dj_test_config_settings_djc')
         # company_aka
         self.assertEqual(vals[1], 'djc')
         expected_vals = {
@@ -105,7 +135,7 @@ class SettingsSongCase(BaseCase):
 
     def test_settings_output(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
-        self.env[self.test_model].create({
+        vals = {
             'field_bool': True,
             'field_char': 'Great!',
             'field_text': 'Hello there!\nLet\'s try this.',
@@ -115,8 +145,10 @@ class SettingsSongCase(BaseCase):
             'field_datetime': '2017-11-14 10:00:00',
             'field_selection_int': 1,
             'field_selection_char': 'ok',
-        }).execute()
-        output = song.dj_render_template()
+        }
+        self.env[self.test_model].create(vals).execute()
+        output = song.with_context(
+            **self._custom_ctx()).dj_render_template()
         expected = self._load_filecontent(
             'base_dj', 'tests/fixtures/fixture_settings_song1.pytxt')
         tmp_file_path = '/tmp/test_settings_output.py'

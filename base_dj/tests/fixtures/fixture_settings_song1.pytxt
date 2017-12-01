@@ -1,5 +1,5 @@
 @anthem.log
-def dj_test_config_settings(ctx):
+def dj_test_config_settings_djc(ctx):
     """Setup dj.test.config.settings for djc."""
     model = ctx.env['dj.test.config.settings'].with_context(tracking_disable=True)
     model.create({

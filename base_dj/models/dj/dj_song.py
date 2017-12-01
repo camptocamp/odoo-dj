@@ -589,13 +589,20 @@ class Song(models.Model):
         global_settings = 'company_id' not in self.song_model
         kwargs = {'limit': 1} if global_settings else {}
 
-        companies = self.env['res.company'].search([], **kwargs)
+        # with a simple context key you can enforce the companies to export
+        specific_companies = self.env.context.get('dj_settings_company_xmlids')
+        if specific_companies:
+            companies = string_to_list(
+                specific_companies, modifier=lambda x: self.env.ref(x))
+        else:
+            companies = self.env['res.company'].search([], **kwargs)
 
         res = []
         for company in companies:
             with force_company(self.env, company.id):
                 wizard = self.song_model.create({})
-                values = wizard.read(load='_classic_write')[0]
+                _fields = self._dj_settings_fields(company)
+                values = wizard.read(fields=_fields, load='_classic_write')[0]
             cp_values = {}
             fields_info = self.song_model.fields_get()
             for fname, val in values.items():
@@ -608,14 +615,19 @@ class Song(models.Model):
                     'val': val,
                     'label': label,
                 }
-            company_codename = company.aka
-            song_name = self.name
-            if not global_settings and self._is_multicompany_env():
-                song_name += '_{}'.format(company_codename)
+            song_name = '{}_{}'.format(self.name, company.aka)
             res.append((song_name, company.aka, cp_values))
         return res
 
+    def _dj_settings_fields(self, company=None):
+        """Take control on which settings fields are exported."""
+        specific_fields = self.env.context.get('dj_settings_fields')
+        if specific_fields:
+            return string_to_list(specific_fields)
+        return None
+
     def _dj_settings_val(self, finfo, fname, val):
+        """Format value to be exported."""
         # knowing which field does what is always difficult
         # if you don't check settings schema definition.
         # Let's add some helpful info.
