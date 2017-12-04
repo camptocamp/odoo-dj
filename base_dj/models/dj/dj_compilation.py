@@ -226,7 +226,11 @@ class Compilation(models.Model):
         files.append((init_file, '#'))
         # generate dev readme for all compilations
         files.append(self.burn_dev_readme())
-        if not self.env.context.get('dj_burn_skip_self'):
+        # if not self.env.context.get('dj_burn_skip_self'):
+        if False:
+            # XXX: TMP skip config export as it's a bit buggy.
+            # The goal is to replace this w/ pure json data export.
+
             # add current config to export
             forced_args = self._export_config_forced_xmlid_params()
             forced_args['dj_burn_skip_self'] = True
