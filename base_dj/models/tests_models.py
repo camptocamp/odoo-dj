@@ -51,3 +51,11 @@ if testing:
                 x for x in self.fields_get().keys() if x.startswith('field_')]
             for fname in fnames:
                 self._set_default_value(fname, self[fname])
+
+    class TestDefaults(models.Model):
+        _name = 'dj.test.defaults'
+
+        partner_id = fields.Many2one(
+            string='The partner',
+            comodel_name='res.partner',
+        )
