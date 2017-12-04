@@ -598,13 +598,13 @@ class Song(models.Model):
             companies = self.env['res.company'].search([], **kwargs)
 
         res = []
+        fields_info = self.song_model._dj_settings_fields()
         for company in companies:
             with force_company(self.env, company.id):
                 wizard = self.song_model.create({})
-                _fields = self._dj_settings_fields(company)
-                values = wizard.read(fields=_fields, load='_classic_write')[0]
+                values = wizard.read(
+                    fields=fields_info.keys(), load='_classic_write')[0]
             cp_values = {}
-            fields_info = self.song_model.fields_get()
             for fname, val in values.items():
                 if fname in SPECIAL_FIELDS:
                     continue
@@ -618,13 +618,6 @@ class Song(models.Model):
             song_name = '{}_{}'.format(self.name, company.aka)
             res.append((song_name, company.aka, cp_values))
         return res
-
-    def _dj_settings_fields(self, company=None):
-        """Take control on which settings fields are exported."""
-        specific_fields = self.env.context.get('dj_settings_fields')
-        if specific_fields:
-            return string_to_list(specific_fields)
-        return None
 
     def _dj_settings_val(self, finfo, fname, val):
         """Format value to be exported."""

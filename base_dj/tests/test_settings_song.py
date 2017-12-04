@@ -5,6 +5,7 @@
 from odoo import fields
 from odoo.tools import mute_logger
 from . common import BaseCase
+from ..utils import ODOOVER
 
 
 class SettingsSongCase(BaseCase):
@@ -15,23 +16,28 @@ class SettingsSongCase(BaseCase):
         fixture = 'fixture_settings_song1'
         cls._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
         cls.test_model = 'dj.test.config.settings'
+        cls.model = cls.env[cls.test_model].with_context(
+            dj_export=True
+        )
         cls.companies = cls.env['res.company'].search([])
 
     @mute_logger('odoo.models.unlink')
     def tearDown(self):
-        try:
-            self.env['ir.values'].search([]).unlink()
-        except KeyError:
+        if ODOOVER >= 11.0:
             # v11
             self.env['ir.default'].search([]).unlink()
+        else:
+            self.env['ir.values'].search([]).unlink()
+
+    all_test_fields = (
+        'field_bool', 'field_char', 'field_text',
+        'field_integer', 'field_float', 'field_date',
+        'field_datetime', 'field_selection_int', 'field_selection_char',
+        'company_id',
+    )
 
     def _custom_ctx(self, fields=None):
-        fields = fields or (
-            'field_bool', 'field_char', 'field_text',
-            'field_integer', 'field_float', 'field_date',
-            'field_datetime', 'field_selection_int', 'field_selection_char',
-            'company_id',
-        )
+        fields = fields or self.all_test_fields
         return dict(
             # limit the export to main company as we are in control of it.
             # In this way we avoid clashes w/ other companies that might
@@ -42,19 +48,34 @@ class SettingsSongCase(BaseCase):
             # In v11 all the *.config.settings have been merged
             # into `res.config.settings`
             # so we don't want to check all the fields out there.
-            dj_settings_fields=','.join(fields),
+            dj_settings_fields_whitelist=','.join(fields),
         )
+
+    def test_whitelisted_fields(self):
+        # by default exclude all classified fields
+        _fields = self.model._add_missing_default_values({})
+        for fname in _fields:
+            self.assertFalse(
+                fname.startswith(('default_', 'group_', 'module_'))
+            )
+        # unless we specify it
+        _fields = self.model._add_missing_default_values({
+            'default_user_rights': True,
+        })
+        self.assertIn('default_user_rights', _fields)
 
     def test_settings_values_all_companies(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
-        self.env[self.test_model].create({})
-        all_vals = song.dj_get_settings_vals()
+        whitelist = self._custom_ctx()['dj_settings_fields_whitelist']
+        all_vals = song.with_context(
+            dj_settings_fields_whitelist=whitelist,
+            dj_export=True,
+        ).dj_get_settings_vals()
         # we should get as many items as many companies
         self.assertEqual(len(all_vals), len(self.companies))
 
     def test_settings_values_defaults(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
-        self.env[self.test_model].create({}).execute()
         all_vals = song.with_context(
             **self._custom_ctx()).dj_get_settings_vals()
         # we should get as many items as many companies
@@ -136,6 +157,7 @@ class SettingsSongCase(BaseCase):
     def test_settings_output(self):
         song = self.env.ref('base_dj.test_song_test_config_settings1')
         vals = {
+            'company_id': self.env.ref('base.main_company').id,
             'field_bool': True,
             'field_char': 'Great!',
             'field_text': 'Hello there!\nLet\'s try this.',
@@ -146,7 +168,7 @@ class SettingsSongCase(BaseCase):
             'field_selection_int': 1,
             'field_selection_char': 'ok',
         }
-        self.env[self.test_model].create(vals).execute()
+        self.model.create(vals).execute()
         output = song.with_context(
             **self._custom_ctx()).dj_render_template()
         expected = self._load_filecontent(
