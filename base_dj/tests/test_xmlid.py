@@ -81,15 +81,14 @@ class XMLIDCase(BaseCase):
     def test_xmlid_with_specific_xmlid_fields_from_equalizer(self):
         # new record
         rec = self.env['res.partner.bank'].create({'acc_number': '20000', })
-
         self.env['dj.equalizer'].create({
             'model': 'res.partner.bank',
-            'xmlid_fields': 'acc_number,acc_type',
+            'xmlid_fields': 'acc_number',
             'xmlid_table_name': 'bank_account',
         })
         self.assertEqual(
             rec._dj_export_xmlid(),
-            '__setup__.bank_account_20000_bank'
+            '__setup__.bank_account_20000'
         )
 
     def test_xmlid_multicompany(self):
