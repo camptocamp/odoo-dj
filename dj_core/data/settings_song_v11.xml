@@ -1,0 +1,12 @@
+<odoo>
+
+  <!-- in v11 all settings are stored in res.config.setttings
+       so this is the only place where we need this. -->
+  <record model="dj.song" id="dj_song_res_config_settings">
+    <field name="compilation_id" ref="dj_core_main"/>
+    <field name="model_id" ref="base.model_res_config_settings"/>
+    <field name="sequence" eval="30" />
+    <field name="song_type">settings</field>
+  </record>
+  
+</odoo>

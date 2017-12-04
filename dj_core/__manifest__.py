@@ -12,7 +12,11 @@
     'license': 'AGPL-3',
     'category': 'songs',
     'depends': ['base_dj', ],
-    'data': ['data/dj.xml'],
+    'data': [
+        'data/dj.xml',
+        'data/settings_song_v11.xml',
+        'data/defaults_song_v11.xml',
+    ],
     'installable': True,
     'auto_install': False,
 }
