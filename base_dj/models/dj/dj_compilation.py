@@ -17,6 +17,7 @@ except ImportError:
 
 from odoo import models, fields, api, exceptions, _
 from ...utils import create_zipfile, make_title, to_str
+from ...slugifier import slugify
 
 
 class Compilation(models.Model):
@@ -31,7 +32,7 @@ class Compilation(models.Model):
     _default_dj_template_path = 'base_dj:discs/disc.tmpl'
     _dj_download_path = '/dj/download/compilation/'
 
-    name = fields.Char(required=True)
+    name = fields.Char(required=True, inverse='_normalize_name')
     active = fields.Boolean(default=True)
     sequence = fields.Integer(
         'Sequence',
@@ -70,6 +71,16 @@ class Compilation(models.Model):
         readonly=True,
     )
     sanity_check = fields.Html(compute='_compute_sanity_check')
+
+    @api.multi
+    def _normalize_name(self):
+        if self.env.context.get('skip_normalize_name'):
+            return
+        for item in self:
+            if item.name:
+                item.with_context(
+                    skip_normalize_name=True
+                ).name = slugify(item.name).replace('-', '_')
 
     def _compute_core_compilation_ids(self):
         core = self._get_core_compilations()
