@@ -541,6 +541,8 @@ class Song(models.Model):
 
     def _handle_special_fields(self, items=None):
         extra_tracks = []
+        if self.env.context.get('dj_read_skip_special_fields'):
+            return extra_tracks
         items = items or self._get_exportable_records()
         if self.song_model is None:
             return

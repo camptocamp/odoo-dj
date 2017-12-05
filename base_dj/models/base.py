@@ -144,6 +144,8 @@ class Base(models.AbstractModel):
         return res
 
     def _dj_handle_special_fields_read(self, records, _fields=None):
+        if self.env.context.get('dj_read_skip_special_fields'):
+            return
         if not records:
             return
         if _fields is None:
