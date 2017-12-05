@@ -54,7 +54,7 @@ class Compilation(models.Model):
     )
     song_ids = fields.One2many('dj.song', 'compilation_id')
     disc_path = fields.Char(
-        default='songs/{data_mode}/generated/{genre}.py',
+        default='songs/{data_mode}/generated/{genre}_{name}.py',
         required=True,
     )
     core = fields.Boolean(
