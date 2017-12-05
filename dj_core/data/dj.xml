@@ -27,4 +27,27 @@
       ref('base.field_res_company_user_ids')])]"/>
   </record>
 
+  <record model="dj.song" id="dj_song_groups">
+    <field name="compilation_id" ref="dj_core_main"/>
+    <field name="model_id" ref="base.model_res_groups" />
+    <field name="sequence" eval="20" />
+    <field name="song_type">load_csv</field>
+    <field name="model_fields_ids" eval="[(6,0,[
+      ref('base.field_res_groups_implied_ids')])]"/>
+      <!-- trick to avoid loading of all the records. We want just some core group -->
+    <field name="domain">[('name', '=', '#NONE#')]</field>
+    <field name="python_code">
+records = env['res.groups'].browse()
+records |= env.ref('base.group_portal')
+records |= env.ref('base.group_public')
+records |= env.ref('base.group_user')
+    </field>
+  </record>
+
+  <record model="dj.song" id="dj_song_installed_addons">
+    <field name="compilation_id" ref="dj_core_main"/>
+    <field name="model_id" ref="base.model_ir_module_module" />
+    <field name="song_type">scratch_installed_addons</field>
+  </record>
+
 </odoo>

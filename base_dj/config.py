@@ -127,7 +127,6 @@ SONG_TYPES = {
 
 DEFAULT_PYTHON_CODE = """# Available variable:
 #  - env: Odoo Environement
-# You have to return a recordset by assigning
-# variable recs.
-# recs = env[model].search([])
+# You have to return a recordset named `records`.
+# records = env[model].search([])
 """

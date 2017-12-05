@@ -264,12 +264,12 @@ class Song(models.Model):
 
         Example:
 
-            result = env['account.journal'].search([]).sequence_id
+            records = env['account.journal'].search([]).sequence_id
         """
         eval_context = {'env': self.env}
         safe_eval(self.python_code.strip(), eval_context,
                   mode="exec", nocopy=True)
-        recs = eval_context.get('recs', None)
+        recs = eval_context.get('records', None)
         if recs is None:
             return
         if not isinstance(recs, models.Model):

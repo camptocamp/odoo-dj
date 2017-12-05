@@ -76,7 +76,7 @@
     <field name="model_id" ref="base.model_ir_sequence"/>
     <field name="csv_path">data/{data_mode}/generated/{model}-account.csv</field>
     <field name="domain">[('name', 'in', ['Customer Invoices', 'Customer Invoices: Refund', 'Vendor Bills', 'Vendor Bills: Refund'])]</field>
-    <field name="python_code">recs = env['account.journal'].search([]).mapped('sequence_id')</field>
+    <field name="python_code">records = env['account.journal'].search([]).mapped('sequence_id')</field>
     <field name="sequence">60</field>
   </record>
 
