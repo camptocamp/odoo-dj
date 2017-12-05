@@ -14,6 +14,9 @@ from ..utils import to_str
 
 class BaseCase(SavepointCase):
 
+    post_install = True
+    at_install = False
+
     @classmethod
     def setUpClass(cls):
         super(BaseCase, cls).setUpClass()
