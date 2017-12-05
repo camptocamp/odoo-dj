@@ -20,6 +20,8 @@ from ...config import (
 from collections import defaultdict, Counter
 import os
 
+testing = tools.config.get('test_enable') or os.environ.get('ODOO_TEST_ENABLE')
+
 
 class Song(models.Model):
     _name = 'dj.song'
@@ -329,7 +331,8 @@ class Song(models.Model):
             path, data = self.scratch_it()
         if path and data:
             res = [(path, data), ]
-            res.extend(self._handle_special_fields())
+            if not self.scratchable():
+                res.extend(self._handle_special_fields())
             return res
         return None
 
@@ -387,7 +390,7 @@ class Song(models.Model):
     def create(self, vals):
         self._handle_fields_shortcuts(vals)
         item = super(Song, self).create(vals)
-        if self.env.context.get('install_mode'):
+        if self.env.context.get('install_mode') or testing:
             # if we are installing/updating the module
             # let's play all onchanges to make sure
             # defaults, filters, etc are set properly on each song
@@ -652,8 +655,11 @@ class Song(models.Model):
         grouped = defaultdict(list)
         core_addons = []
         for mod in addons:
-            path = get_module_path(mod.name)
-            repo_name = os.path.split(os.path.dirname(path))[-1]
+            mod_path = get_module_path(mod.name)
+            if not mod_path:
+                # be defensive w/ removed but not uninstalled modules
+                continue
+            repo_name = os.path.split(os.path.dirname(mod_path))[-1]
             if repo_name == 'addons':
                 # yeah, not 100% sure but for us work like that ;)
                 core_addons.append(mod)

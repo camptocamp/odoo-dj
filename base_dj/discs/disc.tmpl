@@ -17,8 +17,9 @@ from ...common import (
 {%- endif %}
 
 {% for song in songs %}
+{%- if not song.scratchable() %}
 {{ song.dj_render_template() }}
-
+{% endif -%}
 {% endfor %}
 
 @anthem.log

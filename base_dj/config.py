@@ -24,6 +24,7 @@ ADDONS_BLACKLIST = (
     # useless to track these modules amongst installed addons
     # TODO: anything else to ignore?
     'base',
+    'base_setup',
     'base_action_rule',
     'base_import',
     'board',

@@ -1,0 +1,14 @@
+<odoo>
+
+  <record model="dj.compilation" id="test_comp_addons">
+    <field name="name">comp_addons</field>
+    <field name="genre_id" ref="test_genre" />
+  </record>
+
+  <record model="dj.song" id="test_song_installed_addons">
+    <field name="compilation_id" ref="test_comp_addons"/>
+    <field name="model_id" ref="base.model_ir_module_module" />
+    <field name="song_type">scratch_installed_addons</field>
+  </record>
+
+</odoo>

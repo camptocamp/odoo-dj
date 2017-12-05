@@ -167,8 +167,6 @@ class Compilation(models.Model):
     def _get_all_songs(self):
         songs = self.env['dj.song'].browse()
         for song in self.mapped('song_ids'):
-            if song.scratchable():
-                continue
             songs |= song
             if song.export_translations:
                 songs |= self._add_shadow_song_translations(song)
