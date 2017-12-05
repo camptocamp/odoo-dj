@@ -77,7 +77,7 @@ class SpecialFieldsCase(BaseCompilationCase):
             'some_image': IMAGE,
             'some_file': FILE,
         })
-        tracks = self.comp.get_all_tracks()
+        tracks = self.comp.get_all_tracks(include_core=False)
         paths = sorted([x[0] for x in tracks])
         expected = [
             'DEV_README.rst',
@@ -102,7 +102,7 @@ class SpecialFieldsCase(BaseCompilationCase):
             'some_image': IMAGE,
             'some_file': FILE,
         })
-        tracks = self.comp.get_all_tracks()
+        tracks = self.comp.get_all_tracks(include_core=False)
         contents = {}
         for path, content in tracks:
             if 'binaries' in path:

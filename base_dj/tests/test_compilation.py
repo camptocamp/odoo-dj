@@ -3,6 +3,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from . common import BaseCompilationCase
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
+DJ_COMPILATION_MODEL_PATH = \
+    'odoo.addons.base_dj.models.dj.dj_compilation.Compilation'
 
 
 class CompilationCase(BaseCompilationCase):
@@ -51,7 +58,8 @@ class CompilationCase(BaseCompilationCase):
         self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
         comp = self.env.ref('base_dj.test_comp1')
         tracks = comp.with_context(
-            dj_read_skip_special_fields=True).get_all_tracks()
+            dj_read_skip_special_fields=True
+        ).get_all_tracks(include_core=False)
         paths = sorted([x[0] for x in tracks])
         expected = [
             'DEV_README.rst',
@@ -69,8 +77,15 @@ class CompilationCase(BaseCompilationCase):
         fixture = 'fixture_comp_core'
         self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
         comp = self.env.ref('base_dj.test_comp1')
-        tracks = comp.with_context(
-            dj_read_skip_special_fields=True).get_all_tracks()
+
+        # patch get core compilation to isolate test
+        core_comp = self.env.ref('base_dj.test_comp_core1')
+        to_patch = DJ_COMPILATION_MODEL_PATH + '._get_core_compilations'
+        with patch(to_patch) as mocked:
+            mocked.return_value = core_comp
+            tracks = comp.with_context(
+                dj_read_skip_special_fields=True).get_all_tracks()
+
         paths = sorted([x[0] for x in tracks])
         expected = [
             'DEV_README.rst',
