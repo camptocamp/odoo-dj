@@ -45,3 +45,42 @@ class CompilationCase(BaseCompilationCase):
         fixture = 'fixture_defer_parent'
         expected_path = 'songs/install/generated/dj_test_comp4.py'
         self._burn_and_test(fixture, expected_path, 'base_dj.test_comp4')
+
+    def test_burn_contents(self):
+        fixture = 'fixture_comp1'
+        self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
+        comp = self.env.ref('base_dj.test_comp1')
+        tracks = comp.with_context(
+            dj_read_skip_special_fields=True).get_all_tracks()
+        paths = sorted([x[0] for x in tracks])
+        expected = [
+            'DEV_README.rst',
+            'data/install/generated/dj_test/res.company.csv',
+            'data/install/generated/dj_test/res.partner.csv',
+            'data/install/generated/dj_test/res.users.csv',
+            'songs/install/generated/__init__.py',
+            'songs/install/generated/dj_test_comp1.py'
+        ]
+        self.assertListEqual(paths, expected)
+
+    def test_burn_contents_with_core(self):
+        fixture = 'fixture_comp1'
+        self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
+        fixture = 'fixture_comp_core'
+        self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
+        comp = self.env.ref('base_dj.test_comp1')
+        tracks = comp.with_context(
+            dj_read_skip_special_fields=True).get_all_tracks()
+        paths = sorted([x[0] for x in tracks])
+        expected = [
+            'DEV_README.rst',
+            'data/install/generated/dj_test/ir.default.csv',
+            'data/install/generated/dj_test/res.company.csv',
+            'data/install/generated/dj_test/res.lang.csv',
+            'data/install/generated/dj_test/res.partner.csv',
+            'data/install/generated/dj_test/res.users.csv',
+            'songs/install/generated/__init__.py',
+            'songs/install/generated/dj_test_comp1.py',
+            'songs/install/generated/dj_test_core1.py',
+        ]
+        self.assertListEqual(paths, expected)
