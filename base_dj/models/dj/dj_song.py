@@ -554,7 +554,7 @@ class Song(models.Model):
                 content = rec[fname]
                 if not content:
                     continue
-                path = rec.with_context(**self._make_csv_context())[fname]
+                path = self.song_model._dj_file_to_path(rec, fname)
                 # special case: xml validation is done on fields like `arch_db`
                 # so we need to wrap/unwrap w/ <odoo/> tag
                 path = path.replace(

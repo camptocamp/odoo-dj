@@ -4,10 +4,19 @@
 
 from odoo import api, models, tools
 import os
-import base64
+import codecs
+import mimetypes
 
 from ..utils import is_xml, to_str, is_string
 from ..slugifier import slugify
+
+
+def encode64(content):
+    return codecs.encode(content, 'base64')
+
+
+def decode64(content):
+    return codecs.decode(content, 'base64')
 
 
 class Base(models.AbstractModel):
@@ -177,7 +186,8 @@ class Base(models.AbstractModel):
             if rec[fname]:
                 rec[fname] = self._dj_file_to_path(ob, fname, info)
 
-    def _dj_file_to_path(self, rec, fname, info):
+    def _dj_file_to_path(self, rec, fname, info=None):
+        info = info or self.fields_get([fname])[fname]
         xmlid = rec._dj_export_xmlid()
         # TODO: handle path from song settings
         path = '{prefix}data/binaries/{xmlid}__{fname}'
@@ -205,10 +215,21 @@ class Base(models.AbstractModel):
         # guess filename from mimetype
         if is_xml(content):
             return 'xml', content
-        mime = tools.mimetypes.guess_mimetype(content.decode('base64'))
+        if info['type'] == 'binary':
+            content = decode64(content)
+        elif info['type'] == 'text':
+            content = encode64(content.encode('utf-8'))
+        mime = tools.mimetypes.guess_mimetype(content)
         if mime:
-            # mime is like `image/png`
-            return mime.split('/')[-1], content.decode('base64')
+            if mime == 'text/plain':
+                # TODO: any better option?
+                # `guess_extension` works very randomly here.
+                # Let's stick to txt for now.
+                ext = 'txt'
+            else:
+                # remove dot
+                ext = mimetypes.guess_extension(mime)[1:]
+            return ext, content
         return 'unknown', content
 
     def _dj_file_content_to_fs(self, fname, record, info=None):
@@ -252,7 +273,7 @@ class Base(models.AbstractModel):
         with open(abs_path, 'r') as ff:
             content = ff.read()
             if info['type'] == 'binary':
-                content = base64.b64encode(content)
+                content = encode64(content)
             return content
 
     @api.model

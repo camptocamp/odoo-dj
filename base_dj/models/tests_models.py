@@ -59,3 +59,19 @@ if testing:
             string='The partner',
             comodel_name='res.partner',
         )
+
+    class TestFileFields(models.Model):
+        _name = 'dj.test.filefields'
+
+        @property
+        def _dj_file_fields_names(self):
+            # arch_db is automatically added here
+            base = list(super(TestFileFields, self)._dj_file_fields_names)
+            return base + ['some_text', ]
+
+        name = fields.Char()
+        some_html = fields.Html()
+        some_text = fields.Text()
+        arch_db = fields.Text()
+        some_image = fields.Binary()
+        some_file = fields.Binary()

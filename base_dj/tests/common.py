@@ -9,7 +9,14 @@ import difflib
 import io
 
 from .lint import run_pylint
+from .xml_compare import xml_compare
 from ..utils import to_str
+
+
+def load_filecontent(module, filepath, mode='r'):
+    path = get_resource_path(module, filepath)
+    with io.open(path, mode) as fd:
+        return to_str(fd.read())
 
 
 class BaseCase(SavepointCase):
@@ -23,10 +30,8 @@ class BaseCase(SavepointCase):
         cls.compilation_model = cls.env['dj.compilation']
         cls._load_xml('base_dj', 'tests/fixtures/default.xml')
 
-    def _load_filecontent(self, module, filepath):
-        path = get_resource_path(module, filepath)
-        with io.open(path, 'r', encoding='utf-8') as fd:
-            return to_str(fd.read())
+    def _load_filecontent(self, module, filepath, mode='r'):
+        return load_filecontent(module, filepath, mode=mode)
 
     @classmethod
     def _load_xml(cls, module, filepath):
@@ -54,6 +59,9 @@ class BaseCase(SavepointCase):
             if msg:
                 message += " : " + msg
             self.fail("Multi-line strings are unequal:\n" + message)
+
+    def assertXMLEqual(self, a, b):
+        return xml_compare(a, b)
 
     @classmethod
     def add_xmlid(cls, record, xmlid, noupdate=False):
