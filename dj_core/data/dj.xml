@@ -4,7 +4,7 @@
   </record>
 
   <record model="dj.compilation" id="dj_core_main">
-    <field name="name">base</field>
+    <field name="name">core</field>
     <field name="genre_id" ref="dj_core_genre" />
     <!-- important -->
     <field name="core" eval="True" />
