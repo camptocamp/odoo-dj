@@ -3,9 +3,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 from odoo import api, fields, models, tools
+import logging
 import os
 
+_logger = logging.getLogger(__file__)
+
 testing = tools.config.get('test_enable') or os.environ.get('ODOO_TEST_ENABLE')
+
 
 if testing:
     class TestConfiguration(models.TransientModel):
@@ -52,8 +56,44 @@ if testing:
             for fname in fnames:
                 self._set_default_value(fname, self[fname])
 
+    class TestMixin(models.AbstractModel):
+
+        _name = 'test.mixin'
+        MOD_NAME = 'base_dj'
+
+        @api.model
+        def _setup_complete(self):
+            super(TestMixin, self)._setup_complete()
+            self._setup_ACL()
+
+        def _setup_ACL(self):
+            """Setup ACL on the fly for any test model.
+
+            This makes Odoo happy :)
+            """
+            xmlid = 'access_test_{}'.format(self._table)
+            if (self._auto and
+                    not self.env.ref(xmlid, raise_if_not_found=False)):
+                header = ['id', 'name', 'model_id:id', 'group_id:id',
+                          'perm_read', 'perm_write',
+                          'perm_create', 'perm_unlink']
+                acl_data = [
+                    [xmlid,
+                     'access_test_{}'.format(self._table),
+                     '{module}.model_{model}'.format(
+                        module=self.MOD_NAME,
+                        model=self._table,
+                     ),
+                     'base.group_system',
+                     '1', '1', '1', '1'],
+                ]
+                result = self.env['ir.model.access'].load(header, acl_data)
+                if result['messages']:
+                    _logger.warning(result['messages'])
+
     class TestDefaults(models.Model):
         _name = 'dj.test.defaults'
+        _inherit = 'test.mixin'
 
         partner_id = fields.Many2one(
             string='The partner',
@@ -62,6 +102,7 @@ if testing:
 
     class TestFileFields(models.Model):
         _name = 'dj.test.filefields'
+        _inherit = 'test.mixin'
 
         @property
         def _dj_file_fields_names(self):
