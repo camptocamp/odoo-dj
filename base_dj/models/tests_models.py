@@ -74,22 +74,24 @@ if testing:
             xmlid = 'access_test_{}'.format(self._table)
             if (self._auto and
                     not self.env.ref(xmlid, raise_if_not_found=False)):
-                header = ['id', 'name', 'model_id:id', 'group_id:id',
-                          'perm_read', 'perm_write',
-                          'perm_create', 'perm_unlink']
-                acl_data = [
-                    [xmlid,
-                     'access_test_{}'.format(self._table),
-                     '{module}.model_{model}'.format(
-                        module=self.MOD_NAME,
-                        model=self._table,
-                     ),
-                     'base.group_system',
-                     '1', '1', '1', '1'],
-                ]
-                result = self.env['ir.model.access'].load(header, acl_data)
-                if result['messages']:
-                    _logger.warning(result['messages'])
+                model_xmlid = '{module}.model_{model}'.format(
+                    module=self.MOD_NAME,
+                    model=self._table,
+                )
+                if self.env.ref(model_xmlid, raise_if_not_found=False):
+                    header = ['id', 'name', 'model_id:id', 'group_id:id',
+                              'perm_read', 'perm_write',
+                              'perm_create', 'perm_unlink']
+                    acl_data = [
+                        [xmlid,
+                         'access_test_{}'.format(self._table),
+                         model_xmlid,
+                         'base.group_system',
+                         '1', '1', '1', '1'],
+                    ]
+                    result = self.env['ir.model.access'].load(header, acl_data)
+                    if result['messages']:
+                        _logger.warning(result['messages'])
 
     class TestDefaults(models.Model):
         _name = 'dj.test.defaults'

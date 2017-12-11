@@ -527,7 +527,7 @@ class Song(models.Model):
     def _is_multicompany_env(self):
         return self.compilation_id._is_multicompany_env()
 
-    def _make_csv_context(self):
+    def _dj_export_context(self):
         ctx = dict(
             dj_export=True,
             dj_multicompany=self._is_multicompany_env(),
@@ -571,7 +571,7 @@ class Song(models.Model):
         items = items or self._get_exportable_records()
         field_names = self.get_csv_field_names()
         export_data = items.with_context(
-            **self._make_csv_context()
+            **self._dj_export_context()
         ).export_data(field_names).get('datas', [])
         return (
             self.real_csv_path(),
@@ -603,13 +603,15 @@ class Song(models.Model):
             companies = self.env['res.company'].search([], **kwargs)
 
         res = []
-        fields_info = self.song_model._dj_settings_fields()
+        model = self.song_model.with_context(dj_export=True)
         for company in companies:
             with force_company(self.env, company.id):
-                wizard = self.song_model.create({})
+                fnames = model._dj_settings_fields_get()
+                wizard = model.create({})
                 values = wizard.read(
-                    fields=fields_info.keys(), load='_classic_write')[0]
+                    fields=fnames, load='_classic_write')[0]
             cp_values = {}
+            fields_info = model.fields_get(fnames)
             for fname, val in values.items():
                 if fname in SPECIAL_FIELDS:
                     continue

@@ -27,5 +27,5 @@ def main(ctx):
     {% for song in songs %}
     {%- if not song.scratchable() -%}
     {{ song.name }}(ctx)
-    {%- endif %}
+    {% endif -%}
     {% endfor %}

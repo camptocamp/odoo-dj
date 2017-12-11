@@ -2,7 +2,7 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
-from odoo import models, api
+from odoo import models, api, tools
 from ..utils import string_to_list
 
 
@@ -24,18 +24,14 @@ class ResConfigSettings(models.TransientModel):
         res = super(ResConfigSettings, self)._add_missing_default_values(vals)
         if self.env.context.get('dj_export'):
             fnames = list(res.keys())
-            whitelisted = list(self._dj_settings_fields(vals).keys())
+            allowed = self._dj_settings_fields_get(vals)
             for fname in fnames:
-                if fname not in vals:
-                    if fname not in whitelisted:
-                        res.pop(fname)
-                    else:
-                        # such fields can appear in `other` too
-                        if fname.startswith(('default_', 'group_', 'module_')):
-                            res.pop(fname)
+                if fname not in allowed and fname not in vals:
+                    res.pop(fname)
         return res
 
-    def _dj_settings_fields(self, vals=None):
+    @tools.ormcache('self')
+    def _dj_settings_fields_get(self, vals=None):
         """Take control on which settings fields are exported."""
         # {'default': [...], 'group': [...], 'module': [...], 'other': [...]}
         # exclude default_ -> add default song in core compilation
@@ -49,4 +45,10 @@ class ResConfigSettings(models.TransientModel):
             whitelisted = string_to_list(specific_fields)
         else:
             whitelisted = list(vals.keys() if vals else [])
-        return self.fields_get(whitelisted)
+        whitelisted.append('company_id')
+        required = [
+            k for k, v in self.fields_get().items()
+            if v['required']
+        ]
+        allowed = list(vals.keys() if vals else []) + whitelisted + required
+        return list(set(allowed))
