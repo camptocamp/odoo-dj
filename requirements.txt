@@ -2,3 +2,6 @@ Jinja2
 autopep8
 pylint
 unicodecsv
+# Improve mimetype guessing.
+# Requires `libmagic1` to be installed sys-wide
+python-magic
