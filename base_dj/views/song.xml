@@ -52,7 +52,7 @@
                   </tree>
                 </field>
                 <label string="Domain" />
-                <field name="domain" widget="char_domain" options="{'model_field': 'model_name'}"/>
+                <field name="domain" widget="domain" options="{'model': 'model_name'}"/>
                 <br />
                 <label string="Python code" />
                 <p class="help-block">You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
