@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/camptocamp/odoo-dj.svg?branch=10.0)](https://travis-ci.org/camptocamp/odoo-dj)
+
 Odoo modules to use to create a prototype
 =========================================
 
