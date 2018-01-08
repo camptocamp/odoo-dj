@@ -83,7 +83,9 @@ if ODOOVER >= 11.0:
                 # TODO: make this more reliable and make sure we have a field
                 field_id = vals.get('field_id', self.field_id.id)
                 field = self._dj_get_relation_field(field_id)
-                if field:
+                # TODO: `vals[self._value_key] == '[]'` means we are exporting
+                # an empty json list. We should avoid that.
+                if field and not vals[self._value_key] == '[]':
                     values = string_to_list(
                         vals[self._value_key],
                         modifier=lambda x: self.env.ref(x).id)
