@@ -87,9 +87,11 @@ class SpecialFieldsCase(BaseCompilationCase):
             'data/binaries/__setup__.dj_test_filefields_foo__some_image.png',
             # CSV are detected as plain text
             'data/binaries/__setup__.dj_test_filefields_foo__some_text.txt',
-            'data/install/generated/dj_test/dj.test.filefields.csv',
+            'data/install/generated/dj_test/special_fields/dj.test.filefields.csv',  # noqa
+            'songs/install/__init__.py',
             'songs/install/generated/__init__.py',
-            'songs/install/generated/dj_test_special_fields.py'
+            'songs/install/generated/dj_test/__init__.py',
+            'songs/install/generated/dj_test/special_fields.py',
         ]
         self.assertListEqual(paths, expected)
 

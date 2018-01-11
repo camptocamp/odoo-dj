@@ -23,6 +23,7 @@ from ...common import (
 {% endfor %}
 
 
+{%- if pre_songs %}
 @anthem.log
 def pre(ctx):
     {% for song in pre_songs %}
@@ -30,8 +31,10 @@ def pre(ctx):
     {{ song.name }}(ctx)
     {% endif -%}
     {% endfor %}
+{% endif -%}
 
 
+{%- if post_songs %}
 @anthem.log
 def post(ctx):
     {% for song in post_songs %}
@@ -39,3 +42,4 @@ def post(ctx):
     {{ song.name }}(ctx)
     {% endif -%}
     {% endfor %}
+{% endif -%}

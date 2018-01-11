@@ -18,7 +18,7 @@ def load_res_partner(ctx):
     deferred_import(
         ctx,
         model,
-        'data/install/generated/dj_test/res.partner.csv',
+        'data/install/generated/dj_test/comp4/res.partner.csv',
         defer_parent_computation=True)
 
 
@@ -29,6 +29,6 @@ def load_res_partner_compute_parent(ctx):
 
 
 @anthem.log
-def main(ctx):
+def post(ctx):
     load_res_partner(ctx)
     load_res_partner_compute_parent(ctx)

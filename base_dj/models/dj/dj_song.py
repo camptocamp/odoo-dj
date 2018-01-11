@@ -84,7 +84,7 @@ class Song(models.Model):
         ]""",
     )
     csv_path = fields.Char(
-        default='data/{data_mode}/generated/{genre}/{model}.csv'
+        default='data/{data_mode}/generated/{genre}/{comp_name}/{model}.csv'
     )
     domain = fields.Char(default="[]")
     python_code = fields.Text(
@@ -310,14 +310,17 @@ class Song(models.Model):
             return context_to_string(ctx)
         return ctx
 
-    def real_csv_path(self):
-        """Final csv path into zip file."""
-        data = {
+    def _real_csv_path_data(self):
+        return {
             'model': self.song_model._name,
             'data_mode': self.compilation_id.data_mode,
-            'genre': self.compilation_id.genre_id.name
+            'genre': self.compilation_id.genre_id.name,
+            'comp_name': self.compilation_id.name,
         }
-        path = self.csv_path.format(**data)
+
+    def real_csv_path(self):
+        """Final csv path into zip file."""
+        path = self.csv_path.format(**self._real_csv_path_data())
         if self._songs_models_count[self.model_name] > 1:
             # make filename unique. Include position to match song name
             path, ext = os.path.splitext(path)

@@ -22,10 +22,10 @@ class CompilationCase(BaseCompilationCase):
         })
         # name is normalized
         self.assertEqual(comp.name, 'foo')
-        # path defaults to songs/{data_mode}/generated/{genre}_{name}.py
+        # path defaults to songs/{data_mode}/generated/{genre}/{name}.py
         self.assertEqual(
             comp.disc_full_path(),
-            'songs/install/generated/dj_test_foo.py'
+            'songs/install/generated/dj_test/foo.py'
         )
 
     def test_disc_path_custom(self):
@@ -45,12 +45,12 @@ class CompilationCase(BaseCompilationCase):
 
     def test_burn_and_test1(self):
         fixture = 'fixture_comp1'
-        expected_path = 'songs/install/generated/dj_test_comp1.py'
+        expected_path = 'songs/install/generated/dj_test/comp1.py'
         self._burn_and_test(fixture, expected_path, 'base_dj.test_comp1')
 
     def test_burn_defer_parent(self):
         fixture = 'fixture_defer_parent'
-        expected_path = 'songs/install/generated/dj_test_comp4.py'
+        expected_path = 'songs/install/generated/dj_test/comp4.py'
         self._burn_and_test(fixture, expected_path, 'base_dj.test_comp4')
 
     def test_burn_contents(self):
@@ -61,14 +61,16 @@ class CompilationCase(BaseCompilationCase):
             dj_read_skip_special_fields=True
         ).get_all_tracks(include_core=False)
         paths = sorted([x[0] for x in tracks])
-        expected = [
+        expected = sorted([
             'DEV_README.rst',
-            'data/install/generated/dj_test/res.company.csv',
-            'data/install/generated/dj_test/res.partner.csv',
-            'data/install/generated/dj_test/res.users.csv',
+            'data/install/generated/dj_test/comp1/res.company.csv',
+            'data/install/generated/dj_test/comp1/res.partner.csv',
+            'data/install/generated/dj_test/comp1/res.users.csv',
+            'songs/install/__init__.py',
             'songs/install/generated/__init__.py',
-            'songs/install/generated/dj_test_comp1.py'
-        ]
+            'songs/install/generated/dj_test/__init__.py',
+            'songs/install/generated/dj_test/comp1.py',
+        ])
         self.assertListEqual(paths, expected)
 
     def test_burn_contents_with_core(self):
@@ -87,15 +89,17 @@ class CompilationCase(BaseCompilationCase):
                 dj_read_skip_special_fields=True).get_all_tracks()
 
         paths = sorted([x[0] for x in tracks])
-        expected = [
+        expected = sorted([
             'DEV_README.rst',
-            'data/install/generated/dj_test/ir.default.csv',
-            'data/install/generated/dj_test/res.company.csv',
-            'data/install/generated/dj_test/res.lang.csv',
-            'data/install/generated/dj_test/res.partner.csv',
-            'data/install/generated/dj_test/res.users.csv',
+            'data/install/generated/dj_test/core1/ir.default.csv',
+            'data/install/generated/dj_test/core1/res.lang.csv',
+            'data/install/generated/dj_test/comp1/res.company.csv',
+            'data/install/generated/dj_test/comp1/res.partner.csv',
+            'data/install/generated/dj_test/comp1/res.users.csv',
+            'songs/install/__init__.py',
             'songs/install/generated/__init__.py',
-            'songs/install/generated/dj_test_comp1.py',
-            'songs/install/generated/dj_test_core1.py',
-        ]
+            'songs/install/generated/dj_test/__init__.py',
+            'songs/install/generated/dj_test/comp1.py',
+            'songs/install/generated/dj_test/core1.py',
+        ])
         self.assertListEqual(paths, expected)
