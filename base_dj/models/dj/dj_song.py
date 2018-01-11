@@ -122,6 +122,11 @@ class Song(models.Model):
     )
     export_translations = fields.Boolean(default=False)
     export_lang = fields.Char()
+    exec_hook = fields.Selection(
+        selection=[('pre', 'pre'), ('post', 'post')],
+        default='post',
+        help="When to execute this? Pre or post module upgrade?"
+    )
 
     @api.depends('model_id', 'sequence', 'compilation_id.song_ids')
     def _compute_position_in_collection(self):

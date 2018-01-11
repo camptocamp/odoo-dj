@@ -16,6 +16,7 @@
     <field name="sequence" eval="10" />
     <field name="song_type">load_csv</field>
     <field name="field_list">active,date_format,decimal_point,grouping,thousands_sep,time_format</field>
+    <field name="exec_hook">pre</field>
   </record>
 
   <record model="dj.song" id="dj_song_company">

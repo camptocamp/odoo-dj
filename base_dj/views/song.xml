@@ -69,6 +69,7 @@
                 <field name="template_path"/>
                 <field name="csv_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
                 <field name="model_context"/>
+                <field name="exec_hook"/>
               </group>
             </page>
             <page name="modules" string="Modules" attrs="{'invisible': [('has_records', '=', False)]}">
