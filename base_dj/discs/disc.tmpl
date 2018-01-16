@@ -22,10 +22,24 @@ from ...common import (
 {% endif -%}
 {% endfor %}
 
+
+{%- if pre_songs %}
 @anthem.log
-def main(ctx):
-    {% for song in songs %}
+def pre(ctx):
+    {% for song in pre_songs %}
     {%- if not song.scratchable() -%}
     {{ song.name }}(ctx)
     {% endif -%}
     {% endfor %}
+{% endif -%}
+
+
+{%- if post_songs %}
+@anthem.log
+def post(ctx):
+    {% for song in post_songs %}
+    {%- if not song.scratchable() -%}
+    {{ song.name }}(ctx)
+    {% endif -%}
+    {% endfor %}
+{% endif -%}

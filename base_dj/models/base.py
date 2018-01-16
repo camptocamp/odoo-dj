@@ -228,9 +228,19 @@ class Base(models.AbstractModel):
                 ext = 'txt'
             else:
                 # remove dot
-                ext = mimetypes.guess_extension(mime)[1:]
+                ext = mimetypes.guess_extension(mime)
+                if ext:
+                    ext = ext[1:]
+                else:
+                    # lookup for a default fallback
+                    ext = self._dj_default_mimetype_ext_mapping.get(
+                        mime, 'unknown')
             return ext, content
         return 'unknown', content
+
+    _dj_default_mimetype_ext_mapping = {
+        'image/x-icon': 'ico'
+    }
 
     def _dj_file_content_to_fs(self, fname, record, info=None):
         """Convert values to file system value.

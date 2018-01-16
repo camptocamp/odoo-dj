@@ -54,7 +54,7 @@ class Compilation(models.Model):
     )
     song_ids = fields.One2many('dj.song', 'compilation_id')
     disc_path = fields.Char(
-        default='songs/{data_mode}/generated/{genre}_{name}.py',
+        default='songs/{data_mode}/generated/{genre}/{name}.py',
         required=True,
     )
     core = fields.Boolean(
@@ -146,9 +146,12 @@ class Compilation(models.Model):
         """Return context variables to render disc's template."""
         self.ensure_one()
         values = super(Compilation, self).dj_template_vars()
+        songs = self._get_all_songs()
         values.update({
             # get all songs but scratchable ones
-            'songs': self._get_all_songs()
+            'songs': songs,
+            'pre_songs': songs.filtered(lambda x: x.exec_hook == 'pre'),
+            'post_songs': songs.filtered(lambda x: x.exec_hook == 'post'),
         })
         return values
 
@@ -229,10 +232,14 @@ class Compilation(models.Model):
             track = song.burn_track()
             if track:
                 files.extend(track)
-        # add __init__..py to song module folder only once
-        init_file = os.path.join(
-            os.path.dirname(comp.disc_full_path()), '__init__.py')
-        files.append((init_file, '#'))
+
+        # add __init__..py to song folders
+        mid_path = comp.disc_full_path().rsplit('/', 1)[0]
+        while mid_path and '/' in mid_path:
+            init_file = os.path.join(mid_path, '__init__.py')
+            files.append((init_file, '#'))
+            mid_path = mid_path.rsplit('/', 1)[0]
+
         # generate dev readme for all compilations
         files.append(self.burn_dev_readme())
         # if not self.env.context.get('dj_burn_skip_self'):
