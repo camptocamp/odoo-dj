@@ -113,6 +113,9 @@ def context_to_string(ctx):
     """
     out = []
     for k, v in ctx.items():
+        if isinstance(v, str):
+            # wrap string to preserve it in jinja tmpl
+            v = "'{}'".format(v)
         out.append('{}={}'.format(k, v))
     return ', '.join(sorted(out))
 
