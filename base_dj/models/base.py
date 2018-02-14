@@ -280,7 +280,10 @@ class Base(models.AbstractModel):
         path = path[len(self._dj_path_prefix):]
         base_path = '/opt/odoo'  # TODO: compute this
         abs_path = os.path.join(base_path, path)
-        with open(abs_path, 'r') as ff:
+        read_mode = 'r'
+        if info['type'] == 'binary':
+            read_mode = 'rb'
+        with open(abs_path, read_mode) as ff:
             content = ff.read()
             if info['type'] == 'binary':
                 content = encode64(content)
