@@ -5,6 +5,13 @@
 from odoo import models, api, tools
 from ..utils import string_to_list
 
+# TODO: very likely to be deprecated
+# ATM we are exporting / importing full records
+# and being res.config.settings just a proxy to real records field_strings
+# is kind of useless to import them too.
+# Plus, they are hard to debug and really heavy to create/update
+# since in v11 they stay in one single model.
+
 
 class ResConfigSettings(models.TransientModel):
 
