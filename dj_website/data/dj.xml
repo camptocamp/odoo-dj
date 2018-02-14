@@ -10,6 +10,7 @@
     <field name="model_id" ref="website.model_website" />
     <field name="sequence" eval="10" />
     <field name="song_type">load_csv</field>
+    <field name="export_translations" eval="True" />
   </record>
 
   <record model="dj.song" id="dj_song_website_menu">
@@ -17,6 +18,7 @@
     <field name="model_id" ref="website.model_website_menu" />
     <field name="sequence" eval="20" />
     <field name="song_type">load_csv</field>
+    <field name="export_translations" eval="True" />
   </record>
 
   <record model="dj.song" id="dj_song_website_auth">
