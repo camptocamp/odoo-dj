@@ -105,7 +105,7 @@
     <field name="arch" type="xml">
       <tree>
         <field name="sequence" widget="handle" />
-        <field name="genre"/>
+        <field name="genre_id"/>
         <field name="name"/>
         <field name="data_mode"/>
       </tree>
@@ -117,7 +117,7 @@
     <field name="model">dj.compilation</field>
     <field name="arch" type="xml">
       <search string="Compilation Search">
-        <field name="genre"/>
+        <field name="genre_id"/>
         <field name="name"/>
         <field name="data_mode"/>
         <group expand="0" string="Group By">

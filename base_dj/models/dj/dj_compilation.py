@@ -44,7 +44,7 @@ class Compilation(models.Model):
         comodel_name='dj.genre',
         required=True,
     )
-    genre = fields.Char(related='genre_id.name', readonly=True)
+    genre = fields.Char(related='genre_id.name', readonly=True, string='Genre')
     data_mode = fields.Selection(
         selection=[
             ('install', 'Install'),
