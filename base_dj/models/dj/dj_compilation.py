@@ -203,6 +203,7 @@ class Compilation(models.Model):
                 'model_context': "{'lang': '%s'}" % lang_code,
                 # set path as foo/bar/my.model.fr_FR.csv
                 'csv_path': filepath + '.' + lang_code + ext,
+                'sequence': song.sequence + 1,
             }
             translated_data = song.copy_data(default=defaults)[0]
             # add `shadow song` for each lang
