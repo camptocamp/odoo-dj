@@ -32,4 +32,10 @@
     <field name="model_context">{'xmlid_value_reference': True}</field>
   </record>
 
+  <record model="dj.equalizer" id="dj_equalizer_config_param">
+    <field name="model">ir.config.parameter</field>
+    <field name="xmlid_fields">key</field>
+    <field name="xmlid_table_name">param</field>
+  </record>
+
 </odoo>
