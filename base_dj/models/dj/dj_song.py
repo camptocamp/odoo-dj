@@ -465,7 +465,7 @@ class Song(models.Model):
             # make sure is always after `id` to ease csv review
             field_names.remove('name')
             field_names.insert(1, 'name')
-        return [to_str(x) for x in field_names]
+        return [to_str(x) for x in set(field_names)]
 
     def get_csv_field_names_exclude(self):
         """Return fields that must be imported in 2 steps.
