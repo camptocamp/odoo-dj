@@ -2,6 +2,10 @@
   <record model="dj.genre" id="dj_core_genre">
     <field name="name">base</field>
   </record>
+  <!-- for your custom compilations -->
+  <record model="dj.genre" id="dj_custom_genre">
+    <field name="name">custom</field>
+  </record>
 
   <record model="dj.compilation" id="dj_core_main">
     <field name="name">core</field>
