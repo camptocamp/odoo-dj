@@ -332,15 +332,18 @@ class Song(models.Model):
     def burn_track(self):
         """Search items and burn the track for the compilations."""
         self.ensure_one()
+        # pass around corect xmlid module name based on compilation
+        song_self = self.with_context(
+            dj_xmlid_module=self.compilation_id.xmlid_module_name)
         path = data = None
         if not self.only_config and not self.scratchable():
-            path, data = self.make_csv()
+            path, data = song_self.make_csv()
         if self.scratchable():
-            path, data = self.scratch_it()
+            path, data = song_self.scratch_it()
         if path and data:
             res = [(path, data), ]
             if not self.scratchable():
-                res.extend(self._handle_special_fields())
+                res.extend(song_self._handle_special_fields())
             return res
         return None
 

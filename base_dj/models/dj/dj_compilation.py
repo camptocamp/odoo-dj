@@ -72,6 +72,15 @@ class Compilation(models.Model):
     )
     sanity_check = fields.Html(compute='_compute_sanity_check')
 
+    @property
+    def xmlid_module_name(self):
+        self.ensure_one()
+        mapping = {
+            'install': '__setup__',
+            'sample': '__sample__',
+        }
+        return mapping.get(self.data_mode, '__setup__')
+
     @api.multi
     def _normalize_name(self):
         if self.env.context.get('skip_normalize_name'):
