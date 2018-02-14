@@ -1,12 +1,13 @@
 @anthem.log
 def {{ song.name }}(ctx):
     """ Import {{ song.model_id.model }} from csv """
+    path = '{{ song.real_csv_path() }}'
     model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.song_model_context(as_string=True) }})
     {%- if header_exclude %}
     header_exclude = {{ header_exclude }}
-    load_csv(ctx, '{{ song.real_csv_path() }}', model, header_exclude=header_exclude)
+    load_csv(ctx, path, model, header_exclude=header_exclude)
     if header_exclude:
-        load_csv(ctx, '{{ song.real_csv_path() }}', model, header=['id', ] + header_exclude)
+        load_csv(ctx, path, model)
     {%- else %}
-    load_csv(ctx, '{{ song.real_csv_path() }}', model)
+    load_csv(ctx, path, model)
     {%- endif %}
