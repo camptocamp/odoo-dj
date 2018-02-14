@@ -11,7 +11,7 @@
     'website': 'https://github.com/camptocamp/odoo-dj',
     'license': 'AGPL-3',
     'category': 'songs',
-    'depends': ['dj_core', ],
+    'depends': ['dj_core', 'website'],
     'data': [
         'data/dj.xml',
     ],
