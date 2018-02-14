@@ -48,7 +48,7 @@ class Compilation(models.Model):
     data_mode = fields.Selection(
         selection=[
             ('install', 'Install'),
-            ('demo', 'Demo'),
+            ('sample', 'Sample'),
         ],
         default='install',
     )
