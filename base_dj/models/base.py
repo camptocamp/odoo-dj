@@ -256,8 +256,6 @@ class Base(models.AbstractModel):
         return super(Base, self).write(vals)
 
     def _dj_handle_special_fields_write(self, vals):
-        if not len(self):
-            return
         if not vals:
             return
         for fname, info in self._dj_special_fields(list(vals.keys())):
