@@ -24,6 +24,11 @@ class DJEqualizer(models.Model):
 
     model = fields.Char(default='')
     xmlid_fields = fields.Char(default='')
+    xmlid_policy = fields.Selection(
+        selection=[('normal', 'Normal'), ('hash', 'Hash')],
+        help='`Normal` will join all fields, '
+             '`hash` will use specified fields to build an hash.'
+    )
     xmlid_table_name = fields.Char(
         default='',
         help='Sometimes the xmlid can be veeeeery long, like for companies. '
@@ -68,6 +73,7 @@ class DJEqualizer(models.Model):
     def get_conf(self, key=None):
         all_keys = {
             'xmlid_fields': self.get_xmlid_fields(),
+            'xmlid_policy': self.xmlid_policy,
             'xmlid_table_name': self.xmlid_table_name,
             'model_context': self.get_model_context(),
             'field_blacklist': self.get_field_blacklist(),
