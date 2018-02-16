@@ -38,4 +38,11 @@
     <field name="xmlid_table_name">param</field>
   </record>
 
+  <record model="dj.equalizer" id="dj_equalizer_ir_default">
+    <field name="model">ir.default</field>
+    <field name="model_context">{'xmlid_value_reference': True}</field>
+    <field name="xmlid_policy">hash</field>
+    <field name="xmlid_fields">condition,field_id,json_value,company_id,user_id</field>
+  </record>
+
 </odoo>

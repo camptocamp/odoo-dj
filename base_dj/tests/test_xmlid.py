@@ -109,3 +109,17 @@ class XMLIDCase(BaseCase):
             rec.with_context(dj_multicompany=1)._dj_export_xmlid(),
             '__setup__.foo_res_partner_bank_{}'.format(rec.id)
         )
+
+    def test_xmlid_hash_policy(self):
+        self.env['dj.equalizer'].create({
+            'model': 'res.partner.bank',
+            'xmlid_fields': 'acc_number',
+            'xmlid_policy': 'hash',
+        })
+        rec = self.env['res.partner.bank'].create({'acc_number': '56789', })
+        # xmlid built w/ hash of `(acc_number, )` tuple
+        hashed = self.env['res.partner.bank']._hash_them((rec.acc_number, ))
+        self.assertEqual(
+            rec._dj_export_xmlid(),
+            '__setup__.res_partner_bank_{}'.format(hashed)
+        )

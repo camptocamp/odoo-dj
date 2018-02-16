@@ -6,6 +6,7 @@ from odoo import api, models, tools
 import os
 import codecs
 import mimetypes
+import hashlib
 
 from ..utils import is_xml, to_str, is_string
 from ..slugifier import slugify
@@ -22,6 +23,13 @@ def decode64(content):
 class Base(models.AbstractModel):
 
     _inherit = 'base'
+
+    @staticmethod
+    def _hash_them(atuple):
+        """Return always the same hashed string for given tuple."""
+        # TODO: get a shorter but still unique hash
+        # Maybe using `hashids` lib?
+        return hashlib.md5(str(atuple).encode()).hexdigest()
 
     def _dj_xmlid_export_module(self):
         """Customize module name for dj compilation.
@@ -59,6 +67,7 @@ class Base(models.AbstractModel):
             name = [self._table, ]
             if global_config.get('xmlid_table_name'):
                 name = [global_config['xmlid_table_name'], ]
+            xmlid_fields_name = []
             for key in xmlid_fields:
                 if not self[key]:
                     continue
@@ -69,7 +78,13 @@ class Base(models.AbstractModel):
                     value = slugify(value.display_name).replace('-', '_')
                 elif isinstance(value, (int, float)):
                     value = str(value)
-                name.append(value)
+                xmlid_fields_name.append(value)
+            if global_config.get('xmlid_policy') == 'hash':
+                # sometime this is the only way to get unique xmlids
+                # (ir.default for instance).
+                name.append(self._hash_them(tuple(xmlid_fields_name)))
+            else:
+                name.extend(xmlid_fields_name)
         if (self.env.context.get('dj_multicompany') and
                 'company_id' in self and self.company_id.aka):
             # discriminate by company `aka` code
