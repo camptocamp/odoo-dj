@@ -596,10 +596,12 @@ class Song(models.Model):
         export_data = items.with_context(
             **self._dj_export_context()
         ).export_data(field_names).get('datas', [])
-        return (
-            self.real_csv_path(),
-            csv_from_data(field_names, export_data)
-        )
+        csv_data = csv_from_data(field_names, export_data)
+        # get bytes, convert to string, cleanup, convert back to bytes
+        csv_data = str(
+            csv_data, 'utf-8'
+        ).replace('\r\n', '\n').replace('^M', '\n')
+        return (self.real_csv_path(), csv_data.encode())
 
     def anthem_path(self):
         path = self.compilation_id.disc_full_path(
