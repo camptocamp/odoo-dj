@@ -200,9 +200,16 @@ class Song(models.Model):
         return res
 
     @property
+    def _song_model_count_key(self):
+        return (self.model_name, self.song_type)
+
+    @property
     def _songs_models_count(self):
-        # count songs in the same compilation w/ the same model
-        return Counter(self.compilation_id.song_ids.mapped('model_name'))
+        # count songs in the same compilation w/ the same model and same type
+        return Counter(
+            self.compilation_id.song_ids.mapped(
+                lambda x: x._song_model_count_key)
+        )
 
     @api.multi
     @api.depends('model_id.model', 'song_type')
@@ -217,7 +224,7 @@ class Song(models.Model):
                 (item.model_id.model or '').replace('.', '_'),
                 suffix,
             )
-            if item._songs_models_count[item.model_name] > 1:
+            if item._songs_models_count[item._song_model_count_key] > 1:
                 # make name unique in the compilation
                 name += '_%d' % item.position_in_collection
             if item.export_lang:
@@ -321,7 +328,7 @@ class Song(models.Model):
     def real_csv_path(self):
         """Final csv path into zip file."""
         path = self.csv_path.format(**self._real_csv_path_data())
-        if self._songs_models_count[self.model_name] > 1:
+        if self._songs_models_count[self._song_model_count_key] > 1:
             # make filename unique. Include position to match song name
             path, ext = os.path.splitext(path)
             path += '_%d' % self.position_in_collection
