@@ -250,6 +250,13 @@ class Base(models.AbstractModel):
                     # lookup for a default fallback
                     ext = self._dj_default_mimetype_ext_mapping.get(
                         mime, 'unknown')
+            # HACK: even w/ libmagic installed, for JPGs we get randomly:
+            # `jpe`, `jpg`, `jpeg`, even if we use `strict=True`.
+            # We MUST have always the same one
+            # otherwise on each export we get different results and
+            # more image files.
+            if ext in ('jpe', 'jpeg'):
+                ext = 'jpg'
             return ext, content
         return 'unknown', content
 
