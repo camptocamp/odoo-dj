@@ -1,0 +1,15 @@
+<odoo>
+  <record model="dj.compilation" id="dj_sale_base">
+    <field name="name">sale</field>
+    <field name="genre_id" ref="dj_core.dj_core_genre" />
+    <field name="core" eval="True" />
+  </record>
+
+  <record model="dj.song" id="dj_song_sale_params">
+    <field name="compilation_id" ref="dj_sale_base"/>
+    <field name="model_id" ref="base.model_ir_config_parameter" />
+    <field name="sequence" eval="30" />
+    <field name="song_type">load_csv</field>
+    <field name="domain">[('key', 'in', ('sale.sale_show_tax', 'website_sale.automatic_invoice'))]</field>
+  </record>
+</odoo>
