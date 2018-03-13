@@ -5,6 +5,18 @@
     <field name="core" eval="True" />
   </record>
 
+  <record model="dj.song" id="dj_song_company">
+    <field name="compilation_id" ref="dj_website_base"/>
+    <field name="model_id" ref="base.model_res_company" />
+    <field name="sequence" eval="20" />
+    <field name="song_type">load_csv</field>
+    <field name="field_list">
+      id,social_facebook,social_github,social_googleplus,
+      social_linkedin,social_twitter,social_youtube</field>
+    <field name="model_fields_blacklist_ids" eval="[(6,0,[
+      ref('base.field_res_company_user_ids')])]"/>
+  </record>
+
   <record model="dj.song" id="dj_song_website">
     <field name="compilation_id" ref="dj_website_base"/>
     <field name="model_id" ref="website.model_website" />
