@@ -29,10 +29,10 @@
     <field name="sequence" eval="20" />
     <field name="song_type">load_csv</field>
     <field name="field_list">
-      id,name,aka,currency_id,email,logo_web,paperformat_id,parent_id,
-      partner_id,report_footer,report_header,sequence,social_facebook,
-      social_github,social_googleplus,social_linkedin,
-      social_twitter,social_youtube</field>
+      id,name,aka,currency_id,vat,
+      street,zip,city,country_id,phone,fax,email,
+      website,logo_web,paperformat_id,parent_id,partner_id,
+      report_footer,report_header,sequence</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
       ref('base.field_res_company_user_ids')])]"/>
   </record>
