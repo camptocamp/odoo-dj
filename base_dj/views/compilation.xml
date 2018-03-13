@@ -105,6 +105,7 @@
     <field name="arch" type="xml">
       <tree>
         <field name="sequence" widget="handle" />
+        <field name="core"/>
         <field name="genre_id"/>
         <field name="name"/>
         <field name="data_mode"/>
