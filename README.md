@@ -1,5 +1,13 @@
 [![Build Status](https://travis-ci.org/camptocamp/odoo-dj.svg?branch=10.0)](https://travis-ci.org/camptocamp/odoo-dj)
 
+
+==============
+v10 DEPRECATED
+==============
+
+DO NOT RELY ON THIS SET OF MODULE FOR VERSION < 11.
+
+
 Odoo modules to use to create a prototype
 =========================================
 
