@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
@@ -310,8 +309,7 @@ class Compilation(models.Model):
         """Burn disc into a zip file."""
         # at least one of the compilations requires to exclude core ones
         exclude_core = (
-            any([self.mapped('exclude_core')])
-            or
+            any([self.mapped('exclude_core')]) or
             self.env.context.get('dj_exclude_core')
         )
         files = self.with_context(

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 # XXX: we dont' want to depend on `website` module
 # So here is a bare copy (PEP8-fied) of `slugify` method from
