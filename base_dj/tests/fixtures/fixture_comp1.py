@@ -6,7 +6,7 @@
 # pylint: disable=C,E
 
 import anthem
-from ...common import load_csv
+from anthem.lyrics.loaders import load_csv
 
 
 @anthem.log
