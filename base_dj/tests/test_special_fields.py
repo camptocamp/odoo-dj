@@ -81,13 +81,13 @@ class SpecialFieldsCase(BaseCompilationCase):
         paths = sorted([x[0] for x in tracks])
         expected = [
             'DEV_README.rst',
-            'data/binaries/__setup__.dj_test_filefields_foo__arch_db.xml',
-            'data/binaries/__setup__.dj_test_filefields_foo__some_file.txt',
-            'data/binaries/__setup__.dj_test_filefields_foo__some_html.html',
-            'data/binaries/__setup__.dj_test_filefields_foo__some_image.png',
+            'binaries/__setup__.dj_test_filefields_foo__arch_db.xml',
+            'binaries/__setup__.dj_test_filefields_foo__some_file.txt',
+            'binaries/__setup__.dj_test_filefields_foo__some_html.html',
+            'binaries/__setup__.dj_test_filefields_foo__some_image.png',
             # CSV are detected as plain text
-            'data/binaries/__setup__.dj_test_filefields_foo__some_text.txt',
-            'data/install/generated/dj_test/special_fields/dj.test.filefields.csv',  # noqa
+            'binaries/__setup__.dj_test_filefields_foo__some_text.txt',
+            'install/generated/dj_test/special_fields/dj.test.filefields.csv',  # noqa
             'songs/install/__init__.py',
             'songs/install/generated/__init__.py',
             'songs/install/generated/dj_test/__init__.py',

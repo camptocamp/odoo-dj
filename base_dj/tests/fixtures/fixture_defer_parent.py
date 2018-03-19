@@ -18,7 +18,7 @@ def load_res_partner(ctx):
     deferred_import(
         ctx,
         model,
-        'data/install/generated/dj_test/comp4/res.partner.csv',
+        'install/generated/dj_test/comp4/res.partner.csv',
         defer_parent_computation=True)
 
 

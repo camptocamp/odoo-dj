@@ -7,7 +7,7 @@ def {{ song.name }}(ctx):
     header_exclude = {{ header_exclude }}
     load_csv(ctx, model, path, header_exclude=header_exclude)
     if header_exclude:
-        load_csv(ctx, path, model)
+        load_csv(ctx, model, path)
     {%- else %}
     load_csv(ctx, model, path)
     {%- endif %}

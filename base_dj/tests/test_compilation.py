@@ -63,9 +63,9 @@ class CompilationCase(BaseCompilationCase):
         paths = sorted([x[0] for x in tracks])
         expected = sorted([
             'DEV_README.rst',
-            'data/install/generated/dj_test/comp1/res.company.csv',
-            'data/install/generated/dj_test/comp1/res.partner.csv',
-            'data/install/generated/dj_test/comp1/res.users.csv',
+            'install/generated/dj_test/comp1/res.company.csv',
+            'install/generated/dj_test/comp1/res.partner.csv',
+            'install/generated/dj_test/comp1/res.users.csv',
             'songs/install/__init__.py',
             'songs/install/generated/__init__.py',
             'songs/install/generated/dj_test/__init__.py',
@@ -91,11 +91,11 @@ class CompilationCase(BaseCompilationCase):
         paths = sorted([x[0] for x in tracks])
         expected = sorted([
             'DEV_README.rst',
-            'data/install/generated/dj_test/core1/ir.default.csv',
-            'data/install/generated/dj_test/core1/res.lang.csv',
-            'data/install/generated/dj_test/comp1/res.company.csv',
-            'data/install/generated/dj_test/comp1/res.partner.csv',
-            'data/install/generated/dj_test/comp1/res.users.csv',
+            'install/generated/dj_test/core1/ir.default.csv',
+            'install/generated/dj_test/core1/res.lang.csv',
+            'install/generated/dj_test/comp1/res.company.csv',
+            'install/generated/dj_test/comp1/res.partner.csv',
+            'install/generated/dj_test/comp1/res.users.csv',
             'songs/install/__init__.py',
             'songs/install/generated/__init__.py',
             'songs/install/generated/dj_test/__init__.py',

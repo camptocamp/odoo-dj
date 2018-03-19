@@ -58,10 +58,10 @@ class Compilation(models.Model):
         required=True,
     )
     core = fields.Boolean(
-        string='Core compilation?',
+        string='Is this a core compilation?',
         help='Core compilations are automatically included '
              'in each compilation burn as we assume '
-             'they are the base for every compilation.'
+             'they are the base for every compilation. '
     )
     core_compilation_ids = fields.Many2many(
         string='Core compilations',
@@ -69,6 +69,13 @@ class Compilation(models.Model):
         relation='dj_compilation_core_compilations_rel',
         compute='_compute_core_compilation_ids',
         readonly=True,
+    )
+    exclude_core = fields.Boolean(
+        string='Exclude core compilations?',
+        help='Core compilations are automatically included '
+             'in each compilation burn as we assume '
+             'they are the base for every compilation. '
+             'You can turn off this behavior by enabling this flag.'
     )
     sanity_check = fields.Html(compute='_compute_sanity_check')
 
@@ -301,9 +308,13 @@ class Compilation(models.Model):
     @api.multi
     def burn(self):
         """Burn disc into a zip file."""
-        # pass around the IDS the we are asked to burn.
-        # Used in export self config for instance.
-        files = self.with_context(dj_burning_ids=self.ids).get_all_tracks()
+        # at least one of the compilations requires to exclude core ones
+        exclude_core = any([self.mapped('exclude_core')])
+        files = self.with_context(
+            # pass around the IDS the we are asked to burn.
+            # Used in export self config for instance.
+            dj_burning_ids=self.ids
+        ).get_all_tracks(include_core=not exclude_core)
         zf = create_zipfile(files)
         filename = self.make_album_title()
         return filename, zf.read()
