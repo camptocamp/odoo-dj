@@ -309,7 +309,11 @@ class Compilation(models.Model):
     def burn(self):
         """Burn disc into a zip file."""
         # at least one of the compilations requires to exclude core ones
-        exclude_core = any([self.mapped('exclude_core')])
+        exclude_core = (
+            any([self.mapped('exclude_core')])
+            or
+            self.env.context.get('dj_exclude_core')
+        )
         files = self.with_context(
             # pass around the IDS the we are asked to burn.
             # Used in export self config for instance.
