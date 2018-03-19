@@ -5,9 +5,9 @@ def {{ song.name }}(ctx):
     model = ctx.env['{{ song.model_id.model }}'].with_context({{ song.song_model_context(as_string=True) }})
     {%- if header_exclude %}
     header_exclude = {{ header_exclude }}
-    load_csv(ctx, path, model, header_exclude=header_exclude)
+    load_csv(ctx, model, path, header_exclude=header_exclude)
     if header_exclude:
         load_csv(ctx, path, model)
     {%- else %}
-    load_csv(ctx, path, model)
+    load_csv(ctx, model, path)
     {%- endif %}

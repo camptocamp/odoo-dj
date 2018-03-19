@@ -7,7 +7,7 @@
 
 import anthem
 {%- if 'load_csv' in songs.mapped('song_type') %}
-from ...common import load_csv
+from anthem.lyrics.loaders import load_csv
 {%- endif %}
 {%- if 'load_csv_defer_parent' in songs.mapped('song_type') %}
 from ...common import (

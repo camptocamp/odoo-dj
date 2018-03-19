@@ -205,7 +205,7 @@ class Base(models.AbstractModel):
         info = info or self.fields_get([fname])[fname]
         xmlid = rec._dj_export_xmlid()
         # TODO: handle path from song settings
-        path = '{prefix}data/binaries/{xmlid}__{fname}'
+        path = '{prefix}binaries/{xmlid}__{fname}'
         export_lang = self.env.context.get('dj_export_lang', '')
         if export_lang:
             path += '_{lang}'
