@@ -10,6 +10,8 @@ import hashlib
 from ..utils import is_xml, to_str, is_string
 from ..slugifier import slugify
 
+ODOO_DATA_PATH = os.getenv('ODOO_DATA_PATH', '').rstrip('/')
+
 
 def encode64(content):
     return codecs.encode(content, 'base64')
@@ -297,7 +299,7 @@ class Base(models.AbstractModel):
         if not path.startswith(self._dj_path_prefix):
             return path
         path = path[len(self._dj_path_prefix):]
-        base_path = '/opt/odoo'  # TODO: compute this
+        base_path = ODOO_DATA_PATH
         abs_path = os.path.join(base_path, path)
         read_mode = 'r'
         if info['type'] == 'binary':
