@@ -12,7 +12,7 @@
         <li t-foreach="core_comps" t-as="core">
           <strong class="comp_name" t-field="core.name" />:
           <!--list models -->
-          <t t-foreach="core_comps.mapped('song_ids').mapped('model_name')" t-as="model">
+          <t t-foreach="core.mapped('song_ids').mapped('model_name')" t-as="model">
             <span class="comp_model" t-esc="model" /><t t-if="not model_last">, </t>
           </t>
         </li>
