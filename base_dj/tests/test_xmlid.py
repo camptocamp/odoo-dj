@@ -77,6 +77,16 @@ class XMLIDCase(BaseCase):
             '__setup__.res_partner_bank_11234'
         )
 
+    def test_xmlid_with_specific_xmlid_fields_related(self):
+        # new record
+        rec = self.env['res.partner.bank'].create({'acc_number': '30000', })
+        # pass new xmlids map
+        fmap = {'res.partner.bank': ['acc_number', 'company_id.name']}
+        self.assertEqual(
+            rec.with_context(dj_xmlid_fields_map=fmap)._dj_export_xmlid(),
+            '__setup__.res_partner_bank_30000_yourcompany'
+        )
+
     def test_xmlid_with_specific_xmlid_fields_from_equalizer(self):
         # new record
         rec = self.env['res.partner.bank'].create({'acc_number': '20000', })

@@ -146,3 +146,19 @@ def string_to_list(astring, separator=',',
     """
     return [modifier(x.strip()) for x in astring.split(separator)
             if checker(x)] if astring else []
+
+
+def follow_record_field(record, field):
+    """Allow nested fields declaration `foo_id.user_id`."""
+    attrs = field.split('.')
+    for attr in attrs:
+        try:
+            record = record[attr]
+        except KeyError:
+            # improve error msg
+            raise KeyError(
+                'Model `%s` has no field named `%s`' % (record._name, attr)
+            )
+    if isinstance(record, odoo.models.Model):
+        record = record.id
+    return record

@@ -7,7 +7,7 @@ import codecs
 import mimetypes
 import hashlib
 
-from ..utils import is_xml, to_str, is_string
+from ..utils import is_xml, to_str, is_string, follow_record_field
 from ..slugifier import slugify
 
 ODOO_DATA_PATH = os.getenv('ODOO_DATA_PATH', '').rstrip('/')
@@ -70,9 +70,13 @@ class Base(models.AbstractModel):
                 name = [global_config['xmlid_table_name'], ]
             xmlid_fields_name = []
             for key in xmlid_fields:
-                if not self[key]:
+                if '.' in key:
+                    val = follow_record_field(self, key)
+                elif self[key]:
+                    val = self[key]
+                else:
                     continue
-                value = to_str(self[key], safe=True)
+                value = to_str(val, safe=True)
                 if isinstance(value, str):
                     value = slugify(value).replace('-', '_')
                 elif isinstance(value, models.BaseModel):
