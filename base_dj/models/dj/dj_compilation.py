@@ -76,7 +76,8 @@ class Compilation(models.Model):
              'they are the base for every compilation. '
              'You can turn off this behavior by enabling this flag.'
     )
-    sanity_check = fields.Html(compute='_compute_sanity_check')
+    sanity_check = fields.Html(compute='_compute_info')
+    global_info = fields.Html(compute='_compute_info')
 
     @property
     def xmlid_module_name(self):
@@ -102,18 +103,19 @@ class Compilation(models.Model):
         for item in self:
             item.core_compilation_ids = core
 
-    @api.depends('song_ids')
-    def _compute_sanity_check(self):
+    @api.depends('song_ids', 'core_compilation_ids')
+    def _compute_info(self):
         if self.env.context.get('dj_burning_ids'):
             return
         for item in self:
             item.sanity_check = item._render_sanity_check()
+            item.global_info = item._render_global_info()
 
     def _render_sanity_check(self):
         sanity_msg = _('Ok')
         sanity_state = 'ok'
         sanity_conditions = []
-        sanity_tmpl = self.env.ref('base_dj.sanity_check_tmpl')
+        sanity_tmpl = self.env.ref('base_dj.sanity_check')
 
         # show warning if we have duplicated models
         core_models = []
@@ -148,6 +150,17 @@ class Compilation(models.Model):
             'sanity_msg': sanity_msg,
             'duplicated': duplicated,
             'xmlid_not_safe': xmlid_not_safe,
+        })
+
+    def _render_global_info(self):
+        info_tmpl = self.env.ref('base_dj.global_info')
+
+        core_comps = self.browse()
+        if not self.core:
+            core_comps = self.core_compilation_ids
+        return info_tmpl.render({
+            'comp': self,
+            'core_comps': core_comps,
         })
 
     @api.multi

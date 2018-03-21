@@ -32,7 +32,7 @@
         'views/song.xml',
         'views/equalizer.xml',
         'views/menuitems.xml',
-        'views/sanity_check.xml',
+        'views/info_templates.xml',
     ],
     'installable': True,
     'auto_install': False,

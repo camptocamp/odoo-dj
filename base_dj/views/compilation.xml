@@ -30,6 +30,8 @@
                 </tree>
               </field>
               <field name="sanity_check" nolabel="1" />
+              <field name="global_info" nolabel="1" />
+              <hr />
               <footer>
                 <div class="row">
                   <div id="download_compilation" class="col-xs-6">
