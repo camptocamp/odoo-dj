@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
 
 from odoo import models, fields, api
+from urllib.parse import urlencode
 
 
 class DownloadMixin(models.AbstractModel):
@@ -15,8 +16,13 @@ class DownloadMixin(models.AbstractModel):
     @api.multi
     @api.depends()
     def _compute_download_url(self):
+        # propagate our ctx keys
+        ctx = {k: v for k, v in self.env.context.items() if k.startswith('dj')}
         for item in self:
-            item.download_url = self._dj_download_path + str(item.id)
+            url = self._dj_download_path + str(item.id)
+            if ctx:
+                url += '?' + urlencode(ctx)
+            item.download_url = url
 
     @api.multi
     def download_it(self):
