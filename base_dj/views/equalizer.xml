@@ -10,6 +10,7 @@
           <group name="main">
             <field name="model" />
             <field name="xmlid_fields" />
+            <field name="xmlid_policy" />
             <field name="model_context" />
           </group>
         </sheet>
@@ -25,6 +26,7 @@
       <tree>
         <field name="model" />
         <field name="xmlid_fields" />
+        <field name="xmlid_policy" />
         <field name="model_context" />
       </tree>
     </field>
