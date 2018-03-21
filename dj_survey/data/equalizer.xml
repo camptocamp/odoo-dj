@@ -1,0 +1,28 @@
+<odoo>
+
+  <record model="dj.equalizer" id="dj_equalizer_survey">
+    <field name="model">survey.survey</field>
+    <field name="xmlid_fields">title,auth_required,users_can_go_back,quizz_mode</field>
+    <field name="xmlid_policy">hash</field>
+    <field name="xmlid_table_name">survey</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_survey_page">
+    <field name="model">survey.page</field>
+    <field name="xmlid_fields">survey_id.title,title</field>
+    <field name="xmlid_policy">hash</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_survey_question">
+    <field name="model">survey.question</field>
+    <field name="xmlid_fields">survey_id.title,page_id.title,question,type</field>
+    <field name="xmlid_policy">hash</field>
+  </record>
+
+  <record model="dj.equalizer" id="dj_equalizer_survey_label">
+    <field name="model">survey.label</field>
+    <field name="xmlid_fields">question_id.question,question_id_2,value,quizz_mark</field>
+    <field name="xmlid_policy">hash</field>
+  </record>
+
+</odoo>
