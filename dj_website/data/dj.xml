@@ -8,7 +8,7 @@
   <record model="dj.song" id="dj_song_company">
     <field name="compilation_id" ref="dj_website_base"/>
     <field name="model_id" ref="base.model_res_company" />
-    <field name="sequence" eval="20" />
+    <field name="sequence" eval="10" />
     <field name="song_type">load_csv</field>
     <field name="field_list">
       id,social_facebook,social_github,social_googleplus,
@@ -20,7 +20,7 @@
   <record model="dj.song" id="dj_song_website">
     <field name="compilation_id" ref="dj_website_base"/>
     <field name="model_id" ref="website.model_website" />
-    <field name="sequence" eval="10" />
+    <field name="sequence" eval="20" />
     <field name="song_type">load_csv</field>
     <field name="export_translations" eval="True" />
   </record>
@@ -28,7 +28,7 @@
   <record model="dj.song" id="dj_song_website_menu">
     <field name="compilation_id" ref="dj_website_base"/>
     <field name="model_id" ref="website.model_website_menu" />
-    <field name="sequence" eval="20" />
+    <field name="sequence" eval="30" />
     <field name="song_type">load_csv</field>
     <field name="export_translations" eval="True" />
   </record>
@@ -36,7 +36,7 @@
   <record model="dj.song" id="dj_song_website_auth">
     <field name="compilation_id" ref="dj_website_base"/>
     <field name="model_id" ref="base.model_ir_config_parameter" />
-    <field name="sequence" eval="30" />
+    <field name="sequence" eval="40" />
     <field name="song_type">load_csv</field>
     <field name="domain">[('key', 'in', ('auth_signup.reset_password','auth_signup.allow_uninvite'))]</field>
   </record>
