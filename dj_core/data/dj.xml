@@ -31,7 +31,7 @@
     <field name="field_list">
       id,name,aka,currency_id,vat,
       street,zip,city,country_id,phone,fax,email,
-      website,logo_web,paperformat_id,parent_id,partner_id,
+      website,logo,paperformat_id,parent_id,partner_id,
       report_footer,report_header,sequence</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
       ref('base.field_res_company_user_ids')])]"/>
