@@ -25,6 +25,7 @@ class DJEqualizer(models.Model):
     xmlid_fields = fields.Char(default='')
     xmlid_policy = fields.Selection(
         selection=[('normal', 'Normal'), ('hash', 'Hash')],
+        default='normal',
         help='`Normal` will join all fields, '
              '`hash` will use specified fields to build an hash.'
     )
