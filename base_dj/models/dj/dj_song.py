@@ -85,6 +85,9 @@ class Song(models.Model):
     csv_path = fields.Char(
         default='{data_mode}/generated/{genre}/{comp_name}/{model}.csv'
     )
+    binaries_path = fields.Char(
+        default='{data_mode}/generated/{genre}/{comp_name}/binaries/{model}'
+    )
     domain = fields.Char(default="[]")
     python_code = fields.Text(
         default=DEFAULT_PYTHON_CODE,
@@ -316,7 +319,7 @@ class Song(models.Model):
             return context_to_string(ctx)
         return ctx
 
-    def _real_csv_path_data(self):
+    def _real_path_data(self):
         return {
             'model': self.song_model._name,
             'data_mode': self.compilation_id.data_mode,
@@ -324,15 +327,22 @@ class Song(models.Model):
             'comp_name': self.compilation_id.name,
         }
 
-    def real_csv_path(self):
-        """Final csv path into zip file."""
-        path = self.csv_path.format(**self._real_csv_path_data())
+    def _real_path(self, pattern):
+        path = pattern.format(**self._real_path_data())
         if self._songs_models_count[self._song_model_count_key] > 1:
             # make filename unique. Include position to match song name
             path, ext = os.path.splitext(path)
             path += '_%d' % self.position_in_collection
             path += ext
         return path
+
+    def real_csv_path(self):
+        """Final csv path into zip file."""
+        return self._real_path(self.csv_path)
+
+    def real_binaries_path(self):
+        """Final path for binary files."""
+        return self._real_path(self.binaries_path)
 
     @api.multi
     def burn_track(self):
@@ -554,6 +564,7 @@ class Song(models.Model):
             dj_export=True,
             dj_multicompany=self._is_multicompany_env(),
             dj_xmlid_fields_map=self._get_xmlid_fields_map(),
+            dj_export_binaries_path=self.real_binaries_path(),
             xmlid_value_reference=True,
         )
         if self.export_lang:
@@ -562,12 +573,20 @@ class Song(models.Model):
         return ctx
 
     def _handle_special_fields(self, items=None):
+        """Handle special fields and return extra tracks for them.
+
+        Special fields (binary, html, text) are exported to their own files.
+        Here we go through each special field and retrieve the final path.
+
+        :return list tuples: pairs for zip tracks (path, filecontent)
+        """
         extra_tracks = []
         if self.env.context.get('dj_read_skip_special_fields'):
             return extra_tracks
         items = items or self._get_exportable_records()
         if self.song_model is None:
             return
+
         special = self.song_model._dj_special_fields()
         for fname, info in special:
             for rec in items:
@@ -576,16 +595,12 @@ class Song(models.Model):
                 content = rec[fname]
                 if not content:
                     continue
-                path = self.song_model._dj_file_to_path(rec, fname)
-                # special case: xml validation is done on fields like `arch_db`
-                # so we need to wrap/unwrap w/ <odoo/> tag
-                path = path.replace(
-                    '<odoo><path>', '').replace('</path></odoo>', '')
+                path = self.song_model.with_context(
+                    **self._dj_export_context()
+                )._dj_file_to_path(rec, fname, bare_path=True)
                 fs_content = self.song_model._dj_file_content_to_fs(
                     fname, rec, info=info)
-                extra_tracks.append(
-                    (path[len(self._dj_path_prefix):], fs_content)
-                )
+                extra_tracks.append((path, fs_content))
         return extra_tracks
 
     def make_csv(self, items=None):

@@ -68,6 +68,7 @@
                 <field name="xmlid_fields"/>
                 <field name="template_path"/>
                 <field name="csv_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
+                <field name="binaries_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
                 <field name="model_context"/>
                 <field name="exec_hook"/>
               </group>

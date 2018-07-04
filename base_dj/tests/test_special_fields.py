@@ -78,14 +78,50 @@ class SpecialFieldsCase(BaseCompilationCase):
         })
         tracks = self.comp.get_all_tracks(include_core=False)
         paths = sorted([x[0] for x in tracks])
+        base_path = (
+            # by default they are place aside the csv files 
+            # in a `binaries` sub folder
+            'install/generated/dj_test/special_fields/'
+            'binaries/dj.test.filefields'
+        )
         expected = [
             'DEV_README.rst',
-            'binaries/__setup__.dj_test_filefields_foo__arch_db.xml',
-            'binaries/__setup__.dj_test_filefields_foo__some_file.txt',
-            'binaries/__setup__.dj_test_filefields_foo__some_html.html',
-            'binaries/__setup__.dj_test_filefields_foo__some_image.png',
+            base_path + '/__setup__.dj_test_filefields_foo__arch_db.xml',
+            base_path + '/__setup__.dj_test_filefields_foo__some_file.txt',
+            base_path + '/__setup__.dj_test_filefields_foo__some_html.html',
+            base_path + '/__setup__.dj_test_filefields_foo__some_image.png',
             # CSV are detected as plain text
-            'binaries/__setup__.dj_test_filefields_foo__some_text.txt',
+            base_path + '/__setup__.dj_test_filefields_foo__some_text.txt',
+            'install/generated/dj_test/special_fields/dj.test.filefields.csv',  # noqa
+            'songs/install/__init__.py',
+            'songs/install/generated/__init__.py',
+            'songs/install/generated/dj_test/__init__.py',
+            'songs/install/generated/dj_test/special_fields.py',
+        ]
+        self.assertListEqual(paths, expected)
+
+    def test_burn_paths_custom(self):
+        self.model.create({
+            'name': 'foo',
+            'arch_db': XML,
+            'some_html': HTML,
+            'some_text': TXT,
+            'some_image': IMAGE,
+            'some_file': FILE,
+        })
+        # customize binaries path on the song
+        self.comp.song_ids[0].binaries_path = '{data_mode}/foo/{model}'
+        tracks = self.comp.get_all_tracks(include_core=False)
+        paths = sorted([x[0] for x in tracks])
+        base_path = 'install/foo/dj.test.filefields'
+        expected = [
+            'DEV_README.rst',
+            base_path + '/__setup__.dj_test_filefields_foo__arch_db.xml',
+            base_path + '/__setup__.dj_test_filefields_foo__some_file.txt',
+            base_path + '/__setup__.dj_test_filefields_foo__some_html.html',
+            base_path + '/__setup__.dj_test_filefields_foo__some_image.png',
+            # CSV are detected as plain text
+            base_path + '/__setup__.dj_test_filefields_foo__some_text.txt',
             'install/generated/dj_test/special_fields/dj.test.filefields.csv',  # noqa
             'songs/install/__init__.py',
             'songs/install/generated/__init__.py',

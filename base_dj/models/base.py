@@ -206,21 +206,22 @@ class Base(models.AbstractModel):
             if rec[fname]:
                 rec[fname] = self._dj_file_to_path(ob, fname, info)
 
-    def _dj_file_to_path(self, rec, fname, info=None):
+    def _dj_file_to_path(self, rec, fname, info=None, bare_path=False):
         info = info or self.fields_get([fname])[fname]
         xmlid = rec._dj_export_xmlid()
-        # TODO: handle path from song settings
-        path = '{prefix}binaries/{xmlid}__{fname}'
+        path = '{prefix}{binaries_path}/{xmlid}__{fname}'
+        bin_path = self.env.context.get('dj_export_binaries_path', 'binaries')
         export_lang = self.env.context.get('dj_export_lang', '')
         if export_lang:
             path += '_{lang}'
         path += '.{ext}'
         ext, _ = self._dj_guess_filetype(fname, rec, info=info)
         res = path.format(
-            prefix=self._dj_path_prefix,
+            prefix=self._dj_path_prefix if not bare_path else '',
+            binaries_path=bin_path,
             xmlid=xmlid, fname=fname,
             lang=export_lang, ext=ext)
-        if fname == 'arch_db':
+        if fname == 'arch_db' and not bare_path:
             return '<odoo><path>' + res + '</path></odoo>'
         return res
 
