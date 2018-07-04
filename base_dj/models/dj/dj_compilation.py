@@ -31,7 +31,7 @@ class Compilation(models.Model):
     _default_dj_template_path = 'base_dj:discs/disc.tmpl'
     _dj_download_path = '/dj/download/compilation/'
 
-    name = fields.Char(required=True, inverse='_normalize_name')
+    name = fields.Char(required=True, inverse='_inverse_name')
     active = fields.Boolean(default=True)
     sequence = fields.Integer(
         'Sequence',
@@ -89,7 +89,7 @@ class Compilation(models.Model):
         return mapping.get(self.data_mode, '__setup__')
 
     @api.multi
-    def _normalize_name(self):
+    def _inverse_name(self):
         if self.env.context.get('skip_normalize_name'):
             return
         for item in self:
