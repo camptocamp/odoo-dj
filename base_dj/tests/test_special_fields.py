@@ -79,7 +79,7 @@ class SpecialFieldsCase(BaseCompilationCase):
         tracks = self.comp.get_all_tracks(include_core=False)
         paths = sorted([x[0] for x in tracks])
         base_path = (
-            # by default they are place aside the csv files 
+            # by default they are place aside the csv files
             # in a `binaries` sub folder
             'install/generated/dj_test/special_fields/'
             'binaries/dj.test.filefields'
