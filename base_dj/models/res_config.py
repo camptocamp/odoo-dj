@@ -4,7 +4,10 @@
 from odoo import models, api, tools
 from ..utils import string_to_list
 
-# TODO: very likely to be deprecated
+import logging
+_logger = logging.getLogger(__file__)
+
+# TODO remove as deprecated.
 # ATM we are exporting / importing full records
 # and being res.config.settings just a proxy to real records field_strings
 # is kind of useless to import them too.
@@ -27,8 +30,9 @@ class ResConfigSettings(models.TransientModel):
         In this way we speed up the export (is taking a lot w/ all the fields)
         and we export only what we need.
         """
-        res = super(ResConfigSettings, self)._add_missing_default_values(vals)
+        res = super()._add_missing_default_values(vals)
         if self.env.context.get('dj_export'):
+            _logger.info('Settings export DEPRECATED.')
             fnames = list(res.keys())
             allowed = self._dj_settings_fields_get(vals)
             for fname in fnames:
