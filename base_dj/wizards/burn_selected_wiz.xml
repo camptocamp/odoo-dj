@@ -24,7 +24,6 @@
     src_model="dj.compilation"
     view_mode="form"
     target="new"
-    key2="client_action_multi"
     view_id="compilation_burn_selected_wiz_form"
     />
 

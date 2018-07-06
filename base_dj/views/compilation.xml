@@ -165,7 +165,6 @@
     <field name="src_model">dj.compilation</field>
     <field name="view_type">form</field>
     <field name="view_mode">form</field>
-    <field name="key2">client_action_multi</field>
     <field name="target">new</field>
   </record>
 
