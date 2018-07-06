@@ -16,6 +16,19 @@
 Release History
 ---------------
 
+latest (unreleased)
++++++++++++++++++++
+
+**Features and Improvements**
+
+**Bugfixes**
+
+**Build**
+
+* Fix warning : `ir.actions.act_window.create() includes unknown fields: key2`
+
+**Documentation**
+
 0.4.0 (2017-11-16)
 ++++++++++++++++++
 
