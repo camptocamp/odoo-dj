@@ -37,26 +37,8 @@
               <footer>
                 <div class="row">
                   <div id="download_compilation" class="col-xs-6">
-                    <button name="download_it" string="Burn and download" type="object" class="btn-primary"/>
-                    <div class="share">
-                      <p>or share download link (right click on it and hit 'Copy link address'):<br />
-                      <field name="download_url" readonly="1" widget="url" /></p>
-                    </div>
-                    <button name="download_it" string="Burn and download - Exclude core"
-                            type="object" class="btn-primary" context="{'dj_exclude_core': True}"
-                            attrs="{'invisible': [('exclude_core', '=', True)]}"
-                            title="Burn only this compilation excluding core ones"
-                            />
-                    <br />
-                    <br />
-                    <!-- A typical use case is: you played w/ xmlid generation configs and you want to get only the final result -->
-                    <button name="download_it" string="Burn and download - Force xmlids"
-                            type="object" class="btn-primary" context="{'dj_xmlid_force': True}"
-                            title="Burn compilation and force xmlid generation not considering existing ones"
-                            />
-                  </div>
-                  <div id="download_config" class="col-xs-6">
-                    <button name="export_current_config" string="Export current configuration" type="object" class="btn-default"/>
+                    <!-- <button name="download_it" string="Burn and download" type="object" class="btn-primary"/> -->
+                    <button name="%(base_dj.act_dj_compilation_burn)d" string="Burn and download" type="action" class="btn-primary"/>
                   </div>
                 </div>
               </footer>

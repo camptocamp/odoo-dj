@@ -1,0 +1,45 @@
+<odoo>
+
+  <record model="ir.ui.view" id="compilation_burn_wiz_form">
+    <field name="name">dj.compilation.burn.wiz.form</field>
+    <field name="model">dj.compilation.burn.wiz</field>
+    <field name="arch" type="xml">
+      <form string="Burn compilation">
+        <group>
+          <field name="compilation_id"/>
+          <field name="dj_force_data_mode"/>
+          <field name="core_compilation_ids">
+            <tree>
+              <field name="name"/>
+              <field name="genre"/>
+              <field name="data_mode"/>
+            </tree>
+          </field>
+          <field name="dj_exclude_core"/>
+          <field name="dj_xmlid_force"/>
+          <field name="dj_xmlid_skip_create"/>
+        </group>
+        <footer>
+          <label for="burn_url" />
+          <br />
+          <field name="burn_url" widget="url" />
+          <hr />
+          <button name="action_burn" type="object" string="Burn" class="oe_highlight"/>
+          or
+          <button string="Cancel" class="oe_link" special="cancel"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+
+  <act_window
+    id="act_dj_compilation_burn"
+    name="Burn Selected Compilations"
+    res_model="dj.compilation.burn.wiz"
+    src_model="dj.compilation"
+    view_mode="form"
+    target="new"
+    view_id="compilation_burn_wiz_form"
+    />
+
+</odoo>

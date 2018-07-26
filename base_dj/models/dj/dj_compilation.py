@@ -8,11 +8,7 @@ except ImportError:
     _logger = logging.getLogger(__name__)
     _logger.warning('`autopep8` dependency lib is missing.')
 import os
-try:
-    from urllib import urlencode
-except ImportError:
-    # py3
-    from urllib.parse import urlencode
+from urllib.parse import urlencode
 
 from odoo import models, fields, api, exceptions, _
 from ...utils import create_zipfile, make_title, to_str
@@ -86,7 +82,8 @@ class Compilation(models.Model):
             'install': '__setup__',
             'sample': '__sample__',
         }
-        return mapping.get(self.data_mode, '__setup__')
+        mode = self.env.context.get('dj_force_data_mode', self.data_mode)
+        return mapping.get(mode, '__setup__')
 
     @api.multi
     def _inverse_name(self):
