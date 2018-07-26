@@ -461,6 +461,16 @@ class Song(models.Model):
             _fields = self._get_all_fields()
         return _fields
 
+    def _csv_field_names_cache_keys(self):
+        return (
+            self.id,
+            self.model_name,
+            self.model_fields_ids.ids,
+            self.model_fields_blacklist_ids.ids,
+            self._dj_global_config('field_blacklist')
+        )
+
+    @tools.ormcache('self._csv_field_names_cache_keys()')
     def get_csv_field_names(self):
         """Retrieve CSV field names."""
         field_names = ['id']
