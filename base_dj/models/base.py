@@ -188,9 +188,20 @@ class Base(models.AbstractModel):
     _dj_path_prefix = 'dj_path:'
 
     def _dj_special_fields(self, _fields=None):
+        """Retrieve valid special fields' names for current export."""
+        # In export mode we can have all model's fields here
+        # BUT we don't want to handle file fields
+        # if they are not requested for export.
+        # This make sure that if we export a model in more than one compilation
+        # we won't have duplicated files if not needed.
+        whitelist = []
+        if self.env.context.get('dj_export'):
+            whitelist = self.env.context.get('dj_export_model_fields', [])
         res = []
         fields_info = self.fields_get(_fields)
         for fname, info in fields_info.items():
+            if whitelist and fname not in whitelist:
+                continue
             if self._dj_is_file_field(fname, info):
                 res.append((fname, info))
         return res
