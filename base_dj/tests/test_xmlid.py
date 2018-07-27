@@ -54,9 +54,11 @@ class XMLIDCase(BaseCase):
         rec = self.env['res.partner.bank'].create({'acc_number': '01234', })
         # no specific rule other than `__setup__` as prefix
         # and record ID as suffix (odoo's std)
-        self.assertEqual(
+        # odoo generates xids using an hash at the end, like:
+        # `__setup__.res_partner_bank_4_93b36cf5``
+        self.assertRegexpMatches(
             rec._dj_export_xmlid(),
-            '__setup__.res_partner_bank_{}'.format(rec.id)
+            '__setup__.res_partner_bank_%d_[0-9a-f]{8}' % rec.id
         )
 
     def test_xmlid_no_specific_rule_name_field(self):
@@ -104,9 +106,9 @@ class XMLIDCase(BaseCase):
         # new record for the same company
         rec = self.env['res.partner.bank'].create({'acc_number': '56789', })
         # we pass `dj_multicompany` flag and we get company's aka as prefix
-        self.assertEqual(
+        self.assertRegexpMatches(
             rec.with_context(dj_multicompany=1)._dj_export_xmlid(),
-            '__setup__.djc_res_partner_bank_{}'.format(rec.id)
+            '__setup__.djc_res_partner_bank_%d_[0-9a-f]{8}' % rec.id
         )
         # new record, different company
         rec = self.env['res.partner.bank'].create({
@@ -114,9 +116,9 @@ class XMLIDCase(BaseCase):
             'acc_type': 'bank',
             'company_id': self.env.ref('base_dj.test_company_foo').id,
         })
-        self.assertEqual(
+        self.assertRegexpMatches(
             rec.with_context(dj_multicompany=1)._dj_export_xmlid(),
-            '__setup__.foo_res_partner_bank_{}'.format(rec.id)
+            '__setup__.foo_res_partner_bank_%d_[0-9a-f]{8}' % rec.id
         )
 
     def test_xmlid_hash_policy(self):
@@ -131,4 +133,70 @@ class XMLIDCase(BaseCase):
         self.assertEqual(
             rec._dj_export_xmlid(),
             '__setup__.res_partner_bank_{}'.format(hashed)
+        )
+
+    def test_xmlid_force_no_replace(self):
+        rec = self.env.ref('base.main_company')
+        ctx = {
+            'dj_xmlid_module': '__setup__',
+            'dj_xmlid_force': True,
+        }
+        # try to force xid for base.* -> no luck, we get the original xid
+        self.assertEqual(
+            rec.with_context(**ctx)._dj_export_xmlid(),
+            'base.main_company',
+        )
+        # same for `__sample__`
+        ctx = {
+            'dj_xmlid_module': '__sample__',
+            'dj_xmlid_force': True,
+        }
+        self.assertEqual(
+            rec.with_context(**ctx)._dj_export_xmlid(),
+            'base.main_company',
+        )
+
+    def test_xmlid_force_replace_stored(self):
+        rec = self.company_model.create({
+            'name': 'Replace rec',
+            'aka': 'rok',
+        })
+        self.add_xmlid(rec, '__test__.company_rok')
+        self.assertTrue(self.env.ref('__test__.company_rok'))
+        ctx = {
+            'dj_xmlid_module': '__sample__',
+            'dj_xmlid_force': True,
+        }
+        # force xid for overridable xid module name ('__test__') works fine
+        self.assertEqual(
+            rec.with_context(**ctx)._dj_export_xmlid(),
+            '__sample__.company_rok',
+        )
+        # and new xid is stored
+        self.assertTrue(self.env.ref('__sample__.company_rok'))
+
+    def test_xmlid_force_replace_no_stored(self):
+        # you can generate one shot xids and not store them
+        # so you don't pollute your db
+        rec = self.company_model.create({
+            'name': 'Replace rec',
+            'aka': 'rok',
+        })
+        self.add_xmlid(rec, '__test__.company_rok')
+        self.assertTrue(self.env.ref('__test__.company_rok'))
+        ctx = {
+            'dj_xmlid_module': '__sample__',
+            'dj_xmlid_force': True,
+            'dj_xmlid_skip_create': True,
+        }
+        self.assertEqual(
+            rec.with_context(**ctx)._dj_export_xmlid(),
+            '__sample__.company_rok',
+        )
+        # new xid is NOT stored
+        with self.assertRaises(ValueError) as err:
+            self.env.ref('__sample__.company_rok')
+        self.assertEqual(
+            str(err.exception),
+            'External ID not found in the system: __sample__.company_rok'
         )
