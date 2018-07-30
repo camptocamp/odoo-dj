@@ -116,6 +116,34 @@ class Base(models.AbstractModel):
         '__import__', '__export__',
     )
 
+    def _existing_xids(self):
+        """Retrieve existing XIDs (and make testing possible).
+
+        This method - not surprisingly - is not in odoo core.
+        The piece of code here is inside the biiiig `__ensure_xml_id` method
+        .
+        This makes impossible to test XIDs generation precisely
+        as the XIDs are not actually committed so the query won't return XIDs
+        and when you call it twice it gets buggy:
+
+        the `copy_from` will find them and raise a constrain error
+        for duplicated keys.
+
+        So, here we keep the original code, in tests we mock this
+        to retrieve XIDs via `env.ref`.
+        """
+        query = """
+            SELECT res_id, module, name
+            FROM ir_model_data
+            WHERE model = %s AND res_id in %s
+        """
+        cr = self.env.cr
+        cr.execute(query, (self._name, tuple(self.ids)))
+        return {
+            res_id: (module, name)
+            for res_id, module, name in cr.fetchall()
+        }
+
     def _BaseModel__ensure_xml_id(self, skip=False):
         """Customize xmlid creation.
 
@@ -138,18 +166,7 @@ class Base(models.AbstractModel):
 
         modname = self._dj_xmlid_export_module()
 
-        query = """
-            SELECT res_id, module, name
-            FROM ir_model_data
-            WHERE model = %s AND res_id in %s
-        """
-
-        cr = self.env.cr
-        cr.execute(query, (self._name, tuple(self.ids)))
-        xids = {
-            res_id: (module, name)
-            for res_id, module, name in cr.fetchall()
-        }
+        xids = self._existing_xids()
 
         def to_xid(record_id):
             (module, name) = xids[record_id]
@@ -188,7 +205,7 @@ class Base(models.AbstractModel):
         # so you don't pollute your db and maybe fix some csv
         if not self.env.context.get('dj_xmlid_skip_create'):
             fields = ['module', 'model', 'name', 'res_id']
-            cr.copy_from(io.StringIO(
+            self.env.cr.copy_from(io.StringIO(
                 u'\n'.join(
                     u"%s\t%s\t%s\t%d" % (
                         modname,

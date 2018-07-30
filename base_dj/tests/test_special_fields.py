@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from . common import BaseCompilationCase, load_filecontent
+from .fake_models import TestFileFields
 import codecs
 from lxml import etree
 
@@ -59,13 +60,40 @@ class SpecialFieldsCase(BaseCompilationCase):
       to make sure it contains XML.
     """
 
+    TEST_MODELS_KLASSES = [TestFileFields, ]
+
     @classmethod
     def setUpClass(cls):
-        super(SpecialFieldsCase, cls).setUpClass()
+        super().setUpClass()
+        cls._setup_test_models()
         fixture = 'fixture_comp_special_fields'
         cls._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
         cls.comp = cls.env.ref('base_dj.test_comp_special')
         cls.model = cls.env['dj.test.filefields']
+
+    def setUp(self):
+        super().setUp()
+
+        # Patch _existing_xids because the std one uses sql query
+        # which works only when transaction is committed.
+        # We don't really want to commit, so, let's rely on `self.env.ref`
+        def _existing_xids(self):
+            res = {}
+            modname = self._dj_xmlid_export_module()
+            for rec in self:
+                xid = '{}.{}'.format(modname, rec._dj_xmlid_export_name())
+                xid_rec = self.env.ref(xid, raise_if_not_found=False)
+                if xid_rec:
+                    res[rec.id] = (modname, rec._dj_xmlid_export_name())
+            return res
+
+        self.model._patch_method('_existing_xids', _existing_xids)
+        self.addCleanup(self.model._revert_method, '_existing_xids')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._teardown_models()
+        super().tearDownClass()
 
     def test_burn_paths(self):
         self.model.create({
