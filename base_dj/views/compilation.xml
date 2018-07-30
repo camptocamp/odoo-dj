@@ -17,6 +17,8 @@
                 <field name="genre_id"/>
                 <field name="name"/>
                 <field name="data_mode"/>
+                <field name="core"/>
+                <field name="exclude_core"/>
               </group>
               <separator string="Exportable songs" />
               <field name="song_ids" context="{'model_tech_name_only': 1, 'default_compilation_id': active_id}">
@@ -61,7 +63,6 @@
             </page>
             <page name="core" string="Core compilations">
               <group>
-                <field name="core"/>
                 <field name="core_compilation_ids">
                   <tree>
                     <field name="genre_id"/>
@@ -69,7 +70,6 @@
                     <field name="data_mode"/>
                   </tree>
                 </field>
-                <field name="exclude_core"/>
               </group>
             </page>
             <page name="advanced" string="Advanced">

@@ -144,7 +144,7 @@ class Compilation(models.Model):
             sanity_msg = _('Warning')
             sanity_state = 'warning'
         return sanity_tmpl.render({
-            'comp': self,
+            'compilation': self,
             'core_comps': core_comps,
             'sanity_state': sanity_state,
             'sanity_msg': sanity_msg,
@@ -159,7 +159,7 @@ class Compilation(models.Model):
         if not self.core:
             core_comps = self.core_compilation_ids
         return info_tmpl.render({
-            'comp': self,
+            'compilation': self,
             'core_comps': core_comps,
         })
 
