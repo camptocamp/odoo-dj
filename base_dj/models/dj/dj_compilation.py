@@ -163,6 +163,17 @@ class Compilation(models.Model):
             'core_comps': core_comps,
         })
 
+    @property
+    @api.model
+    def dj_burn_options_flags(self):
+        return (
+            # ctx keys used to control burning
+            'dj_exclude_core',
+            'dj_xmlid_force',
+            'dj_xmlid_skip_create',
+            'dj_force_data_mode',
+        )
+
     @api.multi
     def download_it(self):
         """Download file."""
