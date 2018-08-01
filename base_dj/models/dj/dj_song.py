@@ -461,6 +461,16 @@ class Song(models.Model):
             _fields = self._get_all_fields()
         return _fields
 
+    def _csv_field_names_cache_keys(self):
+        return (
+            self.id,
+            self.model_name,
+            self.model_fields_ids.ids,
+            self.model_fields_blacklist_ids.ids,
+            self._dj_global_config('field_blacklist')
+        )
+
+    @tools.ormcache('self._csv_field_names_cache_keys()')
     def get_csv_field_names(self):
         """Retrieve CSV field names."""
         field_names = ['id']
@@ -565,6 +575,8 @@ class Song(models.Model):
             dj_multicompany=self._is_multicompany_env(),
             dj_xmlid_fields_map=self._get_xmlid_fields_map(),
             dj_export_binaries_path=self.real_binaries_path(),
+            dj_export_model=self.model_name,
+            dj_export_model_fields=self.get_csv_field_names(),
             xmlid_value_reference=True,
         )
         if self.export_lang:
@@ -586,8 +598,10 @@ class Song(models.Model):
         items = items or self._get_exportable_records()
         if self.song_model is None:
             return
-
-        special = self.song_model._dj_special_fields()
+        song_model = self.song_model.with_context(
+            **self._dj_export_context()
+        )
+        special = song_model._dj_special_fields()
         for fname, info in special:
             for rec in items:
                 if self.export_lang:
@@ -595,9 +609,7 @@ class Song(models.Model):
                 content = rec[fname]
                 if not content:
                     continue
-                path = self.song_model.with_context(
-                    **self._dj_export_context()
-                )._dj_file_to_path(rec, fname, bare_path=True)
+                path = song_model._dj_file_to_path(rec, fname, bare_path=True)
                 fs_content = self.song_model._dj_file_content_to_fs(
                     fname, rec, info=info)
                 extra_tracks.append((path, fs_content))

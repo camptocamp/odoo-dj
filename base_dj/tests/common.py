@@ -23,11 +23,34 @@ class BaseCase(SavepointCase):
     post_install = True
     at_install = False
 
+    # override this in your test case to inject new models on the fly
+    TEST_MODELS_KLASSES = []
+
     @classmethod
     def setUpClass(cls):
         super(BaseCase, cls).setUpClass()
         cls.compilation_model = cls.env['dj.compilation']
         cls._load_xml('base_dj', 'tests/fixtures/default.xml')
+        # in your custom klass
+        # cls._setup_test_models()
+
+    # in your custom klass
+    # @classmethod
+    # def tearDownClass(cls):
+    #     cls._teardown_models()
+    #     super().tearDownClass()
+
+    @classmethod
+    def _setup_test_models(cls):
+        """Setup new fake models for testing."""
+        for kls in cls.TEST_MODELS_KLASSES:
+            kls._test_setup_model(cls.env)
+
+    @classmethod
+    def _teardown_models(cls):
+        """Wipe fake models once tests have finished."""
+        for kls in cls.TEST_MODELS_KLASSES:
+            kls._test_teardown_model(cls.env)
 
     def _load_filecontent(self, module, filepath, mode='r'):
         return load_filecontent(module, filepath, mode=mode)
