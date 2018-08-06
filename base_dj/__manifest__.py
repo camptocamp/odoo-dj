@@ -25,6 +25,7 @@
         'security/ir.model.access.csv',
         'data/equalizer.xml',
         'data/export_compilation.xml',
+        'wizards/burn_wiz.xml',
         'wizards/burn_selected_wiz.xml',
         'wizards/load_compilation.xml',
         'views/company.xml',

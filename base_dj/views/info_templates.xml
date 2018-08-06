@@ -33,23 +33,28 @@
     <h2>
       Core compilations info
     </h2>
-    <div class="core" t-if="core_comps">
-      <strong>Core compilations involved and their models</strong>
-      <p class="text-mute" style="font-size:90%">
-        Compilations listed here we'll be included in the export. <br />
-        You can exlude them by default with the specific flag in "Core compilations" tab. <br />
-        You can exclude them on demand on burn by using the specific button below.
-      </p>
-      <ol>
-        <li t-foreach="core_comps" t-as="core">
-          <strong class="comp_name" t-field="core.name" />:
-          <!--list models -->
-          <t t-foreach="core.mapped('song_ids').mapped('model_name')" t-as="model">
-            <span class="comp_model" t-esc="model" /><t t-if="not model_last">, </t>
-          </t>
-        </li>
-      </ol>
-      <p>See "Core compilations" tab for more info.</p>
+    <div class="core">
+      <t t-if="core_comps and not compilation.exclude_core">
+        <strong>Core compilations involved and their models</strong>
+        <p class="text-mute" style="font-size:90%">
+          Compilations listed here we'll be included in the export. <br />
+          You can exlude them by default with the specific flag in "Core compilations" tab. <br />
+          You can exclude them on demand on burn by using the specific button below.
+        </p>
+        <ol>
+          <li t-foreach="core_comps" t-as="core">
+            <strong class="comp_name" t-field="core.name" />:
+            <!--list models -->
+            <t t-foreach="core.mapped('song_ids').mapped('model_name')" t-as="model">
+              <span class="comp_model" t-esc="model" /><t t-if="not model_last">, </t>
+            </t>
+          </li>
+        </ol>
+        <p>See "Core compilations" tab for more info.</p>
+      </t>
+      <t t-if="compilation.exclude_core">
+        <strong>"Exclude core compilations" is on: no core compilation included.</strong>
+      </t>
     </div>
 
   </template>
