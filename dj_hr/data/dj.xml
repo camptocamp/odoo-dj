@@ -1,0 +1,22 @@
+<odoo>
+  <record model="dj.compilation" id="dj_hr_base">
+    <field name="name">HR</field>
+    <field name="genre_id" ref="dj_core.dj_custom_genre" />
+    <field name="core" eval="True" />
+  </record>
+
+  <record model="dj.song" id="dj_song_resource_calendar">
+    <field name="compilation_id" ref="dj_hr_base"/>
+    <field name="model_id" ref="resource.model_resource_calendar" />
+    <field name="sequence" eval="10" />
+    <field name="song_type">load_csv</field>
+  </record>
+
+  <record model="dj.song" id="dj_song_res_company">
+    <field name="compilation_id" ref="dj_hr_base"/>
+    <field name="model_id" ref="base.model_res_company" />
+    <field name="sequence" eval="20" />
+    <field name="song_type">load_csv</field>
+    <field name="field_list">resource_calendar_id</field>
+  </record>
+</odoo>
