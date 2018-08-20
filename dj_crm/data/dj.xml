@@ -24,7 +24,7 @@
     <field name="model_id" ref="mail.model_mail_alias" />
     <field name="sequence" eval="20" />
     <field name="song_type">load_csv</field>
-    <field name="domain">[('alias_model_id.model', '=','crm.lead')]</field>
+    <field name="domain">['&amp;', ('alias_model_id.model', '=','crm.lead'),('alias_name', '!=', [False, 'sales', 'sales2'])]</field>
   </record>
 
   <record model="dj.song" id="dj_song_crm_stages">
