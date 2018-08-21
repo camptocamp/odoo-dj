@@ -270,11 +270,11 @@ class Compilation(models.Model):
             if track:
                 files.extend(track)
 
-        # add __init__..py to song folders
+        # add __init__.py to song folders
         mid_path = comp.disc_full_path().rsplit('/', 1)[0]
         while mid_path and '/' in mid_path:
             init_file = os.path.join(mid_path, '__init__.py')
-            files.append((init_file, '#'))
+            files.append((init_file, '#\n'))
             mid_path = mid_path.rsplit('/', 1)[0]
 
         # generate dev readme for all compilations
