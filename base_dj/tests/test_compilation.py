@@ -13,6 +13,15 @@ DJ_COMPILATION_MODEL_PATH = \
 
 class CompilationCase(BaseCompilationCase):
 
+    def burn_contents(self):
+        fixture = 'fixture_comp1'
+        self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
+        comp = self.env.ref('base_dj.test_comp1')
+        tracks = comp.with_context(
+            dj_read_skip_special_fields=True
+        ).get_all_tracks(include_core=False)
+        return tracks
+
     def test_disc_path(self):
         genre = self.env.ref('base_dj.test_genre')
         comp = self.env['dj.compilation'].create({
@@ -53,12 +62,7 @@ class CompilationCase(BaseCompilationCase):
         self._burn_and_test(fixture, expected_path, 'base_dj.test_comp4')
 
     def test_burn_contents(self):
-        fixture = 'fixture_comp1'
-        self._load_xml('base_dj', 'tests/fixtures/%s.xml' % fixture)
-        comp = self.env.ref('base_dj.test_comp1')
-        tracks = comp.with_context(
-            dj_read_skip_special_fields=True
-        ).get_all_tracks(include_core=False)
+        tracks = self.burn_contents()
         paths = sorted([x[0] for x in tracks])
         expected = sorted([
             'DEV_README.rst',
@@ -102,3 +106,9 @@ class CompilationCase(BaseCompilationCase):
             'songs/install/generated/dj_test/core1.py',
         ])
         self.assertListEqual(paths, expected)
+
+    def test_content__init__(self):
+        tracks = self.burn_contents()
+        init_content_list = [x[1] for x in tracks if '__init__.py' in x[0]]
+        for init_content in init_content_list:
+            self.assertEqual(init_content, '#\n')
