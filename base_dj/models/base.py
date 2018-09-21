@@ -1,7 +1,9 @@
 # Copyright 2017 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from psycopg2 import IntegrityError
 from odoo import api, models, tools
+from odoo.exceptions import ValidationError
 import io
 import os
 import codecs
@@ -197,7 +199,6 @@ class Base(models.AbstractModel):
                 (record, to_xid(record.id))
                 for record in self
             )
-
         xids.update(
             (r.id, (modname, r._dj_xmlid_export_name())) for r in missing
         )
@@ -205,19 +206,26 @@ class Base(models.AbstractModel):
         # so you don't pollute your db and maybe fix some csv
         if not self.env.context.get('dj_xmlid_skip_create'):
             fields = ['module', 'model', 'name', 'res_id']
-            self.env.cr.copy_from(io.StringIO(
-                u'\n'.join(
-                    u"%s\t%s\t%s\t%d" % (
-                        modname,
-                        record._name,
-                        xids[record.id][1],
-                        record.id,
-                    )
-                    for record in missing
-                )),
-                table='ir_model_data',
-                columns=fields,
-            )
+            try:
+                self.env.cr.copy_from(io.StringIO(
+                    u'\n'.join(
+                        u"%s\t%s\t%s\t%d" % (
+                            modname,
+                            record._name,
+                            xids[record.id][1],
+                            record.id,
+                        )
+                        for record in missing
+                    )),
+                    table='ir_model_data',
+                    columns=fields,
+                )
+            except IntegrityError:
+                raise ValidationError(
+                    "Writing xmlids for %s failed."
+                    " Probably your xmlids aren't unique."
+                    " Ids in the query: %s" % (self._name, missing.ids)
+                )
             self.env['ir.model.data'].invalidate_cache(fnames=fields)
         return (
             (record, to_xid(record.id))
