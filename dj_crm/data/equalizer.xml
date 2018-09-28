@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <record model="dj.equalizer" id="dj_equalizer_mail_alias">
+    <field name="model">mail.alias</field>
+    <field name="xmlid_fields">alias_model_id,alias_user_id,alias_name</field>
+  </record>
+</odoo>
