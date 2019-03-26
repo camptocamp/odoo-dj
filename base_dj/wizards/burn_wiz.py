@@ -65,7 +65,6 @@ class BurnWiz(models.TransientModel):
             'dj_force_data_mode': self.compilation_id.data_mode,
             'core_compilation_ids': self.compilation_id.core_compilation_ids,
         })
-        self._update_url()
 
     @api.onchange('dj_force_data_mode')
     def _onchange_data_mode(self):
@@ -79,7 +78,6 @@ class BurnWiz(models.TransientModel):
                 'dj_xmlid_force': False,
                 'dj_xmlid_skip_create': False,
             })
-        self._update_url()
 
     @api.onchange('dj_exclude_core')
     def _onchange_dj_exclude_core(self):
@@ -89,6 +87,10 @@ class BurnWiz(models.TransientModel):
         self.update({
             'core_compilation_ids': core_comps,
         })
+        self._update_url()
+
+    @api.onchange('dj_xmlid_force', 'dj_xmlid_skip_create')
+    def _onchange_force_flags(self):
         self._update_url()
 
     def _update_url(self):
