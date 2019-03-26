@@ -7,6 +7,7 @@
       <form string="Burn compilation">
         <group>
           <field name="compilation_id"/>
+          <field name="song_id"/>
           <field name="dj_force_data_mode"/>
           <field name="core_compilation_ids">
             <tree>
@@ -23,6 +24,11 @@
           <label for="burn_url" />
           <br />
           <field name="burn_url" widget="url" />
+          <br />
+          <label for="download_file" />
+          <br />
+          <field name="download_filename" invisible="1" />
+          <field name="download_file" filename="download_filename" />
           <hr />
           <button name="action_burn" type="object" string="Burn" class="oe_highlight"/>
           or

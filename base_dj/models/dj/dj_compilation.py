@@ -171,6 +171,9 @@ class Compilation(models.Model):
             'dj_force_data_mode',
         )
 
+    def make_burn_ctx_via_params(self, **kw):
+        return {k: kw[k] for k in self.dj_burn_options_flags if k in kw}
+
     @api.multi
     def download_it(self):
         """Download file."""

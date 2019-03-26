@@ -25,15 +25,11 @@ class DJ(http.Controller):
             ('Expires', "0"),
         ]
 
-    def _make_burn_ctx_via_params(self, **kw):
-        burn_options = request.env['dj.compilation'].dj_burn_options_flags
-        return {k: kw[k] for k in burn_options if k in kw}
-
     @http.route(
         '/dj/download/song/<model("dj.song"):song>',
         type='http', auth="user", website=False)
     def download_song(self, song, **kwargs):
-        ctx = self._make_burn_ctx_via_params(**kwargs)
+        ctx = request.env['dj.compilation'].make_burn_ctx_via_params(**kwargs)
         track = song.with_context(**ctx).burn_track()
         if not track:
             return 'Sorry, nothing to view here.'
@@ -53,7 +49,7 @@ class DJ(http.Controller):
         """
         ids = string_to_list(compilation_ids, modifier=int)
         records = request.env['dj.compilation'].browse(ids)
-        ctx = self._make_burn_ctx_via_params(**kwargs)
+        ctx = request.env['dj.compilation'].make_burn_ctx_via_params(**kwargs)
         filename, content = records.with_context(**ctx).burn()
         headers = self._make_download_headers(
             content, filename, 'application/zip')
