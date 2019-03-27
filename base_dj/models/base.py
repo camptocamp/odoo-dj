@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from psycopg2 import IntegrityError
-from odoo import api, models, tools
+from odoo import api, models, tools, _
 from odoo.exceptions import ValidationError
 import io
 import os
@@ -221,11 +221,11 @@ class Base(models.AbstractModel):
                     columns=fields,
                 )
             except IntegrityError:
-                raise ValidationError(
+                raise ValidationError(_(
                     "Writing xmlids for %s failed."
                     " Probably your xmlids aren't unique."
-                    " Ids in the query: %s" % (self._name, missing.ids)
-                )
+                    " Ids in the query: %s"
+                ) % (self._name, missing.ids))
             self.env['ir.model.data'].invalidate_cache(fnames=fields)
         return (
             (record, to_xid(record.id))

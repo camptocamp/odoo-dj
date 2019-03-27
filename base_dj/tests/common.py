@@ -122,7 +122,7 @@ class BaseCompilationCase(BaseCase):
             fd.write(output)
 
         lint_errors = self._pylint_report(tmp_file_path)
-        self.assertEqual(lint_errors, None)
+        self.assertFalse(lint_errors)
 
     def _burn_and_test(self, fixture, expected_path, compilation):
         # load fixture
