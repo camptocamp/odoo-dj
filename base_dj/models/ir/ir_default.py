@@ -58,98 +58,47 @@ class DefaultMixin(models.AbstractModel):
         raise NotImplementedError()
 
 
-if ODOOVER >= 11.0:
-    class IRDefault(models.Model):
+class IRDefault(models.Model):
 
-        _name = 'ir.default'
-        _inherit = [
-            'ir.default',
-            'default.mixin',
-        ]
-        _value_key = 'json_value'
+    _name = 'ir.default'
+    _inherit = [
+        'ir.default',
+        'default.mixin',
+    ]
+    _value_key = 'json_value'
 
-        def _dj_get_relation_field(self, field_id):
-            """Return field info if values match a related field."""
-            if not field_id:
-                return None
-            field = self.env['ir.model.fields'].browse(field_id)
-            return field if field.ttype in ('many2one', 'many2many') else None
-
-        def _dj_xmlid_to_values(self, vals):
-            """Convert xmlid to db values."""
-            if (self.env.context.get('xmlid_value_reference', False) and
-                    vals.get(self._value_key)):
-                # TODO: make this more reliable and make sure we have a field
-                field_id = vals.get('field_id', self.field_id.id)
-                field = self._dj_get_relation_field(field_id)
-                # TODO: `vals[self._value_key] == '[]'` means we are exporting
-                # an empty json list. We should avoid that.
-                if field and not vals[self._value_key] == '[]':
-                    values = string_to_list(
-                        vals[self._value_key],
-                        modifier=lambda x: self.env.ref(x).id)
-                    if field.ttype == 'many2one':
-                        values = values[0]
-                    vals[self._value_key] = json.dumps(values)
-
-        def _dj_value_to_xmlid(self, field, rec):
-            value = rec[self._value_key]
-            rec_ids = json.loads(value)
-            model = self.env[field['relation']]
-            if rec_ids:
-                if isinstance(rec_ids, list):
-                    value = ','.join([model.browse(rec_id)._dj_export_xmlid()
-                                      for rec_id in rec_ids])
-                else:
-                    value = model.browse(rec_ids)._dj_export_xmlid()
-            return value
-else:
-    class IRValues(models.Model):
-
-        _name = 'ir.values'
-        _inherit = [
-            'ir.values',
-            'default.mixin',
-        ]
-        _value_key = 'value'
-
-        def _dj_get_relation_field(self, vals):
-            """Return field info if values match a related field."""
-            fname = vals['name']
-            model = self.env[vals['model']]
-            if fname in model:
-                field = model.fields_get([fname])[fname]
-                # catch x2x + company_dependent fields (that are m2o anyway)
-                return field if field.get('relation') else None
+    def _dj_get_relation_field(self, field_id):
+        """Return field info if values match a related field."""
+        if not field_id:
             return None
+        field = self.env['ir.model.fields'].browse(field_id)
+        return field if field.ttype in ('many2one', 'many2many') else None
 
-        def _dj_value_to_xmlid(self, field, rec):
-            if rec.get(self._value_key) and rec.get('key') == 'action':
-                # relation to actions
-                rec[self._value_key] = property_to_xmlid(
-                    self.env, rec[self._value_key])
-            elif rec.get(self._value_key) and rec.get('key') == 'default':
-                # handle relation fields
-                field = self._dj_get_relation_field(rec)
-                if field:
-                    # DO NOT USE `value_unpickle` + browse record
-                    # otherwise when changing `value` we are going
-                    # to break `value_unpickle` computation
-                    rec_id = int(pickle.loads(rec[self._value_key]))
-                    model = self.env[field['relation']]
-                    rec[self._value_key] = \
-                        model.browse(rec_id)._dj_export_xmlid()
+    def _dj_xmlid_to_values(self, vals):
+        """Convert xmlid to db values."""
+        if (self.env.context.get('xmlid_value_reference', False) and
+                vals.get(self._value_key)):
+            # TODO: make this more reliable and make sure we have a field
+            field_id = vals.get('field_id', self.field_id.id)
+            field = self._dj_get_relation_field(field_id)
+            # TODO: `vals[self._value_key] == '[]'` means we are exporting
+            # an empty json list. We should avoid that.
+            if field and not vals[self._value_key] == '[]':
+                values = string_to_list(
+                    vals[self._value_key],
+                    modifier=lambda x: self.env.ref(x).id)
+                if field.ttype == 'many2one':
+                    values = values[0]
+                vals[self._value_key] = json.dumps(values)
 
-        def _dj_xmlid_to_values(self, vals):
-            """Convert xmlid to db values."""
-            if (self.env.context.get('xmlid_value_reference', False) and
-                    vals.get(self._value_key)):
-                if vals.get('key') == 'action':
-                    vals[self._value_key] = xmlid_to_property(
-                        self.env, vals[self._value_key])
-                elif vals.get('key') == 'default':
-                    field = self._dj_get_relation_field(vals)
-                    if field:
-                        vals[self._value_key] = \
-                            pickle.dumps(
-                                self.env.ref(vals[self._value_key]).id)
+    def _dj_value_to_xmlid(self, field, rec):
+        value = rec[self._value_key]
+        rec_ids = json.loads(value)
+        model = self.env[field['relation']]
+        if rec_ids:
+            if isinstance(rec_ids, list):
+                value = ','.join([model.browse(rec_id)._dj_export_xmlid()
+                                    for rec_id in rec_ids])
+            else:
+                value = model.browse(rec_ids)._dj_export_xmlid()
+        return value

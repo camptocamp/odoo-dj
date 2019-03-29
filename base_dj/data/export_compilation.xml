@@ -30,7 +30,7 @@
     <!-- we are going to value this domain on the fly
     when exporting the compilation -->
     <!-- <field name="domain">[('id', '=', my_cool_compilation)]</field> -->
-    <field name="model_fields_blacklist_ids" eval="[(6, 0, [ref('base_dj.field_dj_compilation_song_ids')])]"/>
+    <field name="model_fields_blacklist_ids" eval="[(6, 0, [ref('base_dj.field_dj_compilation__song_ids')])]"/>
     <field name="sequence" eval="20" />
   </record>
 
@@ -40,8 +40,8 @@
     <field name="compilation_id" ref="dj_self_export"/>
     <field name="model_id" ref="base_dj.model_dj_song"/>
     <field name="model_fields_blacklist_ids" eval="[
-      (6, 0, [ref('base_dj.field_dj_song_domain')]),
-      (6, 0, [ref('base_dj.field_dj_song_depends_on_ids')])
+      (6, 0, [ref('base_dj.field_dj_song__domain')]),
+      (6, 0, [ref('base_dj.field_dj_song__depends_on_ids')])
     ]"/>
     <field name="sequence" eval="80" />
   </record>

@@ -26,6 +26,16 @@ class XMLIDCase(BaseCase):
         })
         cls.add_xmlid(baz, 'base_dj.test_company_baz')
 
+    def _create_partner_bank(self, **vals):
+        partner = self.env['res.partner'].search([
+            ('is_company', '=', True)], limit=1)
+        values = {
+            'partner_id': partner.id,
+        }
+        values.update(vals)
+        return self.env['res.partner.bank'].create(values)
+
+
     def test_companies(self):
         # records created from setup maintain their own xmlid
         self.assertEqual(
@@ -51,7 +61,7 @@ class XMLIDCase(BaseCase):
 
     def test_xmlid_no_specific_rule_no_name_field(self):
         # new record
-        rec = self.env['res.partner.bank'].create({'acc_number': '01234', })
+        rec = self._create_partner_bank(acc_number='01234')
         # no specific rule other than `__setup__` as prefix
         # and record ID as suffix (odoo's std)
         # odoo generates xids using an hash at the end, like:
@@ -71,7 +81,7 @@ class XMLIDCase(BaseCase):
 
     def test_xmlid_with_specific_xmlid_fields(self):
         # new record
-        rec = self.env['res.partner.bank'].create({'acc_number': '11234', })
+        rec = self._create_partner_bank(acc_number='11234')
         # pass new xmlids map
         fmap = {'res.partner.bank': ['acc_number', ]}
         self.assertEqual(
@@ -81,7 +91,7 @@ class XMLIDCase(BaseCase):
 
     def test_xmlid_with_specific_xmlid_fields_related(self):
         # new record
-        rec = self.env['res.partner.bank'].create({'acc_number': '30000', })
+        rec = self._create_partner_bank(acc_number='30000')
         # pass new xmlids map
         fmap = {'res.partner.bank': ['acc_number', 'company_id.name']}
         self.assertEqual(
@@ -91,7 +101,7 @@ class XMLIDCase(BaseCase):
 
     def test_xmlid_with_specific_xmlid_fields_from_equalizer(self):
         # new record
-        rec = self.env['res.partner.bank'].create({'acc_number': '20000', })
+        rec = self._create_partner_bank(acc_number='20000')
         self.env['dj.equalizer'].create({
             'model': 'res.partner.bank',
             'xmlid_fields': 'acc_number',
@@ -104,18 +114,18 @@ class XMLIDCase(BaseCase):
 
     def test_xmlid_multicompany(self):
         # new record for the same company
-        rec = self.env['res.partner.bank'].create({'acc_number': '56789', })
+        rec = self._create_partner_bank(acc_number='56789')
         # we pass `dj_multicompany` flag and we get company's aka as prefix
         self.assertRegexpMatches(
             rec.with_context(dj_multicompany=1)._dj_export_xmlid(),
             '__setup__.djc_res_partner_bank_%d_[0-9a-f]{8}' % rec.id
         )
         # new record, different company
-        rec = self.env['res.partner.bank'].create({
-            'acc_number': '11111',
-            'acc_type': 'bank',
-            'company_id': self.env.ref('base_dj.test_company_foo').id,
-        })
+        rec = self._create_partner_bank(
+            acc_number='11111',
+            acc_type='bank',
+            company_id=self.env.ref('base_dj.test_company_foo').id,
+        )
         self.assertRegexpMatches(
             rec.with_context(dj_multicompany=1)._dj_export_xmlid(),
             '__setup__.foo_res_partner_bank_%d_[0-9a-f]{8}' % rec.id
@@ -127,7 +137,7 @@ class XMLIDCase(BaseCase):
             'xmlid_fields': 'acc_number',
             'xmlid_policy': 'hash',
         })
-        rec = self.env['res.partner.bank'].create({'acc_number': '56789', })
+        rec = self._create_partner_bank(acc_number='56789')
         # xmlid built w/ hash of `(acc_number, )` tuple
         hashed = self.env['res.partner.bank']._hash_them((rec.acc_number, ))
         self.assertEqual(

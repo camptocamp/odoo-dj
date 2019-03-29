@@ -438,6 +438,8 @@ class Song(models.Model):
         names = set(
             self.song_model.fields_get().keys()
         ).difference(set(SPECIAL_FIELDS))
+        # TODO: what about related fields that are not readonly?
+        # eg: company.logo -> partner_id.image
         domain = [
             ('model', '=', self.model_name),
             ('store', '=', True),

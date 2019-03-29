@@ -11,7 +11,7 @@
     <field name="xmlid_fields">login</field>
     <field name="xmlid_table_name">user</field>
     <field name="field_blacklist">password_crypt</field>
-    <field name="record_blacklist">base.user_root</field>
+    <field name="record_blacklist">base.user_root,base.user_admin</field>
     <field name="model_context">{'no_reset_password': True}</field>
   </record>
 
@@ -19,7 +19,7 @@
     <field name="model">res.partner</field>
     <field name="xmlid_fields">name</field>
     <field name="xmlid_table_name">partner</field>
-    <field name="record_blacklist">base.partner_root</field>
+    <field name="record_blacklist">base.partner_root,base.partner_admin</field>
   </record>
 
   <record model="dj.equalizer" id="dj_equalizer_ir_sequence">

@@ -26,7 +26,9 @@ class SongCase(BaseCase):
         for special in SPECIAL_FIELDS:
             self.assertNotIn(special, all_fields)
         self.assertEqual(sorted(all_fields), sorted([
-            'name', 'color', 'parent_id', 'partner_ids', 'active',
+            'name', 'color',
+            'parent_id', 'parent_path',
+            'partner_ids', 'active',
         ]))
 
     def test_get_csv_names(self):

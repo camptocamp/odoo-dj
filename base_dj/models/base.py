@@ -370,10 +370,16 @@ class Base(models.AbstractModel):
         _, content = self._dj_guess_filetype(fname, record)
         return content
 
-    @api.multi
-    def write(self, vals):
+    def _load_records_write(self, vals):
         self._dj_handle_special_fields_write(vals)
-        return super(Base, self).write(vals)
+        super()._load_records_write(vals)
+
+    def _load_records_create(self, data_list):
+        # create is multi since v12
+        for rec_data in data_list:
+            self._dj_handle_special_fields_write(rec_data)
+        return super()._load_records_create(data_list)
+
 
     def _dj_handle_special_fields_write(self, vals):
         if not vals:
