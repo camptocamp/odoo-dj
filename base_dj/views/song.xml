@@ -37,7 +37,7 @@
               </group>
               <div name="domain_conf" attrs="{'invisible': [('has_records', '=', False)]}">
                 <separator string="Domain configuration" />
-                <label string="Depends on" />
+                <h4>Depends on</h4>
                 <p class="help-block">You can select an existing song to be used as master to collect records.
                 For instance: you wan to export partners from exported `procurement.rule`.
                 Solution: select the procurement rule song and the field "Partner address".
@@ -51,10 +51,10 @@
                     <field name="model_field" />
                   </tree>
                 </field>
-                <label string="Domain" />
+                <label string="Domain" for="domain"/>
                 <field name="domain" widget="domain" options="{'model': 'model_name'}"/>
                 <br />
-                <label string="Python code" />
+                <label string="Python code" for="python_code" />
                 <p class="help-block">You can use <strong>python_code</strong> in case <strong>domain</strong> is not enoughto filter records.<br />
                   It has <strong>env</strong> available and needs to return record set. <br />
                   For instance to get all object related to an other model you can do: <br />

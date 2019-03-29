@@ -29,7 +29,7 @@
     <field name="model_id" ref="base.model_res_partner" />
     <field name="sequence" eval="40" />
     <field name="field_blacklist">phone</field>
-    <field name="model_fields_blacklist_ids" eval="[(6, 0, [ref('base.field_res_partner_ref')])]"/>
+    <field name="model_fields_blacklist_ids" eval="[(6, 0, [ref('base.field_res_partner__ref')])]"/>
   </record>
 
 </odoo>
