@@ -35,7 +35,7 @@
         'views/menuitems.xml',
         'views/info_templates.xml',
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'post_load': 'patch_fields',
 }

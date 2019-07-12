@@ -15,4 +15,5 @@
         'data/equalizer.xml',
         'data/dj.xml',
     ],
+    'installable': False,
 }

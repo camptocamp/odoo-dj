@@ -15,6 +15,6 @@
     'test': [],
     'external_dependencies': {
     },
-    'installable': True,
+    'installable': False,
     'auto_install': False,
 }

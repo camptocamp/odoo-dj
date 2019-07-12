@@ -14,4 +14,5 @@
     'data': [
         'data/dj.xml',
     ],
+    'installable': False,
 }
