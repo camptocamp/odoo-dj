@@ -14,7 +14,7 @@
       id,social_facebook,social_github,social_googleplus,
       social_linkedin,social_twitter,social_youtube</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
-      ref('base.field_res_company_user_ids')])]"/>
+      ref('base.field_res_company__user_ids')])]"/>
   </record>
 
   <record model="dj.song" id="dj_song_website">
