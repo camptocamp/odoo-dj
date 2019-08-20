@@ -31,6 +31,7 @@
     <field name="sequence" eval="30" />
     <field name="song_type">load_csv</field>
     <field name="export_translations" eval="True" />
+    <field name="records_order">parent_path asc</field>
   </record>
 
   <record model="dj.song" id="dj_song_website_auth">
