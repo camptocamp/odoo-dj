@@ -20,6 +20,7 @@ class DJEqualizer(models.Model):
     """Hold models' global configuration."""
 
     _name = 'dj.equalizer'
+    _description = 'DJ Equalizer'
 
     model = fields.Char(default='')
     xmlid_fields = fields.Char(default='')

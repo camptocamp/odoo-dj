@@ -19,6 +19,7 @@ class Compilation(models.Model):
     """Create compilations of songs and burn them."""
 
     _name = 'dj.compilation'
+    _description = 'DJ Compilation'
     _order = 'sequence,core,name'
     _inherit = [
         'dj.template.mixin',
@@ -39,7 +40,12 @@ class Compilation(models.Model):
         comodel_name='dj.genre',
         required=True,
     )
-    genre = fields.Char(related='genre_id.name', readonly=True, string='Genre')
+    genre = fields.Char(
+        related='genre_id.name',
+        readonly=True,
+        string='Genre name',
+        help='Tech field for accessing genre name straight in templates.'
+    )
     data_mode = fields.Selection(
         selection=[
             ('install', 'Install'),

@@ -9,6 +9,7 @@ class DownloadMixin(models.AbstractModel):
     """Make models downloadable."""
 
     _name = 'dj.download.mixin'
+    _description = 'DJ download mixin'
     _dj_download_path = '/dj/download/'
 
     download_url = fields.Char(compute='_compute_download_url')

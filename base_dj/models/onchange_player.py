@@ -12,6 +12,7 @@ from odoo import models, api
 
 class OnchangePlayer(models.AbstractModel):
     _name = 'onchange.player.mixin'
+    _description = 'Onchange player mixin'
 
     def _play_new_values(self, values, onchange_values,
                          override_existing=True):

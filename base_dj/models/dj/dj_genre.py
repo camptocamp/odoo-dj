@@ -9,6 +9,7 @@ class Genre(models.Model):
     """Pick your favourite music genre."""
 
     _name = 'dj.genre'
+    _description = 'DJ Genre'
 
     name = fields.Char(required=True, help='Name will be normalized.')
     active = fields.Boolean(default=True)

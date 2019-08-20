@@ -13,6 +13,7 @@ class TemplateMixin(models.AbstractModel):
     """Provide Jinja rendering capabilities."""
 
     _name = 'dj.template.mixin'
+    _description = 'DJ template mixin'
 
     template_path = fields.Char(
         default=lambda self: self._default_dj_template_path,

@@ -10,6 +10,7 @@ import os
 
 class BurnWiz(models.TransientModel):
     _name = 'dj.compilation.burn.wiz'
+    _description = 'DJ Burn compilation wizard'
 
     compilation_id = fields.Many2one(
         string='Compilation to burn',

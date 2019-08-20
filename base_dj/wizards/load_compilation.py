@@ -23,10 +23,12 @@ def read_csv(data, dialect='excel', encoding='utf-8', **fmtparams):
     return header, list(rows)
 
 
+# TODO: fix it or trash it
 class LoadCompilation(models.TransientModel):
     """Import compilations."""
 
     _name = 'dj.load.compilation.wiz'
+    _description = 'DJ Load selected compilation wizard'
 
     name = fields.Char()
     zip_file = fields.Binary(

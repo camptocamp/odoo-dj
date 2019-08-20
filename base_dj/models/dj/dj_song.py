@@ -24,6 +24,7 @@ testing = tools.config.get('test_enable') or os.environ.get('ODOO_TEST_ENABLE')
 
 class Song(models.Model):
     _name = 'dj.song'
+    _description = 'DJ Song'
     _inherit = [
         'dj.template.mixin',
         'onchange.player.mixin',
@@ -745,6 +746,7 @@ class Song(models.Model):
 
 class SongDependency(models.Model):
     _name = 'dj.song.dependency'
+    _description = 'DJ Song dependency'
     _rec_name = 'song_id'
 
     song_id = fields.Many2one(

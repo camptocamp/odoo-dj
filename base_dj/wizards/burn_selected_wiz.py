@@ -6,6 +6,8 @@ from odoo import api, models, fields
 
 class BurnSelectedWiz(models.TransientModel):
     _name = 'dj.compilation.burn_selected.wiz'
+    _description = 'DJ Burn selected compilation wizard'
+
 
     compilation_ids = fields.Many2many(
         'dj.compilation',
