@@ -71,6 +71,7 @@
                 <field name="binaries_path" attrs="{'invisible': [('has_records', '=', False)]}"/>
                 <field name="model_context"/>
                 <field name="exec_hook"/>
+                <field name="records_order"/>
               </group>
             </page>
             <page name="modules" string="Modules" attrs="{'invisible': [('has_records', '=', False)]}">

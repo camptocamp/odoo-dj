@@ -112,6 +112,7 @@ class Song(models.Model):
         compute='_compute_records_count',
         readonly=True
     )
+    records_order = fields.Char(default='id asc')
     depends_on_ids = fields.One2many(
         string='Depends on',
         comodel_name='dj.song.dependency',
@@ -561,6 +562,7 @@ class Song(models.Model):
     def _get_exportable_records(self, order=None):
         if self.song_model is None:
             return []
+        order = order or self.records_order
         recs = self.song_model.search(self.eval_domain(), order=order)
         if self.python_code:
             recs2 = self.eval_python_code()
