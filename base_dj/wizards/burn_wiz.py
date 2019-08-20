@@ -103,6 +103,10 @@ class BurnWiz(models.TransientModel):
         })
         self._update_url()
 
+    @api.onchange('song_id')
+    def _onchange_song_id(self):
+        self._update_url()
+
     @api.onchange('dj_xmlid_force', 'dj_xmlid_skip_create')
     def _onchange_force_flags(self):
         self._update_url()
@@ -119,6 +123,12 @@ class BurnWiz(models.TransientModel):
             id=self.compilation_id.id,
             config=urlencode(self._get_config())
         )
+        if self.song_id:
+            self.burn_url = '/dj/download/song/{id}?{config}'.format(
+                id=self.song_id.id,
+                config=urlencode(self._get_config())
+            )
+
 
     @api.multi
     def action_burn(self):
