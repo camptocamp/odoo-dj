@@ -481,6 +481,8 @@ class Song(models.Model):
 
         blacklisted = self.model_fields_blacklist_ids.mapped('name')
         blacklisted.extend(self._dj_global_config('field_blacklist'))
+        if 'parent_path' in self.song_model:
+            blacklisted.append('parent_path')
         for field in _fields:
             if field.name in blacklisted:
                 continue
