@@ -31,19 +31,33 @@
     <field name="field_list">
       id,name,aka,currency_id,vat,
       street,zip,city,country_id,phone,fax,email,
-      website,logo,paperformat_id,parent_id,partner_id,
+      website,paperformat_id,parent_id,partner_id,
       report_footer,report_header,sequence</field>
     <field name="model_fields_blacklist_ids" eval="[(6,0,[
-      ref('base.field_res_company_user_ids')])]"/>
+      ref('base.field_res_company__user_ids')])]"/>
+  </record>
+
+  <!-- export partners related to the companies -->
+  <record model="dj.song" id="dj_song_partner">
+    <field name="compilation_id" ref="dj_core_main"/>
+    <field name="model_id" ref="base.model_res_partner" />
+    <field name="sequence" eval="30" />
+    <field name="song_type">load_csv</field>
+    <field name="field_list">
+      id,name,active,email,category_id,image,is_company</field>
+    <field name="depends_on_ids" eval="[
+      (0, 0, {'master_song_id': ref('dj_core.dj_song_company'),
+              'model_field_id': ref('base.field_res_company__partner_id')}),
+    ]" />
   </record>
 
   <record model="dj.song" id="dj_song_groups">
     <field name="compilation_id" ref="dj_core_main"/>
     <field name="model_id" ref="base.model_res_groups" />
-    <field name="sequence" eval="20" />
+    <field name="sequence" eval="40" />
     <field name="song_type">load_csv</field>
     <field name="model_fields_ids" eval="[(6,0,[
-      ref('base.field_res_groups_implied_ids')])]"/>
+      ref('base.field_res_groups__implied_ids')])]"/>
       <!-- trick to avoid loading of all the records. We want just some core group -->
     <field name="domain">[('name', '=', '#NONE#')]</field>
     <field name="python_code">
@@ -64,7 +78,7 @@ records |= env.ref('base.group_user')
   <record model="dj.song" id="dj_song_ir_default">
     <field name="compilation_id" ref="dj_core_main"/>
     <field name="model_id" ref="base.model_ir_default"/>
-    <field name="sequence" eval="40" />
+    <field name="sequence" eval="30" />
     <field name="song_type">load_csv</field>
   </record>
 
